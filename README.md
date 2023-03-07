@@ -1,3 +1,6 @@
+This branch is a copy of the original master branch we received at the start of the mp. 
+Preserves original files in case we accidentally make unwanted edits to given files. 
+
 ACADEMIC INTEGRITY
 -----
 Please review the University of Illinois Student Code before starting,
