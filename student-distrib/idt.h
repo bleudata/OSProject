@@ -1,0 +1,34 @@
+
+#ifndef _IDT_H
+#define _IDT_H
+
+
+
+// should exceptions also return 0 on success and -1 on fail?
+// that's what system calls are doing
+
+extern void init_idt();
+extern void setup_idt();
+extern void intel_handler_0_19(int vector);
+extern void divide_error_handler();
+extern void reserved1_handler();
+extern void nmi_interrupt_handler();
+extern void breakpoint_handler();
+extern void overflow_handler();
+extern void bound_range_exceeded_handler();
+extern void invalid_opcode_handler();
+extern void device_na_handler();
+extern void double_fault_handler();
+extern void reserved9_handler();
+extern void invalid_tss_handler();
+extern void seg_not_present_handler();
+extern void stack_set_fault_handler();
+extern void general_protection_handler();
+extern void page_fault_handler();
+extern void reserved15_handler();
+extern void fpu_float_error_handler();
+extern void alignment_check_handler();
+extern void machine_check_handler();
+extern void smid_float_exception_handler();
+
+#endif /* _IDT_H */
