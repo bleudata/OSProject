@@ -1,4 +1,5 @@
-
+#if !defined(IDT_ASM_H)
+#define IDT_ASM_H
 
 // might not actually need these, copied from syscall but noelle says intel and pic stuff
 // is different than sys call 
@@ -45,3 +46,5 @@ extern void fpu_float_error_handler_lnk();
 extern void alignment_check_handler_lnk();
 extern void machine_check_handler_lnk();
 extern void smid_float_exception_handler_lnk();
+
+#endif /* IDT_ASM_H */

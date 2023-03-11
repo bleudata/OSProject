@@ -4,7 +4,7 @@
 #define HANDLER_LNK(name, function)   \
 	.GLOBL name               		 ;\
 	name:						 	 ;\
-		PUSHAL						 ;\ 
+		PUSHAL						 ;\
 		PUSHFL 						 ;\
 		CALL function   			 ;\
 		POPFL	          			 ;\

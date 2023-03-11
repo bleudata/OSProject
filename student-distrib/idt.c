@@ -1,7 +1,7 @@
 /* This file will hold all functions relating to IDT */
 
 #include "idt.h"
-
+#include "idt_asm.h"
 #include "lib.h"
 #include "x86_desc.h"
 enum intel_Exceptions {
