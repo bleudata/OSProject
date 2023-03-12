@@ -4,8 +4,6 @@
 #include "idt_asm.h"
 #include "lib.h"
 #include "x86_desc.h"
-#include "i8259.h"
-
 
 static unsigned char * intel_handler_strings[] = {
     [DIVIDE_ERROR] = (unsigned char *) "Divide error",
@@ -64,6 +62,7 @@ void setup_idt() {
     //     SET_IDT_ENTRY(idt[0], exceptions[0]);
     // }
 
+    // vectors 0-19
     SET_IDT_ENTRY(idt[DIVIDE_ERROR], divide_error_handler_lnk);
     SET_IDT_ENTRY(idt[RESERVED1], reserved1_handler_lnk);
     SET_IDT_ENTRY(idt[NMI_INTERRUPT], nmi_interrupt_handler_lnk);
@@ -84,6 +83,12 @@ void setup_idt() {
     SET_IDT_ENTRY(idt[ALIGNMENT_CHECK], alignment_check_handler_lnk);
     SET_IDT_ENTRY(idt[MACHINE_CHECK], machine_check_handler_lnk);
     SET_IDT_ENTRY(idt[SIMD_FLOAT_EXCEPTION], smid_float_exception_handler_lnk);
+
+    //pic irqs
+    //SET_IDT_ENTRY(idt[KEYBOARD_VECTOR], )
+
+    //system calls
+    SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], generic_system_call_handler_lnk);
 }
 
  void generic_handler(int vector) {

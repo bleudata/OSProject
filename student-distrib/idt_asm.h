@@ -2,7 +2,16 @@
 #ifndef IDT_ASM_H
 #define IDT_ASM_H
 
+#define IRQ1_VECTOR         0x20
+#define IRQ15_VECTOR        0x2F
+#define KEYBOARD_VECTOR     0x21
+#define RTC_VECTOR          0x28
+#define KEYBOARD_IRQ        0x01
+#define RTC_IRQ             0x08
+
 #define SYSTEM_CALL_VECTOR 0x80
+
+// intel vectors 0-19
 #define DIVIDE_ERROR    0
 #define RESERVED1    1
 #define NMI_INTERRUPT 2
@@ -71,6 +80,7 @@ extern void fpu_float_error_handler_lnk();
 extern void alignment_check_handler_lnk();
 extern void machine_check_handler_lnk();
 extern void smid_float_exception_handler_lnk();
+extern void generic_system_call_handler_lnk();
 
 #endif /* ASM */
 #endif /* IDT_ASM_H */

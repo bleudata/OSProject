@@ -5,6 +5,7 @@
 #include "i8259.h"
 #include "lib.h"
 
+
 /* Interrupt masks to determine which interrupts are enabled and disabled */
 uint8_t master_mask; /* IRQs 0-7  */
 uint8_t slave_mask;  /* IRQs 8-15 */
@@ -67,4 +68,16 @@ void send_eoi(uint32_t irq_num) {
 	outb(EOI, MASTER_8259_PORT); // always send eoi to primary pic
 }
 
+// output the character to the screen
+void keyboard_irq_handler(uint8_t key) {
+    // if(key < 0 || key > 127) { //not a valid character so don't have to print
+    //     return;
+    // }
+    // putc(key);
+    puts("keyboard handler");
+}
 
+// use the test_interrupts from lib.c according to the doc
+void rtc_irq_handler() {
+    test_interrupts();
+}

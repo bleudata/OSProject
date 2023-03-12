@@ -30,15 +30,6 @@
  * the interrupt number and sent out to the PIC
  * to declare the interrupt finished */
 #define EOI                 0x60
-#define KEYBOARD_VECTOR     0x21
-#define RTC_VECTOR          0x28
-#define KEYBOARD_IRQ        0x01
-#define RTC_IRQ             0x08
-#define IRQ1_VECTOR         0x20
-#define IRQ15_VECTOR        0x2F
-
-
-
 
 /* Externally-visible functions */
 
@@ -50,5 +41,9 @@ void enable_irq(uint32_t irq_num);
 void disable_irq(uint32_t irq_num);
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num);
+
+void keyboard_irq_handler(uint8_t key);
+
+void rtc_irq_handler();
 
 #endif /* _I8259_H */
