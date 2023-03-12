@@ -1,31 +1,10 @@
 /* This file will hold all functions relating to IDT */
 
 #include "idt.h"
-
+#include "idt_asm.h"
 #include "lib.h"
 #include "x86_desc.h"
-enum intel_Exceptions {
-    DIVIDE_ERROR,
-    RESERVED1,
-    NMI_INTERRUPT,
-    BREAKPOINT,
-    OVERFLOW,
-    BOUND_RANGE_EXCEEDED,
-    INVALID_OPCODE,
-    DEVICE_NA,
-    DOUBLE_FAULT, // error code is 0
-    RESERVED9,
-    INVALID_TSS, //yes
-    SEG_NOT_PRESENT, //yes
-    STACK_SEG_FAULT, //yes
-    GENERAL_PROTECTION, //yes
-    PAGE_FAULT, //yes
-    RESERVED15,
-    FPU_FLOAT_ERROR,
-    ALIGNMENT_CHECK, // error code is 0
-    MACHINE_CHECK,
-    SIMD_FLOAT_EXCEPTION
-};
+
 
 static unsigned char * intel_handler_strings[] = {
     [DIVIDE_ERROR] = (unsigned char *) "Divide error",
@@ -52,9 +31,13 @@ static unsigned char * intel_handler_strings[] = {
 
 // go through each entry and set to either trap or interrupt
 void init_idt() {
-
-    return; 
-
+    int i;
+    for(i = DIVIDE_ERROR; i <= SIMD_FLOAT_EXCEPTION; i++) {
+        idt[i].size = 1; // want size to be 32 bit 1110
+        idt[i].reserved1 = 1;
+        idt[i].reserved2 = 1;
+        idt[i].reserved3 = 0;
+    }
 }
 
 // add the handlers into the idt
@@ -64,7 +47,26 @@ void setup_idt() {
     //     SET_IDT_ENTRY(idt[0], exceptions[0]);
     // }
 
-   // SET_IDT_ENTRY(idt[0], )
+    SET_IDT_ENTRY(idt[DIVIDE_ERROR], divide_error_handler_lnk);
+    SET_IDT_ENTRY(idt[RESERVED1], reserved1_handler_lnk);
+    SET_IDT_ENTRY(idt[NMI_INTERRUPT], nmi_interrupt_handler_lnk);
+    SET_IDT_ENTRY(idt[BREAKPOINT], breakpoint_handler_lnk);
+    SET_IDT_ENTRY(idt[OVERFLOW], overflow_handler_lnk);
+    SET_IDT_ENTRY(idt[BOUND_RANGE_EXCEEDED], bound_range_exceeded_handler_lnk);
+    SET_IDT_ENTRY(idt[INVALID_OPCODE], invalid_opcode_handler_lnk);
+    SET_IDT_ENTRY(idt[DEVICE_NA], device_na_handler_lnk);
+    SET_IDT_ENTRY(idt[DOUBLE_FAULT], double_fault_handler_lnk);
+    SET_IDT_ENTRY(idt[RESERVED9], reserved9_handler_lnk);
+    SET_IDT_ENTRY(idt[INVALID_TSS], invalid_tss_handler_lnk);
+    SET_IDT_ENTRY(idt[SEG_NOT_PRESENT], seg_not_present_handler_lnk);
+    SET_IDT_ENTRY(idt[STACK_SEG_FAULT], stack_set_fault_handler_lnk);
+    SET_IDT_ENTRY(idt[GENERAL_PROTECTION], general_protection_handler_lnk);
+    SET_IDT_ENTRY(idt[PAGE_FAULT], page_fault_handler_lnk);
+    SET_IDT_ENTRY(idt[RESERVED15], reserved15_handler_lnk);
+    SET_IDT_ENTRY(idt[FPU_FLOAT_ERROR], fpu_float_error_handler_lnk);
+    SET_IDT_ENTRY(idt[ALIGNMENT_CHECK], alignment_check_handler_lnk);
+    SET_IDT_ENTRY(idt[MACHINE_CHECK], machine_check_handler_lnk);
+    SET_IDT_ENTRY(idt[SIMD_FLOAT_EXCEPTION], smid_float_exception_handler_lnk);
 }
 
 // test to make one handler for all intel exceptions 0-19 to just print and sit in a while loop

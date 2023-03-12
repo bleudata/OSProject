@@ -1,12 +1,15 @@
-
 #define ASM
+#include "idt_asm.h"
 
-#define HANDLER_LNK(name, function)   \
+/* will need to add macro above pushal for pushing vector num and error code from pic */
+#define HANDLER_LNK(name, function, number)   \
 	.GLOBL name               		 ;\
 	name:						 	 ;\
-		PUSHAL						 ;\ 
+		PUSHAL						 ;\
 		PUSHFL 						 ;\
+		PUSHL $number				 ;\
 		CALL function   			 ;\
+		ADDL $4, %ESP				 ;\
 		POPFL	          			 ;\
 		POPAL	         			 ;\
 		IRET						 ;\
@@ -14,26 +17,26 @@
 # the exception library wrappers 
 
 
-HANDLER_LNK(divide_error_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(reserved1_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(nmi_interrupt_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(breakpoint_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(overflow_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(bound_range_exceeded_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(invalid_opcode_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(device_na_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(double_fault_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(reserved9_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(invalid_tss_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(seg_not_present_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(stack_set_fault_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(general_protection_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(page_fault_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(reserved15_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(fpu_float_error_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(alignment_check_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(machine_check_handler_lnk, intel_handler_0_19)
-HANDLER_LNK(smid_float_exception_handler_lnk, intel_handler_0_19)
+HANDLER_LNK(divide_error_handler_lnk, intel_handler_0_19, 0)
+HANDLER_LNK(reserved1_handler_lnk, intel_handler_0_19, 1)
+HANDLER_LNK(nmi_interrupt_handler_lnk, intel_handler_0_19, 2)
+HANDLER_LNK(breakpoint_handler_lnk, intel_handler_0_19, 3)
+HANDLER_LNK(overflow_handler_lnk, intel_handler_0_19, 4)
+HANDLER_LNK(bound_range_exceeded_handler_lnk, intel_handler_0_19, 5)
+HANDLER_LNK(invalid_opcode_handler_lnk, intel_handler_0_19, 6)
+HANDLER_LNK(device_na_handler_lnk, intel_handler_0_19, 7)
+HANDLER_LNK(double_fault_handler_lnk, intel_handler_0_19, 8)
+HANDLER_LNK(reserved9_handler_lnk, intel_handler_0_19, 9)
+HANDLER_LNK(invalid_tss_handler_lnk, intel_handler_0_19, 10)
+HANDLER_LNK(seg_not_present_handler_lnk, intel_handler_0_19, 11)
+HANDLER_LNK(stack_set_fault_handler_lnk, intel_handler_0_19, 12)
+HANDLER_LNK(general_protection_handler_lnk, intel_handler_0_19, 13)
+HANDLER_LNK(page_fault_handler_lnk, intel_handler_0_19, 14)
+HANDLER_LNK(reserved15_handler_lnk, intel_handler_0_19, 15)
+HANDLER_LNK(fpu_float_error_handler_lnk, intel_handler_0_19, 16)
+HANDLER_LNK(alignment_check_handler_lnk, intel_handler_0_19, 17)
+HANDLER_LNK(machine_check_handler_lnk, intel_handler_0_19, 18)
+HANDLER_LNK(smid_float_exception_handler_lnk, intel_handler_0_19, 19)
 
 
 /*
