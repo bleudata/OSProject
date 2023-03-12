@@ -72,8 +72,5 @@ extern void alignment_check_handler_lnk();
 extern void machine_check_handler_lnk();
 extern void smid_float_exception_handler_lnk();
 
-<<<<<<< HEAD
-=======
 #endif /* ASM */
->>>>>>> 04ea930da788798c1cec0bfbd43a07ceb0b8ac83
 #endif /* IDT_ASM_H */
