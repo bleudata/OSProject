@@ -2,30 +2,53 @@
 #ifndef IDT_ASM_H
 #define IDT_ASM_H
 
-#ifndef ASM
-// might not actually need these, copied from syscall but noelle says intel and pic stuff
-// is different than sys call 
-// #define DIVIDE_ERROR    0
-// #define RESERVED1    1
-// #define NMI_INTERRUPT 2
-// #define BREAKPOINT    3
-// #define OVERFLOW   4
-// #define BOUND_RANGE_EXCEEDED    5
-// #define INVALID_OPCODE   6
-// #define DEVICE_NA 7
-// #define DOUBLE_FAULT  8
-// #define RESERVED9  9
-// #define INVALID_TSS  10
-// #define SEG_NOT_PRESENT   11
-// #define STACK_SEG_FAULT 12
-// #define GENERAL_PROTECTION  13
-// #define PAGE_FAULT  14
-// #define RESERVED15  15
-// #define FPU_FLOAT_ERROR 16
-// #define ALIGNMENT_CHECK  17
-// #define MACHINE_CHECK  18
-// #define SIMD_FLOAT_EXCEPTION  19
+#define SYSTEM_CALL_VECTOR 0x80
+#define DIVIDE_ERROR    0
+#define RESERVED1    1
+#define NMI_INTERRUPT 2
+#define BREAKPOINT    3
+#define OVERFLOW   4
+#define BOUND_RANGE_EXCEEDED    5
+#define INVALID_OPCODE   6
+#define DEVICE_NA 7
+#define DOUBLE_FAULT  8
+#define RESERVED9  9
+#define INVALID_TSS  10
+#define SEG_NOT_PRESENT   11
+#define STACK_SEG_FAULT 12
+#define GENERAL_PROTECTION  13
+#define PAGE_FAULT  14
+#define RESERVED15  15
+#define FPU_FLOAT_ERROR 16
+#define ALIGNMENT_CHECK  17
+#define MACHINE_CHECK  18
+#define SIMD_FLOAT_EXCEPTION  19
 
+#ifndef ASM
+
+
+// enum intel_exceptions {
+//     DIVIDE_ERROR = 0,
+//     RESERVED1,
+//     NMI_INTERRUPT,
+//     BREAKPOINT,
+//     OVERFLOW,
+//     BOUND_RANGE_EXCEEDED,
+//     INVALID_OPCODE,
+//     DEVICE_NA,
+//     DOUBLE_FAULT, // error code is 0
+//     RESERVED9,
+//     INVALID_TSS, //yes
+//     SEG_NOT_PRESENT, //yes
+//     STACK_SEG_FAULT, //yes
+//     GENERAL_PROTECTION, //yes
+//     PAGE_FAULT, //yes
+//     RESERVED15,
+//     FPU_FLOAT_ERROR,
+//     ALIGNMENT_CHECK, // error code is 0
+//     MACHINE_CHECK,
+//     SIMD_FLOAT_EXCEPTION
+// };
 
 
 extern void divide_error_handler_lnk();

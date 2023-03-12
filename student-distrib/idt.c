@@ -4,6 +4,7 @@
 #include "idt_asm.h"
 #include "lib.h"
 #include "x86_desc.h"
+#include "i8259.h"
 
 
 static unsigned char * intel_handler_strings[] = {
@@ -30,14 +31,30 @@ static unsigned char * intel_handler_strings[] = {
 };
 
 // go through each entry and set to either trap or interrupt
-void init_idt() {
+void idt_init() {
     int i;
+    lidt(idt_desc_ptr); // load the idt address
+
+    // intel exceptions
     for(i = DIVIDE_ERROR; i <= SIMD_FLOAT_EXCEPTION; i++) {
-        idt[i].size = 1; // want size to be 32 bit 1110
+        idt[i].size = 1; // want size to be 32 bit 1110 for interrupt gate
         idt[i].reserved1 = 1;
         idt[i].reserved2 = 1;
         idt[i].reserved3 = 0;
     }
+    // pic irqs
+    for(i = IRQ1_VECTOR; i <= IRQ15_VECTOR; i++) {
+        idt[i].size = 1; // want size to be 32 bit 1110 for interrupt gate
+        idt[i].reserved1 = 1;
+        idt[i].reserved2 = 1;
+        idt[i].reserved3 = 0;
+    }
+
+    // system call
+    idt[SYSTEM_CALL_VECTOR].size = 1;
+    idt[SYSTEM_CALL_VECTOR].reserved1 = 1; // 1111 for trap gate
+    idt[SYSTEM_CALL_VECTOR].reserved2 = 1;
+    idt[SYSTEM_CALL_VECTOR].reserved3 = 1;
 }
 
 // add the handlers into the idt
@@ -69,8 +86,19 @@ void setup_idt() {
     SET_IDT_ENTRY(idt[SIMD_FLOAT_EXCEPTION], smid_float_exception_handler_lnk);
 }
 
+ void generic_handler(int vector) {
+    if(vector < 0 || vector > 19) {
+        generic_intel_handler(vector);
+    }
+    else if(vector < IRQ1_VECTOR || vector > IRQ15_VECTOR) {
+        generic_irq_handler(vector);
+    }
+    else if(vector == SYSTEM_CALL_VECTOR) {
+        generic_system_call_handler();
+    }
+ }
 // test to make one handler for all intel exceptions 0-19 to just print and sit in a while loop
-void intel_handler_0_19(int vector) {
+void generic_intel_handler(int vector) {
     if(vector < 0 || vector > 19) {
         return; // invalid vector number for this function
     }
@@ -78,6 +106,11 @@ void intel_handler_0_19(int vector) {
     while(1); // infinite loop here for now, supposed to have this according to slides???
 }
 
+void generic_irq_handler(int vector) {
+    if(vector < IRQ1_VECTOR || vector > IRQ15_VECTOR) {
+        return; //invalid vector number for this function
+    }
+}
 void divide_error_handler() {
     printf("Divide Error."); // maybe we want to puts instead?
     while(1); // want it to break for now
@@ -159,3 +192,8 @@ void machine_check_handler() {
 void smid_float_exception_handler() {
     return ;
 }
+
+void generic_system_call_handler() {
+    printf("System call");
+}
+
