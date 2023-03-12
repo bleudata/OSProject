@@ -13,8 +13,6 @@
 /* Ports that each PIC sits on */
 #define MASTER_8259_PORT    0x20 //command
 #define SLAVE_8259_PORT     0xA0 //command
-#define PIC1_DATA         MASTER_8259_PORT+1 
-#define PIC2_DATA          SLAVE_8259_PORT+1
 
 /* Initialization control words to init each PIC.
  * See the Intel manuals for details on the meaning
@@ -30,12 +28,7 @@
  * the interrupt number and sent out to the PIC
  * to declare the interrupt finished */
 #define EOI                 0x60
-#define KEYBOARD_VECTOR     0x21
-#define RTC_VECTOR          0x28
-#define KEYBOARD_IRQ        0x01
-#define RTC_IRQ             0x08
-#define IRQ1_VECTOR         0x20
-#define IRQ15_VECTOR        0x2F
+
 
 
 
