@@ -8,6 +8,7 @@
 /* Interrupt masks to determine which interrupts are enabled and disabled */
 uint8_t master_mask; /* IRQs 0-7  */
 uint8_t slave_mask;  /* IRQs 8-15 */
+int pic_error_code;
 
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
@@ -29,4 +30,15 @@ void send_eoi(uint32_t irq_num) {
 
 }
 
+void keyboard_irq_handler() {
+    puts("test in keyboard handler");
+}
+
+void rtc_irq_handler() {
+    test_interrupts(); // doc says to use this to test rtc
+}
+
+int get_pic_error_code() {
+    return pic_error_code;
+}
 

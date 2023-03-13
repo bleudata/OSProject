@@ -3,6 +3,11 @@
 #define IDT_ASM_H
 
 #define SYSTEM_CALL_VECTOR 0x80
+
+#define KEYBOARD_VECTOR  0x21
+#define RTC_VECTOR   0x28
+
+
 #define DIVIDE_ERROR    0
 #define RESERVED1    1
 #define NMI_INTERRUPT 2
@@ -23,6 +28,9 @@
 #define ALIGNMENT_CHECK  17
 #define MACHINE_CHECK  18
 #define SIMD_FLOAT_EXCEPTION  19
+#define PUSH_NEW_EC 2  // push a
+#define PUSH_DUMMY_EC 1 // need to push dummy error code, ec = error code
+#define DONT_PUSH_EC 0 // already pushed error code, don't need to ec = error code
 
 #ifndef ASM
 
@@ -71,6 +79,9 @@ extern void fpu_float_error_handler_lnk();
 extern void alignment_check_handler_lnk();
 extern void machine_check_handler_lnk();
 extern void smid_float_exception_handler_lnk();
+extern void generic_system_call_handler_lnk();
+extern void keyboard_handler_lnk();
+extern void rtc_handler_lnk();
 
 #endif /* ASM */
 #endif /* IDT_ASM_H */

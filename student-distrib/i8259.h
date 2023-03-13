@@ -32,7 +32,6 @@
 
 
 
-
 /* Externally-visible functions */
 
 /* Initialize both PICs */
@@ -43,5 +42,11 @@ void enable_irq(uint32_t irq_num);
 void disable_irq(uint32_t irq_num);
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num);
+
+void keyboard_irq_handler();
+
+void rtc_irq_handler();
+
+int get_pic_error_code();
 
 #endif /* _I8259_H */
