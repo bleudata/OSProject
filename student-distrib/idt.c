@@ -5,6 +5,8 @@
 #include "lib.h"
 #include "x86_desc.h"
 #include "i8259.h"
+#include "tests.h"
+
 
 static unsigned char * intel_handler_strings[] = {
     [DIVIDE_ERROR] = (unsigned char *) "Divide error",
@@ -97,8 +99,10 @@ void setup_idt() {
     SET_IDT_ENTRY(idt[ALIGNMENT_CHECK], alignment_check_handler_lnk);
     SET_IDT_ENTRY(idt[MACHINE_CHECK], machine_check_handler_lnk);
     SET_IDT_ENTRY(idt[SIMD_FLOAT_EXCEPTION], smid_float_exception_handler_lnk);
+
     SET_IDT_ENTRY(idt[KEYBOARD_VECTOR], keyboard_handler_lnk);
     SET_IDT_ENTRY(idt[RTC_VECTOR], rtc_handler_lnk);
+    
     SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], generic_system_call_handler_lnk);
 
 }

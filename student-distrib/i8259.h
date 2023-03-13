@@ -9,6 +9,8 @@
 #define _I8259_H
 
 #include "types.h"
+#include "lib.h"
+
 
 /* Ports that each PIC sits on */
 #define MASTER_8259_PORT    0x20 //command
@@ -32,6 +34,13 @@
 #define EOI                 0x60
 // noelle says some fix was changing this to 0x20??? bit aditya says no don't change it
 
+#define KEYBOARD_IRQ        0x01
+#define PIC2_IRQ            0x20
+#define RTC_IRQ             0x08
+#define KEYBOARD_PORT       0x60
+#define ENABLE_SCANNING     0xF4
+#define SCAN_CODE_START     0x00
+#define SCAN_CODE_END       0x53
 
 /* Externally-visible functions */
 
@@ -47,5 +56,8 @@ void send_eoi(uint32_t irq_num);
 void keyboard_irq_handler(int vector);
 
 void rtc_irq_handler();
+
+void keyboard_init();
+
 
 #endif /* _I8259_H */

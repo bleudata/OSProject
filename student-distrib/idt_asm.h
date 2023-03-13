@@ -1,9 +1,6 @@
-
 #ifndef IDT_ASM_H
 #define IDT_ASM_H
 
-#define KEYBOARD_IRQ        0x01
-#define RTC_IRQ             0x08
 
 #define SYSTEM_CALL_VECTOR 0x80
 #define KEYBOARD_VECTOR  0x21
@@ -35,31 +32,6 @@
 #define DONT_PUSH_EC 0 // already pushed error code, don't need to ec = error code
 
 #ifndef ASM
-
-
-// enum intel_exceptions {
-//     DIVIDE_ERROR = 0,
-//     RESERVED1,
-//     NMI_INTERRUPT,
-//     BREAKPOINT,
-//     OVERFLOW,
-//     BOUND_RANGE_EXCEEDED,
-//     INVALID_OPCODE,
-//     DEVICE_NA,
-//     DOUBLE_FAULT, // error code is 0
-//     RESERVED9,
-//     INVALID_TSS, //yes
-//     SEG_NOT_PRESENT, //yes
-//     STACK_SEG_FAULT, //yes
-//     GENERAL_PROTECTION, //yes
-//     PAGE_FAULT, //yes
-//     RESERVED15,
-//     FPU_FLOAT_ERROR,
-//     ALIGNMENT_CHECK, // error code is 0
-//     MACHINE_CHECK,
-//     SIMD_FLOAT_EXCEPTION
-// };
-
 
 extern void divide_error_handler_lnk();
 extern void reserved1_handler_lnk();

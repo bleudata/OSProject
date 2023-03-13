@@ -10,6 +10,8 @@
 #include "tests.h"
 #include "idt.h"
 #include "idt_asm.h"
+#include "tests.h"
+
 
 #define RUN_TESTS
 
@@ -149,6 +151,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
     printf("done with idt init");
     // now unmask the irqs we want
+    enable_irq(PIC2_IRQ);
     enable_irq(KEYBOARD_IRQ);
     enable_irq(RTC_IRQ);
     

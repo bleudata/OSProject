@@ -1,6 +1,7 @@
+#ifndef ASM
 #define ASM
 #include "idt_asm.h"
-/*#include "i8259.h"*/
+
 
 /* will need to add macro above pushal for pushing vector num and error code from pic */
 #define HANDLER_LNK(name, function, vector)   \
@@ -32,7 +33,7 @@ HANDLER_LNK(invalid_tss_handler_lnk, generic_handler, 10)
 HANDLER_LNK(seg_not_present_handler_lnk, generic_handler, 11)
 HANDLER_LNK(stack_set_fault_handler_lnk, generic_handler, 12)
 HANDLER_LNK(general_protection_handler_lnk, generic_handler,  13)
-HANDLER_LNK(page_fault_handler_lnk, generic_handler, 14)
+HANDLER_LNK(page_fault_handler_lnk, generic_handler, 14) # will likely need to change this to later, see PAGE FAULT SAMPLE 
 HANDLER_LNK(reserved15_handler_lnk, generic_handler, 15)
 HANDLER_LNK(fpu_float_error_handler_lnk, generic_handler, 16)
 HANDLER_LNK(alignment_check_handler_lnk, generic_handler,  17)
@@ -48,5 +49,17 @@ HANDLER_LNK(rtc_handler_lnk, generic_handler, RTC_VECTOR)
 # also might need to push own unique error code, to be figured out later...
 HANDLER_LNK(generic_system_call_handler_lnk, generic_handler, SYSTEM_CALL_VECTOR)
 
-/* Call the main() function, then halt with its return value. */
+/* PAGE FAULT SAMPLE
+ .globl page_fault_lnk
+  page_fault_lnk:
+	pushal
+	pushfl
+	pushl $14
+	call page_fault_handler
+	addl $4,%esp
+	popfl
+	popal
+	iret
+*/
 
+#endif
