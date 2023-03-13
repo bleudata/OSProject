@@ -28,9 +28,12 @@
  * the interrupt number and sent out to the PIC
  * to declare the interrupt finished */
 #define EOI                 0x60
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> cp1_pic
 
 /* Externally-visible functions */
 
@@ -43,10 +46,8 @@ void disable_irq(uint32_t irq_num);
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num);
 
-void keyboard_irq_handler();
+void keyboard_irq_handler(uint8_t key);
 
 void rtc_irq_handler();
-
-int get_pic_error_code();
 
 #endif /* _I8259_H */
