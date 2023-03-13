@@ -34,7 +34,7 @@ int idt_test(){
 
 	int i;
 	int result = PASS;
-	for (i = 0; i < 10; ++i){
+	for (i = 0; i < 19; ++i){
 		if ((idt[i].offset_15_00 == NULL) && 
 			(idt[i].offset_31_16 == NULL)){
 			assertion_failure();
@@ -42,7 +42,32 @@ int idt_test(){
 		}
 	}
 
+	if ((idt[0x21].offset_15_00 == NULL) && 
+			(idt[0x21].offset_31_16 == NULL)){
+			assertion_failure();
+			result = FAIL;
+	}
+
+	if ((idt[0x28].offset_15_00 == NULL) && 
+			(idt[0x28].offset_31_16 == NULL)){
+			assertion_failure();
+			result = FAIL;
+	}
+
+	if ((idt[0x80].offset_15_00 == NULL) && 
+			(idt[0x80].offset_31_16 == NULL)){
+			assertion_failure();
+			result = FAIL;
+	}
+
 	return result;
+}
+
+int divide_zero_test(){
+	TEST_HEADER;
+	int j = 0;
+	int i = 10 /j;
+	return i ? PASS: FAIL;
 }
 
 // add more tests here
@@ -56,5 +81,8 @@ int idt_test(){
 /* Test suite entry point */
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
+	//clear();
+	//TEST_OUTPUT("divide zero", divide_zero_test());
+	while(1);
 	// launch your tests here
 }

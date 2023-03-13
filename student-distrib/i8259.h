@@ -35,7 +35,7 @@
 // noelle says some fix was changing this to 0x20??? bit aditya says no don't change it
 
 #define KEYBOARD_IRQ        0x01
-#define PIC2_IRQ            0x20
+#define PIC2_IRQ            0x02
 #define RTC_IRQ             0x08
 #define KEYBOARD_PORT       0x60
 #define ENABLE_SCANNING     0xF4
@@ -58,6 +58,8 @@ void keyboard_irq_handler(int vector);
 void rtc_irq_handler();
 
 void keyboard_init();
+
+void rtc_init();
 
 
 #endif /* _I8259_H */

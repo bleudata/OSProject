@@ -1,5 +1,5 @@
-#ifndef ASM
-#define ASM
+
+#define ASM 1
 #include "idt_asm.h"
 
 
@@ -17,7 +17,7 @@
 		IRET						 ;\
 
 # the exception library wrappers 
-
+.text
 # vectors 0-19, in this section these aren't magic numbers, they're just the vector numbers....
 HANDLER_LNK(divide_error_handler_lnk, generic_handler, 0)
 HANDLER_LNK(reserved1_handler_lnk, generic_handler, 1)
@@ -62,4 +62,3 @@ HANDLER_LNK(generic_system_call_handler_lnk, generic_handler, SYSTEM_CALL_VECTOR
 	iret
 */
 
-#endif

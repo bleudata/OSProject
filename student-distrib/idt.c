@@ -35,7 +35,7 @@ static unsigned char * intel_handler_strings[] = {
 // go through each entry and set to either trap or interrupt
 void idt_init() {
     int i;
-    lidt(idt_desc_ptr); // load the idt address
+    
 
     // intel exceptions
     for(i = DIVIDE_ERROR; i <= SIMD_FLOAT_EXCEPTION; i++) {
@@ -44,7 +44,10 @@ void idt_init() {
         idt[i].reserved2 = 1;
         idt[i].reserved3 = 1;
         idt[i].reserved4 = 0;
+        idt[i].reserved0 = 0;
         idt[i].dpl = 0;
+        idt[i].present = 1;
+        idt[i].seg_selector = KERNEL_CS;
     }
     // pic irqs
     idt[KEYBOARD_VECTOR].size = 1; // 1110 for interrupt gate
@@ -52,14 +55,20 @@ void idt_init() {
     idt[KEYBOARD_VECTOR].reserved2 = 1;
     idt[KEYBOARD_VECTOR].reserved3 = 0;
     idt[KEYBOARD_VECTOR].reserved4 = 0;
+    idt[KEYBOARD_VECTOR].reserved0 = 0;
     idt[KEYBOARD_VECTOR].dpl = 0;
+    idt[KEYBOARD_VECTOR].present = 1;
+    idt[KEYBOARD_VECTOR].seg_selector = KERNEL_CS;
 
     idt[RTC_VECTOR].size = 1;
     idt[RTC_VECTOR].reserved1 = 1; 
     idt[RTC_VECTOR].reserved2 = 1;
     idt[RTC_VECTOR].reserved3 = 0;
     idt[RTC_VECTOR].reserved4 = 0;
+    idt[RTC_VECTOR].reserved0 = 0;
     idt[RTC_VECTOR].dpl = 0;
+    idt[RTC_VECTOR].present = 1;
+    idt[RTC_VECTOR].seg_selector = KERNEL_CS;
 
     // system call
     idt[SYSTEM_CALL_VECTOR].size = 1;
@@ -67,8 +76,12 @@ void idt_init() {
     idt[SYSTEM_CALL_VECTOR].reserved2 = 1;
     idt[SYSTEM_CALL_VECTOR].reserved3 = 1;
     idt[SYSTEM_CALL_VECTOR].reserved4 = 0;
+    idt[SYSTEM_CALL_VECTOR].reserved0 = 0;
     idt[SYSTEM_CALL_VECTOR].dpl = 3;
+    idt[SYSTEM_CALL_VECTOR].present = 1;
+    idt[SYSTEM_CALL_VECTOR].seg_selector = KERNEL_CS;
     setup_idt();
+    lidt(idt_desc_ptr); // load the idt address
 }
 
 // add the handlers into the idt
@@ -102,13 +115,14 @@ void setup_idt() {
 
     SET_IDT_ENTRY(idt[KEYBOARD_VECTOR], keyboard_handler_lnk);
     SET_IDT_ENTRY(idt[RTC_VECTOR], rtc_handler_lnk);
-    
     SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], generic_system_call_handler_lnk);
 
 }
 
  void generic_handler(int vector) {
-    if(vector < 0 || vector > 19) {
+    //clear();
+    printf("printing vector %d \n", vector);
+    if(vector >= 0 && vector <= 19) {
         generic_intel_handler(vector);
     }
     else if(vector == KEYBOARD_VECTOR) {
@@ -121,12 +135,15 @@ void setup_idt() {
         generic_system_call_handler();
     }
  }
+
 // test to make one handler for all intel exceptions 0-19 to just print and sit in a while loop
 void generic_intel_handler(int vector) {
+    printf("before line 139 if statement hello \n");
     if(vector < 0 || vector > 19) {
-        return; // invalid vector number for this function
+       return; // invalid vector number for this function
     }
-    printf("%s", intel_handler_strings[vector]);
+    // printf("hihihihihihihihihi\n");
+   printf("%s \n", intel_handler_strings[vector]);
     while(1); // infinite loop here for now, supposed to have this according to slides???
 }
 
