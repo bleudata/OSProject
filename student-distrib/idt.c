@@ -96,19 +96,10 @@ void setup_idt() {
     SET_IDT_ENTRY(idt[ALIGNMENT_CHECK], alignment_check_handler_lnk);
     SET_IDT_ENTRY(idt[MACHINE_CHECK], machine_check_handler_lnk);
     SET_IDT_ENTRY(idt[SIMD_FLOAT_EXCEPTION], smid_float_exception_handler_lnk);
-<<<<<<< HEAD
     SET_IDT_ENTRY(idt[KEYBOARD_VECTOR], keyboard_handler_lnk);
     SET_IDT_ENTRY(idt[RTC_VECTOR], rtc_handler_lnk);
     SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], generic_system_call_handler_lnk);
 
-=======
-
-    //pic irqs
-    //SET_IDT_ENTRY(idt[KEYBOARD_VECTOR], )
-
-    //system calls
-    SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], generic_system_call_handler_lnk);
->>>>>>> cp1_pic
 }
 
  void generic_handler(int vector) {

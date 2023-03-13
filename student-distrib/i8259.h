@@ -28,12 +28,9 @@
  * the interrupt number and sent out to the PIC
  * to declare the interrupt finished */
 #define EOI                 0x60
-<<<<<<< HEAD
 
 
 
-=======
->>>>>>> cp1_pic
 
 /* Externally-visible functions */
 
