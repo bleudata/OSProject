@@ -80,9 +80,15 @@ int divide_zero_test(){
 
 /* Test suite entry point */
 void launch_tests(){
+
 	TEST_OUTPUT("idt_test", idt_test());
-	//clear();
+
+	clear();
 	//TEST_OUTPUT("divide zero", divide_zero_test());
+	// int i;
+	// for(i = 0; ; i++) {
+	// 	printf("%d\n", i);
+	// }
 	while(1);
 	// launch your tests here
 }

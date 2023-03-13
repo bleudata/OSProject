@@ -14,13 +14,13 @@ uint8_t slave_mask;  /* IRQs 8-15 */
 int pic_error_code;
 
 
-static unsigned char scancodes[] = { // values 0x00 - 0x53, length 85
+static unsigned char scancodes[] = { // values 0x00 - 0x53, length 83
    '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=','\0',  
    '\0', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\n', '\0',
    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '`', '\0', '\\', 
-   'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', '\0', '*', '\0', '\0', ' ',
-   '\0', '\0', '\0', '\0', '\0', '\0','\0', '\0','\0', '\0','\0', '\0','\0', 
-   '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
+   'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', '\0', '*', '\0', ' ', '\0',
+   '\0', '\0', '\0', '\0', '\0', '\0','\0', '\0','\0', '\0','\0', '\0', '7', '8', '9', 
+   '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
 };
 
 /* Initialize the 8259 PIC */
@@ -87,20 +87,20 @@ void send_eoi(uint32_t irq_num) {
 // output the character to the screen
 void keyboard_irq_handler(int vector) {
     // for now we're just printing that we're inside the handler
-    // int code = inb(KEYBOARD_PORT);
-    // unsigned char echo;
-    printf("keyboard handler \n");
-    // if(code < SCAN_CODE_START || code > SCAN_CODE_END) { // check if key is invalid for print
-    //     puts("invalid scan code for handler");
-    // }
-    // else {
-    //     echo = scancodes[code]; // print char if key was valid
-    //     if(echo != '\0') {
-    //         putc(echo);
-    //     }
-    // }
+    int code = inb(KEYBOARD_PORT);
+    unsigned char echo;
+    //printf("keyboard handler \n");
+    if(code < SCAN_CODE_START || code > SCAN_CODE_END) { // check if key is invalid for print
+        //puts("\n invalid scan code for handler ");
+    }
+    else {
+        echo = scancodes[code]; // print char if key was valid
+        if(echo != '\0') {
+            putc(echo);
+        }
+    }
     send_eoi(KEYBOARD_IRQ); // send the irq
-    printf("eoi sent");
+    //printf("eoi sent");
 }
 
 // use the test_interrupts from lib.c according to the doc

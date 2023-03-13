@@ -121,7 +121,7 @@ void setup_idt() {
 
  void generic_handler(int vector) {
     //clear();
-    printf("printing vector %d \n", vector);
+    //printf("printing vector %d \n", vector);
     if(vector >= 0 && vector <= 19) {
         generic_intel_handler(vector);
     }
