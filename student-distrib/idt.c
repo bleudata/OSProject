@@ -28,6 +28,7 @@ static unsigned char * intel_handler_strings[] = {
     [SIMD_FLOAT_EXCEPTION] = (unsigned char *) "SIMD float exception"
 };
 
+
 // go through each entry and set to either trap or interrupt
 void idt_init() {
     int i;
@@ -35,24 +36,36 @@ void idt_init() {
 
     // intel exceptions
     for(i = DIVIDE_ERROR; i <= SIMD_FLOAT_EXCEPTION; i++) {
-        idt[i].size = 1; // want size to be 32 bit 1110 for interrupt gate
+        idt[i].size = 1; // want size to be 32 bit 1111 for trap gate
         idt[i].reserved1 = 1;
         idt[i].reserved2 = 1;
-        idt[i].reserved3 = 0;
+        idt[i].reserved3 = 1;
+        idt[i].reserved4 = 0;
+        idt[i].dpl = 0;
     }
     // pic irqs
-    for(i = IRQ1_VECTOR; i <= IRQ15_VECTOR; i++) {
-        idt[i].size = 1; // want size to be 32 bit 1110 for interrupt gate
-        idt[i].reserved1 = 1;
-        idt[i].reserved2 = 1;
-        idt[i].reserved3 = 0;
-    }
+    idt[KEYBOARD_VECTOR].size = 1; // 1110 for interrupt gate
+    idt[KEYBOARD_VECTOR].reserved1 = 1; 
+    idt[KEYBOARD_VECTOR].reserved2 = 1;
+    idt[KEYBOARD_VECTOR].reserved3 = 0;
+    idt[KEYBOARD_VECTOR].reserved4 = 0;
+    idt[KEYBOARD_VECTOR].dpl = 0;
+
+    idt[RTC_VECTOR].size = 1;
+    idt[RTC_VECTOR].reserved1 = 1; 
+    idt[RTC_VECTOR].reserved2 = 1;
+    idt[RTC_VECTOR].reserved3 = 0;
+    idt[RTC_VECTOR].reserved4 = 0;
+    idt[RTC_VECTOR].dpl = 0;
 
     // system call
     idt[SYSTEM_CALL_VECTOR].size = 1;
     idt[SYSTEM_CALL_VECTOR].reserved1 = 1; // 1111 for trap gate
     idt[SYSTEM_CALL_VECTOR].reserved2 = 1;
     idt[SYSTEM_CALL_VECTOR].reserved3 = 1;
+    idt[SYSTEM_CALL_VECTOR].reserved4 = 0;
+    idt[SYSTEM_CALL_VECTOR].dpl = 3;
+    setup_idt();
 }
 
 // add the handlers into the idt
@@ -83,20 +96,30 @@ void setup_idt() {
     SET_IDT_ENTRY(idt[ALIGNMENT_CHECK], alignment_check_handler_lnk);
     SET_IDT_ENTRY(idt[MACHINE_CHECK], machine_check_handler_lnk);
     SET_IDT_ENTRY(idt[SIMD_FLOAT_EXCEPTION], smid_float_exception_handler_lnk);
+<<<<<<< HEAD
+    SET_IDT_ENTRY(idt[KEYBOARD_VECTOR], keyboard_handler_lnk);
+    SET_IDT_ENTRY(idt[RTC_VECTOR], rtc_handler_lnk);
+    SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], generic_system_call_handler_lnk);
+
+=======
 
     //pic irqs
     //SET_IDT_ENTRY(idt[KEYBOARD_VECTOR], )
 
     //system calls
     SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], generic_system_call_handler_lnk);
+>>>>>>> cp1_pic
 }
 
  void generic_handler(int vector) {
     if(vector < 0 || vector > 19) {
         generic_intel_handler(vector);
     }
-    else if(vector < IRQ1_VECTOR || vector > IRQ15_VECTOR) {
-        generic_irq_handler(vector);
+    else if(vector == KEYBOARD_VECTOR) {
+        keyboard_irq_handler();
+    }
+    else if(vector == RTC_VECTOR) {
+        rtc_irq_handler();
     }
     else if(vector == SYSTEM_CALL_VECTOR) {
         generic_system_call_handler();
@@ -111,94 +134,94 @@ void generic_intel_handler(int vector) {
     while(1); // infinite loop here for now, supposed to have this according to slides???
 }
 
-void generic_irq_handler(int vector) {
-    if(vector < IRQ1_VECTOR || vector > IRQ15_VECTOR) {
-        return; //invalid vector number for this function
-    }
-}
-void divide_error_handler() {
-    printf("Divide Error."); // maybe we want to puts instead?
-    while(1); // want it to break for now
-}
 
-void reserved1_handler() {
+// void divide_error_handler() {
+//     printf("Divide Error."); // maybe we want to puts instead?
+//     while(1); // want it to break for now
+// }
 
-return; 
-}
+// void reserved1_handler() {
 
-void nmi_interrupt_handler() {
+// return; 
+// }
 
-}
+// void nmi_interrupt_handler() {
 
-void breakpoint_handler() {
+// }
 
-}
+// void breakpoint_handler() {
 
-void overflow_handler() {
+// }
 
-}
+// void overflow_handler() {
 
-void bound_range_exceeded_handler() {
+// }
 
-}
+// void bound_range_exceeded_handler() {
 
-void invalid_opcode_handler() {
+// }
 
-}
+// void invalid_opcode_handler() {
 
-void device_na_handler() {
+// }
 
-}
+// void device_na_handler() {
 
-void double_fault_handler() {
+// }
 
-}
+// void double_fault_handler() {
 
-void reserved9_handler() {
+// }
 
-}
+// void reserved9_handler() {
 
-void invalid_tss_handler() {
+// }
 
-}
+// void invalid_tss_handler() {
 
-void seg_not_present_handler() {
+// }
 
-}
+// void seg_not_present_handler() {
 
-void stack_set_fault_handler() {
+// }
 
-}
+// void stack_set_fault_handler() {
 
-void general_protection_handler() {
+// }
 
-}
+// void general_protection_handler() {
 
-void page_fault_handler() {
+// }
 
-}
+// void page_fault_handler() {
 
-void reserved15_handler() {
+// }
 
-}
+// void reserved15_handler() {
 
-void fpu_float_error_handler() {
+// }
 
-}
+// void fpu_float_error_handler() {
 
-void alignment_check_handler() {
+// }
 
-}
+// void alignment_check_handler() {
 
-void machine_check_handler() {
+// }
 
-}
+// void machine_check_handler() {
 
-void smid_float_exception_handler() {
-    return ;
-}
+// }
+
+// void smid_float_exception_handler() {
+//     return ;
+// }
 
 void generic_system_call_handler() {
     printf("System call");
 }
+
+
+
+
 
