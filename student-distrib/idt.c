@@ -4,6 +4,7 @@
 #include "idt_asm.h"
 #include "lib.h"
 #include "x86_desc.h"
+#include "i8259.h"
 
 static unsigned char * intel_handler_strings[] = {
     [DIVIDE_ERROR] = (unsigned char *) "Divide error",
@@ -107,10 +108,10 @@ void setup_idt() {
         generic_intel_handler(vector);
     }
     else if(vector == KEYBOARD_VECTOR) {
-        keyboard_irq_handler();
+        keyboard_irq_handler(vector); // this is from pic file
     }
     else if(vector == RTC_VECTOR) {
-        rtc_irq_handler();
+        rtc_irq_handler(); // this is from pic file
     }
     else if(vector == SYSTEM_CALL_VECTOR) {
         generic_system_call_handler();

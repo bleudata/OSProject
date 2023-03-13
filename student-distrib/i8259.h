@@ -30,8 +30,7 @@
  * the interrupt number and sent out to the PIC
  * to declare the interrupt finished */
 #define EOI                 0x60
-
-
+// noelle says some fix was changing this to 0x20??? bit aditya says no don't change it
 
 
 /* Externally-visible functions */
@@ -45,7 +44,7 @@ void disable_irq(uint32_t irq_num);
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num);
 
-void keyboard_irq_handler(uint8_t key);
+void keyboard_irq_handler(int vector);
 
 void rtc_irq_handler();
 

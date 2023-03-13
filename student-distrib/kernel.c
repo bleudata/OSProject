@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "tests.h"
 #include "idt.h"
+#include "idt_asm.h"
 
 #define RUN_TESTS
 
@@ -138,7 +139,7 @@ void entry(unsigned long magic, unsigned long addr) {
     }
 
     /* Init the PIC */
-    i8259_init();
+    i8259_init(); // also disables all irqs
 
     printf("done with pic init");
 
@@ -147,13 +148,16 @@ void entry(unsigned long magic, unsigned long addr) {
     idt_init();
 
     printf("done with idt init");
+    // now unmask the irqs we want
+    enable_irq(KEYBOARD_IRQ);
+    enable_irq(RTC_IRQ);
     
+    printf("unmasked keyboard and rtc irqs");
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-    // enable_irq(KEYBOARD_IRQ);
-    // enable_irq(RTC_IRQ);
+
     /*printf("Enabling Interrupts\n");
     sti();*/
 
