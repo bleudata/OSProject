@@ -12,6 +12,7 @@
 .globl gdt_ptr
 .globl idt_desc_ptr, idt
 
+
 .align 4
 
 

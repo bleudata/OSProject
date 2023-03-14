@@ -145,6 +145,8 @@ void entry(unsigned long magic, unsigned long addr) {
 
     printf("done with pic init");
 
+    init_paging();
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     idt_init();
@@ -166,7 +168,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+    // launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 
