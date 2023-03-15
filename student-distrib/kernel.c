@@ -167,8 +167,10 @@ void entry(unsigned long magic, unsigned long addr) {
     sti();
 
 #ifdef RUN_TESTS
+    clear_reset_cursor(); // clear screen and reset cursor
     /* Run tests */
-    // launch_tests();
+    //launch_tests(IDT_TEST);
+    launch_tests(PAGE_FAULT_TEST);
 #endif
     /* Execute the first program ("shell") ... */
 

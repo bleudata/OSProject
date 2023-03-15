@@ -7,10 +7,9 @@
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
 
 
-uint32_t first_page_table[1024] __attribute__((aligned(4096)));
+uint32_t first_page_table[1024] __attribute__((aligned(4096))); //PCB, global var??
 
 //write a regular c program that tests this, create fake table, print to screen
-
 
 
 void init_paging() {

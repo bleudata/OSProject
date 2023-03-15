@@ -24,6 +24,18 @@ void clear(void) {
     }
 }
 
+/**
+ * Clear video memory and set cursor to upper left corner
+*/
+void clear_reset_cursor(void) {
+    int32_t i;
+    for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
+        *(uint8_t *)(video_mem + (i << 1)) = ' ';
+        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+    }
+    screen_x = screen_y = 0;
+}
+
 /* Standard printf().
  * Only supports the following format strings:
  * %%  - print a literal '%' character
