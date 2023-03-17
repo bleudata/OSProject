@@ -170,7 +170,7 @@ void entry(unsigned long magic, unsigned long addr) {
     clear_reset_cursor(); // clear screen and reset cursor
     /* Run tests */
     //launch_tests(IDT_TEST);
-    launch_tests(PAGE_FAULT_TEST);
+    launch_tests(PAGE_ACCESS_TEST);
 #endif
     /* Execute the first program ("shell") ... */
 

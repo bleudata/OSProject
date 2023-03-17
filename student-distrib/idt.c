@@ -39,10 +39,10 @@ void idt_init() {
 
     // intel exceptions
     for(i = DIVIDE_ERROR; i <= SIMD_FLOAT_EXCEPTION; i++) {
-        idt[i].size = 1; // want size to be 32 bit 1111 for trap gate
+        idt[i].size = 1; // want size to be 32 bit 1110 for interrupt gate
         idt[i].reserved1 = 1;
         idt[i].reserved2 = 1;
-        idt[i].reserved3 = 1;
+        idt[i].reserved3 = 0;
         idt[i].reserved4 = 0;
         idt[i].reserved0 = 0;
         idt[i].dpl = 0;
@@ -138,7 +138,7 @@ void setup_idt() {
 
 // test to make one handler for all intel exceptions 0-19 to just print and sit in a while loop
 void generic_intel_handler(int vector) {
-    printf("before line 139 if statement hello \n");
+    //printf("before line 139 if statement hello \n");
     if(vector < 0 || vector > 19) {
        return; // invalid vector number for this function
     }

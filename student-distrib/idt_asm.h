@@ -27,9 +27,7 @@
 #define ALIGNMENT_CHECK  17
 #define MACHINE_CHECK  18
 #define SIMD_FLOAT_EXCEPTION  19
-#define PUSH_NEW_EC 2  // push a
-#define PUSH_DUMMY_EC 1 // need to push dummy error code, ec = error code
-#define DONT_PUSH_EC 0 // already pushed error code, don't need to ec = error code
+
 
 #ifndef ASM
 

@@ -38,7 +38,6 @@
 #define PIC2_IRQ            0x02
 #define RTC_IRQ             0x08
 #define KEYBOARD_PORT       0x60
-#define ENABLE_SCANNING     0xF4
 #define SCAN_CODE_START     0x00
 #define SCAN_CODE_END       0x53
 

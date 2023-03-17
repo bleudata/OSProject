@@ -112,7 +112,6 @@ void rtc_irq_handler() {
 
 void keyboard_init() {
     enable_irq(KEYBOARD_IRQ);
-    //outb(ENABLE_SCANNING, KEYBOARD_PORT);
 }
 
 void rtc_init() {

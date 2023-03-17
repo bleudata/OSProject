@@ -28,9 +28,9 @@ void init_paging() {
 
     }
 
-    // 0000 0000 0100 0000  0000 0000 0000 0000 (4mb)
+    // 0000 0000 0100 0000  0000 0000 0000 0000 (4mb) 2^22
     // 0x0040 0000 (virtual) -> 0x0040 0000 (physical) (for kernel) (4MB page)
-    // 0x000B 8000 (virtual) -> 0x000B 8000 (physical) (for video memory) (4KB page)
+    // 0x000B 8000 (virtual) -> 0x000B 8000 (physical) (for video memory) (4KB page) 2^12
 
     //initialize 4MB page for kernel
     //page_directory[1].entry = 0x00400083;
