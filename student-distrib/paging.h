@@ -3,8 +3,6 @@
 
 #include "types.h"
 
-// 0x0040 0000 (virtual) -> 0x0040 0000 (physical) (for kernel) (4MB page)
-// 0x000B 8000 (virtual) -> 0x000B 8000 (physical) (for video memory) (4KB page)
 
 typedef struct __attribute__ ((packed)){
     uint32_t present : 1;
@@ -17,7 +15,7 @@ typedef struct __attribute__ ((packed)){
     uint32_t page_size : 1;
     uint32_t global_page : 1;
     uint32_t available_prog_use : 3; //11-9
-    uint32_t bits_12_31 : 20; //page table base address
+    uint32_t pt_address : 20; //page table base address, 12-31
 }pde_inside_4KB;
 
 typedef struct __attribute__ ((packed)){
@@ -33,8 +31,9 @@ typedef struct __attribute__ ((packed)){
     uint32_t available_prog_use : 3; //11-9
     uint32_t pta_index : 1;
     uint32_t bits_13_21 : 9;
-    uint32_t bits_22_31 : 10; //physical page base address
+    uint32_t page_address : 10; //physical page base address, bit 22-31
 }pde_inside_4MB;
+
 
 typedef union{
     
@@ -44,12 +43,7 @@ typedef union{
 
 }page_directory_entry;
 
-
-
-typedef union{
-    uint32_t entry;
-
-    struct{
+typedef struct __attribute__ ((packed)){
         uint32_t present : 1;
         uint32_t read_write : 1;
         uint32_t user_supervisor : 1;
@@ -60,8 +54,13 @@ typedef union{
         uint32_t pta_index : 1;
         uint32_t global_page : 1;
         uint32_t available_prog_use : 3; //11-9
-        uint32_t bits_12_31 : 20; //physical page base address
-    } __attribute__ ((packed));
+        uint32_t page_address : 20; //physical page base address
+}pt_fields;
+
+typedef union{
+    uint32_t entry;
+
+    pt_fields pt_fields;
 
 }page_table_entry;
 
@@ -70,10 +69,13 @@ typedef union{
 
 extern void init_paging();
 
+//assembly function that puts page_directory address into %cr3
 extern void load_page_dir(uint32_t * page_dir_ptr);
 
+//set paging bit (bit 31 in the %cr0 register)
 extern void enable_paging();
 
+//enables mixed size pages (4kb and 4mb), set bit 4 of %cr4
 extern void enable_mixed_size();
 
 
@@ -87,7 +89,6 @@ extern void enable_mixed_size();
 //edit_page_table_entry
 //add_entry
 //free_entry
-
 //create_page_directory
 
 
