@@ -155,14 +155,14 @@ void entry(unsigned long magic, unsigned long addr) {
     // now unmask the irqs we want
     enable_irq(PIC2_IRQ); 
     keyboard_init();
-    //rtc_init();
+    rtc_init();
     
     printf("unmasked keyboard and rtc irqs");
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-
+    
     printf("Enabling Interrupts\n");
     sti();
 
@@ -170,7 +170,7 @@ void entry(unsigned long magic, unsigned long addr) {
     clear_reset_cursor(); // clear screen and reset cursor
     /* Run tests */
     //launch_tests(IDT_TEST);
-    launch_tests(PAGE_ACCESS_TEST);
+    //launch_tests(PAGE_ACCESS_TEST);
 #endif
     /* Execute the first program ("shell") ... */
 

@@ -14,7 +14,7 @@ uint8_t slave_mask;  /* IRQs 8-15 */
 int pic_error_code;
 
 
-
+// scan code set 1, maps scan codes from keyboard to characters
 static unsigned char scancodes[] = { // values 0x00 - 0x53, length 83
    '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=','\0',  
    '\0', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', '\0',
@@ -76,8 +76,9 @@ void disable_irq(uint32_t irq_num) {
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
     if(irq_num >= 8) {// if irq is on the secondary pic, send eoi to both pics
-		outb(EOI|irq_num, SLAVE_8259_PORT);
+		outb(EOI|(irq_num-8), SLAVE_8259_PORT);
         outb(EOI|PIC2_IRQ, MASTER_8259_PORT); // always send eoi to primary pic
+        
     }
     else {
         outb(EOI|irq_num, MASTER_8259_PORT); // always send eoi to primary pic
@@ -106,7 +107,10 @@ void keyboard_irq_handler(int vector) {
 
 // use the test_interrupts from lib.c according to the doc
 void rtc_irq_handler() {
-    test_interrupts();
+    int result;
+    //test_interrupts();
+    outb(RTC_REG_C, RTC_REG_PORT); // select register c
+    result = inb(RTC_RW_PORT); // need to read from c register or the interrupt won't happen again
     send_eoi(RTC_IRQ);
 }
 
@@ -115,5 +119,22 @@ void keyboard_init() {
 }
 
 void rtc_init() {
+    // everytime you read or write from registers ABC
+    // RW from dataport 0x70 is expected or will go into undefined state
+    outb(RTC_REG_B_DISABLE, RTC_REG_PORT); // set to register b and disable nmi
+    char prev = inb(RTC_RW_PORT); // get current value from register b
+    outb(RTC_REG_B_DISABLE, RTC_REG_PORT); // set to register b and disable nmi
+    outb(prev | 0x40, RTC_RW_PORT); // set bit 6 to 1 using 0x40 to enable periodic interrupts
     enable_irq(RTC_IRQ);
+    nmi_enable();
+}
+
+void nmi_enable() {
+    outb(inb(RTC_REG_PORT) & 0x7F, RTC_REG_PORT); // set the 0x80 bit to 0 to enable 
+    inb(RTC_RW_PORT);
+}
+
+void nmi_disable() {
+    outb(inb(RTC_REG_PORT)|0x80 , RTC_REG_PORT); // set the 0x80 bit to 1 to disable
+    inb(RTC_RW_PORT);
 }

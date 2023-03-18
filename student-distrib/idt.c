@@ -129,6 +129,7 @@ void setup_idt() {
         keyboard_irq_handler(vector); // this is from pic file
     }
     else if(vector == RTC_VECTOR) {
+        //printf("entered rtc if statement");
         rtc_irq_handler(); // this is from pic file
     }
     else if(vector == SYSTEM_CALL_VECTOR) {
