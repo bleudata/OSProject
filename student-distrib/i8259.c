@@ -76,7 +76,7 @@ void disable_irq(uint32_t irq_num) {
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
     if(irq_num >= 8) {// if irq is on the secondary pic, send eoi to both pics
-		outb(EOI|(irq_num-8), SLAVE_8259_PORT);
+		outb(EOI|(irq_num-8), SLAVE_8259_PORT); 
         outb(EOI|PIC2_IRQ, MASTER_8259_PORT); // always send eoi to primary pic
         
     }
@@ -92,10 +92,7 @@ void keyboard_irq_handler(int vector) {
     int code = inb(KEYBOARD_PORT);
     unsigned char echo;
     //printf("keyboard handler \n");
-    if(code < SCAN_CODE_START || code > SCAN_CODE_END) { // check if key is invalid for print
-        //puts("\n invalid scan code for handler ");
-    }
-    else {
+    if(code >= SCAN_CODE_START && code <= SCAN_CODE_END) { // check if key is invalid for print
         echo = scancodes[code]; // print char if key was valid
         if(echo != '\0') {
             putc(echo);
@@ -119,8 +116,6 @@ void keyboard_init() {
 }
 
 void rtc_init() {
-    // everytime you read or write from registers ABC
-    // RW from dataport 0x70 is expected or will go into undefined state
     outb(RTC_REG_B_DISABLE, RTC_REG_PORT); // set to register b and disable nmi
     char prev = inb(RTC_RW_PORT); // get current value from register b
     outb(RTC_REG_B_DISABLE, RTC_REG_PORT); // set to register b and disable nmi
