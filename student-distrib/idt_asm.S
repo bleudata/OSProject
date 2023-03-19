@@ -3,7 +3,13 @@
 #include "idt_asm.h"
 
 
-/* will need to add macro above pushal for pushing vector num and error code from pic */
+/*
+ * HANDLER_LINK
+ *   DESCRIPTION: Macro to create exception / interrupt assmebly linkage using handler functions
+ *   INPUTS: name -- name of the new c function for the handler with assembly linkage
+ * 			 function -- handler function to call 
+ * 			 vector -- the vector number of the exception / interrupt 
+ */
 #define HANDLER_LNK(name, function, vector)   \
 	.GLOBL name               		 ;\
 	name:						 	 ;\
@@ -41,12 +47,12 @@ HANDLER_LNK(machine_check_handler_lnk, generic_handler, 18)
 HANDLER_LNK(smid_float_exception_handler_lnk, generic_handler, 19)
 
 # pic irq vectors - keyboard and rtc
-# these might need to push own unique error code, to be figured out later....
+# these might need to push own unique error code, to be figured out later.
 HANDLER_LNK(keyboard_handler_lnk, generic_handler, KEYBOARD_VECTOR) 
 HANDLER_LNK(rtc_handler_lnk, generic_handler, RTC_VECTOR)
 
 # system call 
-# also might need to push own unique error code, to be figured out later...
+# also might need to push own unique error code, to be figured out later.
 HANDLER_LNK(generic_system_call_handler_lnk, generic_handler, SYSTEM_CALL_VECTOR)
 
 /* PAGE FAULT SAMPLE

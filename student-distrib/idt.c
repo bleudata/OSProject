@@ -8,6 +8,7 @@
 #include "tests.h"
 
 
+// array of strings to print for each vector 0-19 exception
 static unsigned char * intel_handler_strings[] = {
     [DIVIDE_ERROR] = (unsigned char *) "Divide error",
     [RESERVED1] = (unsigned char *) "Reserved1",
@@ -32,11 +33,18 @@ static unsigned char * intel_handler_strings[] = {
 };
 
 
-// go through each entry and set to either trap or interrupt
+/*
+ * idt_init
+ *   DESCRIPTION: initializes the idt (interrupt descriptor table) by setting entries for vectors 0-19,
+ *                keyboard interrupts, rtc interrupts, and system calls
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: changes values for entries in the idt such as gates, sets handlers in the idt, and loads the idt address
+ */
 void idt_init() {
     int i;
     
-
     // intel exceptions
     for(i = DIVIDE_ERROR; i <= SIMD_FLOAT_EXCEPTION; i++) {
         idt[i].size = 1; // want size to be 32 bit 1110 for interrupt gate
@@ -80,17 +88,20 @@ void idt_init() {
     idt[SYSTEM_CALL_VECTOR].dpl = 3;
     idt[SYSTEM_CALL_VECTOR].present = 1;
     idt[SYSTEM_CALL_VECTOR].seg_selector = KERNEL_CS;
+
     setup_idt();
     lidt(idt_desc_ptr); // load the idt address
 }
 
-// add the handlers into the idt
+/*
+ * setup_idt
+ *   DESCRIPTION: sets handlers for vectors 0-19, keyboard and rtc interrupts, and system calls in the idt
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: placed handlers into the idt
+ */
 void setup_idt() {
-    // int i;  HEARD PATRICK TELLING SOMEONE TO JUST DO IT 20 TIMES INSTEAD OF LOOP CAUSE ITS EASIER
-    // for (i = 0; i < len(exceptions); i++) {
-    //     SET_IDT_ENTRY(idt[0], exceptions[0]);
-    // }
-
     // vectors 0-19
     SET_IDT_ENTRY(idt[DIVIDE_ERROR], divide_error_handler_lnk);
     SET_IDT_ENTRY(idt[RESERVED1], reserved1_handler_lnk);
@@ -113,12 +124,21 @@ void setup_idt() {
     SET_IDT_ENTRY(idt[MACHINE_CHECK], machine_check_handler_lnk);
     SET_IDT_ENTRY(idt[SIMD_FLOAT_EXCEPTION], smid_float_exception_handler_lnk);
 
+    // pic and system call
     SET_IDT_ENTRY(idt[KEYBOARD_VECTOR], keyboard_handler_lnk);
     SET_IDT_ENTRY(idt[RTC_VECTOR], rtc_handler_lnk);
     SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], generic_system_call_handler_lnk);
 
 }
 
+/*
+ * generic_handler
+ *   DESCRIPTION: umbrella function to determine which handler to call based on the interrupt vector
+ *   INPUTS: vector -- interrupt vector
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: calls the interrupt handler corresponding to the input vector
+ */
  void generic_handler(int vector) {
     //clear();
     //printf("printing vector %d \n", vector);
@@ -137,7 +157,15 @@ void setup_idt() {
     }
  }
 
-// test to make one handler for all intel exceptions 0-19 to just print and sit in a while loop
+/*
+ * generic_intel_handler
+ *   DESCRIPTION: handler for intel determined exceptions: vectors 0-19, and 
+ *                prints which exception occurred to the screen and sits in a while loop
+ *   INPUTS: vector -- interrupt vector
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: prints message to the screen saying which exception occured
+ */
 void generic_intel_handler(int vector) {
     //printf("before line 139 if statement hello \n");
     if(vector < 0 || vector > 19) {
@@ -148,7 +176,14 @@ void generic_intel_handler(int vector) {
     while(1); // infinite loop here for now, supposed to have this according to slides???
 }
 
-
+/*
+ * generic_system_call_handler
+ *   DESCRIPTION: handler for system calls, prints to the screen to indicate system call has occured
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: prints message to the screen saying system call occured
+ */
 void generic_system_call_handler() {
     printf("System call");
 }

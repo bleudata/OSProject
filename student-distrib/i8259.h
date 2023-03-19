@@ -58,17 +58,17 @@ void enable_irq(uint32_t irq_num);
 void disable_irq(uint32_t irq_num);
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num);
-
-void keyboard_irq_handler(int vector);
-
+// handle keyboard interrupt
+void keyboard_irq_handler();
+// handler rtc interrupt
 void rtc_irq_handler();
-
+// initialize keyboard
 void keyboard_init();
-
+// intialize rtc periodic interrupts
 void rtc_init();
-
+// enable nmi
 void nmi_enable();
-
+// disable nmi
 void nmi_disable();
 
 #endif /* _I8259_H */

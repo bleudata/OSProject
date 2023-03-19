@@ -31,6 +31,8 @@
 
 #ifndef ASM
 
+// handlers with assmebly linkage for vectors 0-19
+// these are what get placed into the idt
 extern void divide_error_handler_lnk();
 extern void reserved1_handler_lnk();
 extern void nmi_interrupt_handler_lnk();
@@ -51,9 +53,14 @@ extern void fpu_float_error_handler_lnk();
 extern void alignment_check_handler_lnk();
 extern void machine_check_handler_lnk();
 extern void smid_float_exception_handler_lnk();
-extern void generic_system_call_handler_lnk();
+
+// pic irqs
 extern void keyboard_handler_lnk();
 extern void rtc_handler_lnk();
+
+// system calls
+extern void generic_system_call_handler_lnk();
+
 
 #endif /* ASM */
 #endif /* IDT_ASM_H */
