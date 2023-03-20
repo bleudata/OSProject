@@ -5,7 +5,7 @@
 .globl load_page_dir
 
 
-// loads page directory address into cr3, takes one argument (address of page directory) (how to know if its physical or virtual address)
+# loads page directory address into cr3, takes one argument (address of page directory) 
 load_page_dir:
     push %ebp
     movl %esp, %ebp
@@ -18,7 +18,7 @@ load_page_dir:
 
 .globl enable_paging
 
-// set the paging bit (32nd bit in the CR0 register)
+# set the paging bit (32nd bit in the CR0 register)
 enable_paging:
     push %ebp
     movl %esp, %ebp
@@ -32,7 +32,7 @@ enable_paging:
 
 .globl enable_mixed_size
 
-//enable mixed size pages (4kb and 4MB) setting bit 4 of cr4
+# enable mixed size pages (4kb and 4MB) setting bit 4 of cr4
 enable_mixed_size:
     push %ebp
     movl %esp, %ebp

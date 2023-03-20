@@ -15,7 +15,7 @@ typedef struct __attribute__ ((packed)){
     uint32_t page_size : 1;
     uint32_t global_page : 1;
     uint32_t available_prog_use : 3; //11-9
-    uint32_t pt_address : 20; //page table base address, 12-31
+    uint32_t pt_address : 20; //page table physical base address, 12-31
 }pde_inside_4KB;
 
 typedef struct __attribute__ ((packed)){
@@ -34,7 +34,7 @@ typedef struct __attribute__ ((packed)){
     uint32_t page_address : 10; //physical page base address, bit 22-31
 }pde_inside_4MB;
 
-
+//struct for page directory entry
 typedef union{
     
     uint32_t entry;
@@ -57,6 +57,7 @@ typedef struct __attribute__ ((packed)){
         uint32_t page_address : 20; //physical page base address
 }pt_fields;
 
+//struct for page table entry
 typedef union{
     uint32_t entry;
 
@@ -66,7 +67,7 @@ typedef union{
 
 
 
-
+/*function that calls other initalization functions*/
 extern void init_paging();
 
 //assembly function that puts page_directory address into %cr3

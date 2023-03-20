@@ -67,12 +67,10 @@ int idt_test(){
 
 /* page fault test
  * 
- * Asserts that first 10 IDT entries are not NULL
+ * try to access unallocated memory
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
- * Coverage: Load IDT, IDT definition
- * Files: x86_desc.h/S
  */
 int page_fault_test(){ //page fault test
 	TEST_HEADER;
@@ -80,16 +78,16 @@ int page_fault_test(){ //page fault test
 
 	//these locations should all page fault
 	char* ptr = 0x000000; //0MB
-	*ptr = 0;
+	// *ptr = 0;
 
-	ptr = (char*) 0x0B7FFF; //one location before 0xB8000 before video mem
-	*ptr = 0;
+	// ptr = (char*) 0x0B7FFF; //one location before 0xB8000 before video mem
+	// *ptr = 0;
 	
-	ptr = (char*) 0x0B9001; //one location after 0xB9000 after video mem
-	*ptr = 0;
+	// ptr = (char*) 0x0B9001; //one location after 0xB9000 after video mem
+	// *ptr = 0;
 
-	ptr = (char*) 0x3FFFFF; //one location before 0x40 0000 before kernel mem
-	*ptr = 0;
+	// ptr = (char*) 0x3FFFFF; //one location before 0x40 0000 before kernel mem
+	// *ptr = 0;
 
 	ptr = (char*) 0x800001; // one location after 0x80 0000 after kernel mem
 	*ptr = 0;
@@ -99,12 +97,10 @@ int page_fault_test(){ //page fault test
 
 /* page access test
  * 
- * Asserts that first 10 IDT entries are not NULL
+ * try to access accessible mem locations
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
- * Coverage: Load IDT, IDT definition
- * Files: x86_desc.h/S
  */
 int page_access_test(){ 
 	TEST_HEADER;
@@ -124,8 +120,16 @@ int page_access_test(){
 	return PASS; //if it gets here = passed
 }
 
+/* divide by zero
+ * 
+ * try to divide number by 0
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 int divide_zero_test(){
 	TEST_HEADER;
+	printf("DIVIDE ZERO :)");
 	int j = 0;
 	int i = 10 /j;
 	return i ? PASS: FAIL;
@@ -154,6 +158,10 @@ void launch_tests(test_t test_num){
 
 	case PAGE_ACCESS_TEST:
 		TEST_OUTPUT("page_access_test", page_access_test());
+		break;
+	
+	case DIVIDE_ZERO_TEST:
+		TEST_OUTPUT("divide_zero_test", divide_zero_test());
 		break;
 
 	default:

@@ -11,7 +11,14 @@ page_directory_entry page_directory[1024] __attribute__((aligned(4096)));
 page_table_entry first_page_table[1024] __attribute__((aligned(4096))); 
 
 
-/*initializes page directory and page table for the kernel*/
+/*
+ * init_paging()
+ *   DESCRIPTION: initializes kernel's page dir and page table, calls page initalization functions
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: initializes paging for kernel :)
+ */
 void init_paging() {
     
     //initialize page directory to all not present
@@ -48,7 +55,7 @@ void init_paging() {
     first_page_table[184].pt_fields.read_write = 1;
     first_page_table[184].pt_fields.page_address = 184;
     
-
+    //load page dir to %cr3, enable mixed size pages and turn on paging
     load_page_dir(page_directory);
     enable_mixed_size();
     enable_paging();
