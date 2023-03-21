@@ -143,6 +143,7 @@ void setup_idt() {
     //clear();
     //printf("printing vector %d \n", vector);
     if(vector >= 0 && vector <= 19) {
+        printf("printing vector %d \n", vector);
         generic_intel_handler(vector);
     }
     else if(vector == KEYBOARD_VECTOR) {

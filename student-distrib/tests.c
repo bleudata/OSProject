@@ -65,6 +65,8 @@ int idt_test(){
 	return result;
 }
 
+
+
 /* page fault test
  * 
  * try to access unallocated memory
@@ -129,13 +131,44 @@ int page_access_test(){
  */
 int divide_zero_test(){
 	TEST_HEADER;
-	printf("DIVIDE ZERO :)");
-	int j = 0;
-	int i = 10 /j;
-	return i ? PASS: FAIL;
+	// printf("Handling Divide by 0 Test..\n");
+	// int j = 0;
+	// int i = 10 /j;
+	asm volatile("int $0");
+	return FAIL;
 }
 
-// add more tests here
+/* bound error test 
+ * 
+ * try to raise bound error 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+int bound_error_test(){
+	TEST_HEADER;
+	// printf("Handling Divide by 0 Test..\n");
+	// int j = 0;
+	// int i = 10 /j;
+	asm volatile("int $5");
+	return FAIL;
+}
+
+/* invalid opcode test
+ * 
+ * try to move something into a register that doesnt exist
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+
+int invalid_opcode_test(){
+	TEST_HEADER;
+	asm volatile("mov %cr6, %eax");
+	//if it reaches this point its 0
+	return FAIL;
+}
+
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -145,6 +178,7 @@ int divide_zero_test(){
 
 /* Test suite entry point */
 void launch_tests(test_t test_num){
+	//int* result;
 	switch (test_num)
 	{
 	case IDT_TEST:
@@ -163,7 +197,11 @@ void launch_tests(test_t test_num){
 	case DIVIDE_ZERO_TEST:
 		TEST_OUTPUT("divide_zero_test", divide_zero_test());
 		break;
-
+	case MULT_EXCEPTIONS_TEST:
+		// divide_zero_test();
+		// bound_error_test();
+		// invalid_opcode_test();
+		break;
 	default:
 		printf("bad test number\n");
 		break;

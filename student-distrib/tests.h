@@ -5,7 +5,8 @@ typedef enum {
 	IDT_TEST,
 	PAGE_FAULT_TEST,
     PAGE_ACCESS_TEST,
-	DIVIDE_ZERO_TEST
+	DIVIDE_ZERO_TEST,
+	MULT_EXCEPTIONS_TEST
 } test_t;
 
 // test launcher
