@@ -56,7 +56,7 @@ void init_paging() {
     first_page_table[184].pt_fields.page_address = 184;
     
     //load page dir to %cr3, enable mixed size pages and turn on paging
-    load_page_dir(page_directory);
+    load_page_dir((uint32_t *)page_directory);
     enable_mixed_size();
     enable_paging();
     

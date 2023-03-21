@@ -11,6 +11,7 @@
 #include "idt.h"
 #include "idt_asm.h"
 #include "tests.h"
+#include "paging.h"
 
 
 #define RUN_TESTS
@@ -172,7 +173,7 @@ void entry(unsigned long magic, unsigned long addr) {
     //launch_tests(IDT_TEST);
     launch_tests(PAGE_ACCESS_TEST);
     //launch_tests(PAGE_FAULT_TEST);
-    launch_tests(DIVIDE_ZERO_TEST);
+    //launch_tests(DIVIDE_ZERO_TEST);
 #endif
     /* Execute the first program ("shell") ... */
 
