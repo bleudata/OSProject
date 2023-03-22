@@ -13,7 +13,7 @@
 
 
 
-/* --- TO DO LATER, don't think we can do these since we don't have anything with user space set up yet --- */
+
 /*
  * terminal_open
  *   DESCRIPTION: TO DO
