@@ -8,3 +8,45 @@
 #include "tests.h"
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
+
+
+
+
+
+/* --- TO DO LATER, don't think we can do these since we don't have anything with user space set up yet --- */
+/*
+ * terminal_open
+ *   DESCRIPTION: TO DO
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: 
+ */
+int terminal_open() {}
+/*
+ * terminal_read
+ *   DESCRIPTION: TO DO
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: 
+ */
+int terminal_read(int fd, unsigned char * buf, int n) {}
+/*
+ * terminal_write
+ *   DESCRIPTION: TO DO
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: 
+ */
+int terminal_write(int fd, unsigned char * buf, int n) {}
+/*
+ * terminal_close
+ *   DESCRIPTION: TO DO
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: 
+ */
+int terminal_close(int fd) {}
