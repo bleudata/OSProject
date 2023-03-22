@@ -6,7 +6,7 @@
 #include "x86_desc.h"
 #include "i8259.h"
 #include "tests.h"
-
+#include "keyboard_driver.h"
 
 // array of strings to print for each vector 0-19 exception
 static unsigned char * intel_handler_strings[] = {

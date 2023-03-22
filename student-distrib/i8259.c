@@ -5,6 +5,7 @@
 #include "i8259.h"
 #include "lib.h"
 #include "tests.h"
+#include "keyboard_driver.h"
 
 // SOURCE CREDIT / CITATION: osdev.org
 
@@ -12,15 +13,7 @@
 uint8_t master_mask; /* IRQs 0-7  */
 uint8_t slave_mask;  /* IRQs 8-15 */
 
-// scan code set 1, maps scan codes from keyboard to characters
-static unsigned char scancodes[] = { // values 0x00 - 0x53, length 83
-   '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=','\0',  
-   '\0', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', '\0',
-   'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', '\0', '\\', 
-   'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', '\0', '*', '\0', ' ', '\0',
-   '\0', '\0', '\0', '\0', '\0', '\0','\0', '\0','\0', '\0','\0', '\0', '7', '8', '9', 
-   '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
-};
+
 
 /* Initialize the 8259 PIC */
 /*
@@ -116,28 +109,7 @@ void send_eoi(uint32_t irq_num) {
     }
 }
 
-// output the character to the screen
-/*
- * keyboard_irq_handler
- *   DESCRIPTION: echos to the screen the character of a key press on the keyboard
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: prints a character to the screen
- */
-void keyboard_irq_handler() {
-    int code = inb(KEYBOARD_PORT);
-    unsigned char echo;
-    //printf("keyboard handler \n");
-    if(code >= SCAN_CODE_START && code <= SCAN_CODE_END) { // check if key is invalid for print
-        echo = scancodes[code]; // print char if key was valid
-        if(echo != '\0') {
-            putc(echo);
-        }
-    }
-    send_eoi(KEYBOARD_IRQ); // send the irq
-    //printf("eoi sent");
-}
+
 
 /*
  * rtc_irq_handler
@@ -155,17 +127,6 @@ void rtc_irq_handler() {
     send_eoi(RTC_IRQ);
 }
 
-/*
- * keyboard_init
- *   DESCRIPTION: initializes the keyboard by enabling its irq on the PIC
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: enables keyboard irq on PIC
- */
-void keyboard_init() {
-    enable_irq(KEYBOARD_IRQ);
-}
 
 /*
  * rtc_init

@@ -11,7 +11,6 @@
 #include "types.h"
 #include "lib.h"
 
-
 /* Ports that each PIC sits on */
 #define MASTER_8259_PORT    0x20 //command
 #define SLAVE_8259_PORT     0xA0 //command
@@ -34,12 +33,9 @@
 #define EOI                 0x60
 // noelle says some fix was changing this to 0x20??? bit aditya says no don't change it
 
-#define KEYBOARD_IRQ        0x01
 #define PIC2_IRQ            0x02
 #define RTC_IRQ             0x08
-#define KEYBOARD_PORT       0x60
-#define SCAN_CODE_START     0x00
-#define SCAN_CODE_END       0x53
+
 
 #define RTC_REG_PORT      0x70
 #define RTC_RW_PORT    0x71

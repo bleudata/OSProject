@@ -12,6 +12,8 @@
 #include "idt_asm.h"
 #include "tests.h"
 #include "paging.h"
+#include "keyboard_driver.h"
+#include "terminal_driver.h"
 
 
 #define RUN_TESTS
