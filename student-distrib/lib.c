@@ -503,7 +503,7 @@ void copy_screen(unsigned char * buf) {
 
 
 /* void putc_new(uint8_t c);
- * Inputs: uint_8* c = character to print
+ * Inputs: uint_8* c = character to print, supports vertical scrolling
  * Return Value: void
  *  Function: Output a character to the console */
 void putc_new(uint8_t c, unsigned char * buf) {

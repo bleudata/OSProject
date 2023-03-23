@@ -199,7 +199,7 @@ void keyboard_init() {
 
 /*
  * get_keyboard_buffer
- *   DESCRIPTION: returns pointer to keyboard buffer so it can be accessed by the terminal drvier
+ *   DESCRIPTION: returns pointer to keyboard buffer so it can be accessed by the terminal driver
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: pointer to keyboard_buf
@@ -209,6 +209,14 @@ unsigned char * get_keyboard_buffer() {
     return keyboard_buf;
 }
 
+/*
+ * update_keyboard_buffer
+ *   DESCRIPTION: adds a character to the keyboard buffer if it isn't full, and clears if its a newline
+ *   INPUTS: input -- character to try to print to the screen
+ *   OUTPUTS: none
+ *   RETURN VALUE: 1 if wrote to buffer or cleared the buffer, 0 if buffer was full
+ *   SIDE EFFECTS: none
+ */
 unsigned char update_keyboard_buffer(unsigned char input) {
     if(input == '\n') { // user pressed enter
         purge_buffer();
