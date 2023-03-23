@@ -16,4 +16,6 @@ void keyboard_init();
 // returns a pointer to the keyboard buffer so the terminal driver can access its contents
 unsigned char * get_keyboard_buffer();
 
+unsigned char update_keyboard_buffer(unsigned char input); 
+
 #endif /*KEYBOARD_DRIVER_H*/

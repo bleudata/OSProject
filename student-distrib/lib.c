@@ -510,17 +510,13 @@ void putc_new(uint8_t c, unsigned char * buf) {
     if(c == '\n' || c == '\r') {
         //screen_y++;
         if((screen_y + 1) > NUM_ROWS-1) { // if currently on the last row
-            
             copy_screen(buf);
             shift_screen_up(buf);
-            //screen_y = screen_y;
-          //  printf("%d ", screen_y);
-            //screen_y = NUM_ROWS-1;
-           //memcopy(video_mem, buf, SCREEN_SIZE);
         }
         else {
             screen_y = (screen_y + 1) % NUM_ROWS;
         }
+        screen_x = 0;
         
     } else {
         if((screen_x+1) > NUM_COLS-1) {
@@ -542,28 +538,41 @@ void putc_new(uint8_t c, unsigned char * buf) {
     }
 }
 
+/*
+ * shift_screen_up
+ *   DESCRIPTION: moves everything on the screen up one line and makes a blank line for the last line
+ *   INPUTS: color -- upper four bits is background color, lower four bits is attribute color
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: colors the background of the screen and the character color
+ */
 void shift_screen_up(unsigned char * buf) {
     int i;
-    int offset = NUM_COLS*2;
-    for(i = 0; i < SCREEN_SIZE*2  - offset; i = i+2) {
-        buf[i] = buf[i+offset];
-        //buf[i] = ' ';
-        buf[i+1] = GRAY_ON_BLACK;
-        //test= buf[i];
-        //printf("  test : %d", test);
-
+    int offset = NUM_COLS*2; // text memory is 2 bytes, first byte is ascii, second is attribute
+    for(i = 0; i < SCREEN_BYTES  - offset; i = i+2) {
+        buf[i] = buf[i+offset]; //  ascii character
+        buf[i+1] = GRAY_ON_BLACK; // attribute
     }
-    for(i = SCREEN_SIZE*2 - offset; i < SCREEN_SIZE*2; i = i+2) {
+    for(i = SCREEN_SIZE*2 - offset; i < SCREEN_BYTES; i = i+2) {
         buf[i] = ' ';
         buf[i+1] = GRAY_ON_BLACK;
     }
     memmove(video_mem, buf, SCREEN_SIZE*2);
 }
 
+
+/*
+ * color screen
+ *   DESCRIPTION: Sets the color of the screen and the text on the screen
+ *   INPUTS: color -- upper four bits is background color, lower four bits is attribute color
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: colors the background of the screen and the character color
+ */
 void color_screen(unsigned char color) {
     int i;
     int offset = NUM_COLS*2;
-    for(i = 1; i < SCREEN_SIZE*2; i = i+2) {        
+    for(i = 1; i < SCREEN_BYTES; i = i+2) {        
         video_mem[i] = color;
     }
 }

@@ -18,6 +18,7 @@ unsigned char alt_pressed = 0x0;
 /*Keyboard buffer variables*/
 static unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
 static unsigned char* buf_position = keyboard_buf;
+static unsigned char* buf_end = keyboard_buf+128;
 static unsigned char screen_buf[SCREEN_SIZE*2];
 
 
@@ -55,6 +56,7 @@ void purge_buffer() {
     int i;
     for (i = 0; i < KEYBOARD_BUF_SIZE; i++) {
         keyboard_buf[i] = '\0';
+        buf_position = keyboard_buf; // move position back to the start of the buffer
     }
 }
 
@@ -86,12 +88,9 @@ void keyboard_irq_handler() {
             echo = scancodes[code][val]; // print char if key was valid
             if(echo != '\0') {
                 //putc(echo);
-                putc_new(echo, screen_buf);
-                if (buf_position - keyboard_buf > 127) {
-                    
+                if(update_keyboard_buffer(echo)){ // if successfully wrote to the buffer
+                    putc_new(echo, screen_buf);
                 }
-                *buf_position = echo;
-                buf_position++;
             }
         }
     }
@@ -99,7 +98,18 @@ void keyboard_irq_handler() {
     // Function Buttons (Not done Alt and F2,F3,F4) TODO: CKPT 5 
     //  TAB
     if (code == 0x0f){
-        puts("     ");
+        int i;
+        if((buf_position < buf_end))
+        {
+            for(i = 0; i < 4; i++) {
+                if(update_keyboard_buffer(' ')) {
+                    putc_new(' ', screen_buf);
+                }
+                else {
+                    break;
+                }
+            }
+        }
     }
     // SHIFT
     else if ((code == 0x2a) || (code == 0x36)) {
@@ -199,6 +209,22 @@ void keyboard_init() {
  */
 unsigned char * get_keyboard_buffer() {
     return keyboard_buf;
+}
+
+unsigned char update_keyboard_buffer(unsigned char input) {
+    if(input == '\n') { // user pressed enter
+        purge_buffer();
+        return 1;
+    }
+    else {
+        if(buf_position < buf_end){
+            *buf_position = input;
+            buf_position++;
+            return 1;
+        }
+        // couldn't add to buffer, buffer full
+        return 0;
+    }
 }
 
 

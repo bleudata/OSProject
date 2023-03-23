@@ -11,6 +11,7 @@
 #define NUM_COLS    80
 #define NUM_ROWS    25
 #define SCREEN_SIZE     NUM_COLS*NUM_ROWS
+#define SCREEN_BYTES    NUM_COLS*NUM_ROWS*2
 #define ATTRIB      0x7
 #define BSOD        0x1F
 #define GRAY_ON_BLACK   0x07
