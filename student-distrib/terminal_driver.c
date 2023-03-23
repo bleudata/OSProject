@@ -10,7 +10,8 @@
 #include "terminal_driver.h"
 
 
-
+static unsigned char* keyboard_buf;
+static unsigned char* screen_buf;
 
 
 
@@ -31,7 +32,11 @@ int terminal_open() {return 0;}
  *   RETURN VALUE: none
  *   SIDE EFFECTS: 
  */
-int terminal_read(int fd, unsigned char * buf, int n) {return 0;}
+int terminal_read(int fd, unsigned char * buf, int n) {
+    // Return data from one line that ended in \n or a full buffer
+
+    return 0;
+}
 /*
  * terminal_write
  *   DESCRIPTION: TO DO
@@ -40,7 +45,11 @@ int terminal_read(int fd, unsigned char * buf, int n) {return 0;}
  *   RETURN VALUE: none
  *   SIDE EFFECTS: 
  */
-int terminal_write(int fd, unsigned char * buf, int n) {return 0;}
+int terminal_write(int fd, unsigned char * buf, int n) {
+    // Move the data in the keyboard buffer into the screen buffer and display screen
+
+    return 0;
+}
 /*
  * terminal_close
  *   DESCRIPTION: TO DO
