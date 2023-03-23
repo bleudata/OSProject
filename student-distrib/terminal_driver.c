@@ -10,7 +10,6 @@
 #include "terminal_driver.h"
 
 
-static unsigned char* keyboard_buf;
 static unsigned char* screen_buf;
 
 
@@ -46,7 +45,7 @@ int terminal_read(int fd, unsigned char * buf, int n) {
  *   SIDE EFFECTS: 
  */
 int terminal_write(int fd, unsigned char * buf, int n) {
-    // Move the data in the keyboard buffer into the screen buffer and display screen
+    // Move the data in the keyboard buffer into the screen buffer and display screen (write to video memory)
 
     return 0;
 }

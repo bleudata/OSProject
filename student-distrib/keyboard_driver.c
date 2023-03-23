@@ -8,7 +8,6 @@
 #include "tests.h"
 #include "keyboard_driver.h"
 
-
 /*Variables that keep track of CapsLock, Shift, Ctrl*/
 unsigned char capslock_on = 0x0;
 unsigned char capslock_released = 0x1;
@@ -16,30 +15,14 @@ unsigned char shift_pressed = 0x0;
 unsigned char ctrl_pressed = 0x0;
 unsigned char alt_pressed = 0x0;
 
+/*Keyboard buffer variables*/
 static unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
+static unsigned char* buf_position = keyboard_buf;
 
-// // scan code set 1, maps scan codes from keyboard to characters
-// static unsigned char scancodes[] = { // values 0x00 - 0x53, length 83
-//    '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=','\0',  
-//    '\0', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', '\0',
-//    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', '\0', '\\', 
-//    'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', '\0', '*', '\0', ' ', '\0',
-//    '\0', '\0', '\0', '\0', '\0', '\0','\0', '\0','\0', '\0','\0', '\0', '7', '8', '9', 
-//    '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
-// };
 
-// // Holds the scancodes for characters when shift is held
-// static unsigned char shiftcodes[] = { // values 0x00 - 0x53, length 83
-//    '\0', '\0', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+','\0',  
-//    '\0', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', '\0',
-//    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '\"', '~', '\0', '|', 
-//    'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', '\0', '*', '\0', ' ', '\0',
-//    '\0', '\0', '\0', '\0', '\0', '\0','\0', '\0','\0', '\0','\0', '\0', '7', '8', '9', 
-//    '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
-// };
 
 // Holds all possible key press combinations
-// [nonshifted value, shifted value, function key]
+// [nonshifted value, shifted value]
 static unsigned char scancodes[58][2] = { // values 0x00 - 0x39
     {'\0', '\0'}, {'\0', '\0'}, {'1', '!'},    {'2', '@'}, 
     {'3', '#'},   {'4', '$'},   {'5', '%'},    {'6', '^'}, 
@@ -58,6 +41,21 @@ static unsigned char scancodes[58][2] = { // values 0x00 - 0x39
     {'\0', '\0'}, {' ', ' '}
 };
 
+
+/*
+ * purge_buffer
+ *   DESCRIPTION: fills the buffer with null
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: chnages keyboard buffer
+ */
+void purge_buffer() {
+    int i;
+    for (i = 0; i < KEYBOARD_BUF_SIZE; i++) {
+        keyboard_buf[i] = '\0';
+    }
+}
 
 /*
  * keyboard_irq_handler
@@ -87,6 +85,8 @@ void keyboard_irq_handler() {
             echo = scancodes[code][val]; // print char if key was valid
             if(echo != '\0') {
                 putc(echo);
+                *buf_position = echo;
+                buf_position++;
             }
         }
     }
