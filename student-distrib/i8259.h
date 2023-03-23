@@ -10,6 +10,7 @@
 
 #include "types.h"
 #include "lib.h"
+#include "rtc.h"
 
 
 /* Ports that each PIC sits on */
@@ -41,13 +42,6 @@
 #define SCAN_CODE_START     0x00
 #define SCAN_CODE_END       0x53
 
-#define RTC_REG_PORT      0x70
-#define RTC_RW_PORT    0x71
-#define RTC_DIVIDER         0x03
-#define RTC_REG_A           0x0A
-#define RTC_REG_B_DISABLE   0x8B   
-#define RTC_REG_C           0x0C
-
 /* Externally-visible functions */
 
 /* Initialize both PICs */
@@ -60,12 +54,8 @@ void disable_irq(uint32_t irq_num);
 void send_eoi(uint32_t irq_num);
 // handle keyboard interrupt
 void keyboard_irq_handler();
-// handler rtc interrupt
-void rtc_irq_handler();
 // initialize keyboard
 void keyboard_init();
-// intialize rtc periodic interrupts
-void rtc_init();
 // enable nmi
 void nmi_enable();
 // disable nmi

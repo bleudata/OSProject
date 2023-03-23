@@ -6,6 +6,7 @@
 #include "x86_desc.h"
 #include "i8259.h"
 #include "tests.h"
+#include "rtc.h"
 
 
 // array of strings to print for each vector 0-19 exception
