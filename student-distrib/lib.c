@@ -514,7 +514,7 @@ void putc_new(uint8_t c, unsigned char * buf) {
             shift_screen_up(buf);
         }
         else {
-            screen_y = (screen_y + 1) % NUM_ROWS;
+            screen_y = (screen_y + 1); // % NUM_ROWS;
         }
         screen_x = 0;
         
@@ -527,7 +527,7 @@ void putc_new(uint8_t c, unsigned char * buf) {
                 shift_screen_up(buf);
             }
             else {
-                screen_y = (screen_y + 1) % NUM_ROWS;
+                screen_y = (screen_y + 1);// % NUM_ROWS;
             }
             screen_x = 0;
         }
@@ -535,7 +535,7 @@ void putc_new(uint8_t c, unsigned char * buf) {
             screen_x++; 
         }
         screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        screen_y = (screen_y + (screen_x / NUM_COLS));// % NUM_ROWS;
     }
 }
 
@@ -576,3 +576,21 @@ void color_screen(unsigned char color) {
         video_mem[i] = color;
     }
 }
+
+void unput_c() {
+    unsigned char * addr = video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1);
+    if(addr < video_mem) { // can't backspace beyond start of memory
+        return;
+    }
+    unsigned char c = *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1));
+    if(c == '\n' || c == '\r') {
+        screen_y = (screen_y -1);
+        screen_x = NUM_COLS - 1; // up one row, at the last column
+        
+    } 
+    *addr = ' '; // replace the character with space to get rid of it
+    *(addr + 1) = ATTRIB;
+    screen_x--;
+    
+}
+

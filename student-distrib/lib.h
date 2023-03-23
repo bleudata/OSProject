@@ -38,6 +38,8 @@ void copy_screen(unsigned char * buf);
 void putc_new(uint8_t c, unsigned char * buf);
 void shift_screen_up(unsigned char * buf);
 void color_screen(unsigned char color);
+void unput_c();
+unsigned char get_newline_flag();
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);
 int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);
