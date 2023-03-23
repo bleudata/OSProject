@@ -16,8 +16,6 @@
 #define RTC_REG_C           0x0C
 #define RTC_REG_C_DISABLE   0x8C
 
-static int rtc_irq_flag;
-
 extern void rtc_init();
 
 extern void rtc_irq_handler();

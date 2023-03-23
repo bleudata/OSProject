@@ -1,5 +1,7 @@
 #include "rtc.h"
 
+static int rtc_irq_flag;
+
 /*
  * rtc_init
  *   DESCRIPTION: initializes periodic rtc interrupts and enables rtc irq on the PIC
@@ -55,6 +57,6 @@ int rtc_read(){
 }
 
 int rtc_write(uint32_t buffer){
-
+    return 0;
 }
 
