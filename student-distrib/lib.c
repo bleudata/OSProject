@@ -519,6 +519,8 @@ void putc_new(uint8_t c, unsigned char * buf) {
         screen_x = 0;
         
     } else {
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         if((screen_x+1) > NUM_COLS-1) {
             if((screen_y + 1) > NUM_ROWS-1) {
                 copy_screen(buf);
@@ -529,10 +531,9 @@ void putc_new(uint8_t c, unsigned char * buf) {
             }
             screen_x = 0;
         }
-
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
+        else {
+            screen_x++; 
+        }
         screen_x %= NUM_COLS;
         screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
@@ -571,7 +572,6 @@ void shift_screen_up(unsigned char * buf) {
  */
 void color_screen(unsigned char color) {
     int i;
-    int offset = NUM_COLS*2;
     for(i = 1; i < SCREEN_BYTES; i = i+2) {        
         video_mem[i] = color;
     }

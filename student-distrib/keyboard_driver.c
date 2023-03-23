@@ -18,10 +18,10 @@ unsigned char alt_pressed = 0x0;
 /*Keyboard buffer variables*/
 static unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
 static unsigned char* buf_position = keyboard_buf;
-static unsigned char* buf_end = keyboard_buf+128;
+//static unsigned char* buf_end = keyboard_buf+128;
 static unsigned char screen_buf[SCREEN_SIZE*2];
 
-
+#define BUF_END   keyboard_buf+128
 
 // Holds all possible key press combinations
 // [nonshifted value, shifted value]
@@ -99,17 +99,15 @@ void keyboard_irq_handler() {
     //  TAB
     if (code == 0x0f){
         int i;
-        if((buf_position < buf_end))
-        {
-            for(i = 0; i < 4; i++) {
-                if(update_keyboard_buffer(' ')) {
-                    putc_new(' ', screen_buf);
-                }
-                else {
-                    break;
-                }
+        for(i = 0; i < 4; i++) {
+            if(update_keyboard_buffer(' ')) {
+                putc_new(' ', screen_buf);
+            }
+            else {
+                break;
             }
         }
+    
     }
     // SHIFT
     else if ((code == 0x2a) || (code == 0x36)) {
@@ -217,7 +215,7 @@ unsigned char update_keyboard_buffer(unsigned char input) {
         return 1;
     }
     else {
-        if(buf_position < buf_end){
+        if(buf_position < BUF_END){
             *buf_position = input;
             buf_position++;
             return 1;
