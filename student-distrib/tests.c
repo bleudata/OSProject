@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "terminal_driver.h"
 
 #define PASS 1
 #define FAIL 0
@@ -171,6 +172,118 @@ int invalid_opcode_test(){
 
 
 /* Checkpoint 2 tests */
+
+/* terminal_open_test
+ * 
+ * try to open terminal
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+int terminal_open_test() {
+	TEST_HEADER;
+	int result; 
+	result = terminal_open();
+	return result ? PASS: FAIL;
+}
+
+/* terminal_close_test
+ * 
+ * try to open terminal
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+int terminal_close_test() {
+	TEST_HEADER;
+	int result; 
+	result = terminal_close(0); 
+	return result ? PASS: FAIL;
+}
+
+/* terminal_read_in_bounds_test
+ * 
+ * try to open terminal
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+int terminal_read_in_bounds_test() {
+	TEST_HEADER;
+	// int n = 10;
+	// int result;
+	// unsigned char test[15];
+	// result = terminal_read(0, test, n);
+	// return result;
+	return 0;
+}
+
+/* terminal_read_out_bounds_test
+ * 
+ * try to read more 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+int terminal_read_out_bounds_test() {
+	TEST_HEADER;
+	// int n = 130;
+	// int result;
+	// unsigned char test[15];
+	// result = terminal_read(0, test, n);
+	// return result;
+	return 0;
+}
+
+/* terminal_write_in_bounds_test
+ * 
+ * try to write 10, valid number, characters to the screen
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+int terminal_write_in_bounds_test() {
+	TEST_HEADER;
+	int n = 10;
+	int result;
+	unsigned char test[] = {"hello this is a test"};
+	result = terminal_write(0, test, n);
+	return result;
+}
+
+/* terminal_write_out_bounds_test
+ * 
+ * try to write more than 128 characters to the screen
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+int terminal_write_out_bounds_test() {
+	TEST_HEADER;
+	int n = SCREEN_SIZE + 10; // want to be larger than the screen
+	int result;
+	unsigned char test[] = {"overflow overflow overflow overflow "};
+	result = terminal_write(0, test, n);
+	return result;
+}
+
+/* terminal_write_out_bounds_test
+ * 
+ * try to read then write to the screen
+ * Inputs: None
+ * Outputs: none
+ * Side Effects: Prints to screen
+ */
+void terminal_read_write_test() {
+	// TEST_HEADER;
+	// int n = 10; // want to be larger than the screen
+	// int result;
+	// unsigned char test[] = {"0123456789"};
+	// unsigned char user_array[] = {"xxxxxxxxxxxx"};
+	// result = terminal_write(0, test, n);
+
+	// return result;
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -198,7 +311,7 @@ void launch_tests(test_t test_num){
 		TEST_OUTPUT("divide_zero_test", divide_zero_test());
 		break;
 	case MULT_EXCEPTIONS_TEST:
-		 //divide_zero_test();
+		//  divide_zero_test();
 		// bound_error_test();
 		// invalid_opcode_test();
 		break;

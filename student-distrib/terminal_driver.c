@@ -9,20 +9,20 @@
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 
-static unsigned char* screen_buf[SCREEN_SIZE];
-
-
-
+// static unsigned char* screen_buf[SCREEN_BYTES];
 
 /*
  * terminal_open
  *   DESCRIPTION: TO DO
  *   INPUTS: none
  *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: 
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS:  none
  */
-int terminal_open() {return 0;}
+int terminal_open() {
+ 
+    return 0;
+}
 /*
  * terminal_read
  *   DESCRIPTION: Reads from the keyboard buffer and copies specified number of bytes into an array given by the user
@@ -62,17 +62,31 @@ int terminal_read(int fd, unsigned char * buf, int n) {
  *   SIDE EFFECTS: 
  */
 int terminal_write(int fd, unsigned char * buf, int n) {
-    
+    int i;
+    if(n > SCREEN_SIZE) {
+        return -1;
+    }
+    // if(n > SCREEN_SIZE) {
+    //     n = SCREEN_SIZE;
+    // }
 
-    return 0;
+    for(i = 0; i < n; i ++) {
+        putc_new(buf[i], 0);
+    }
+
+
+    return n;
 }
 /*
  * terminal_close
  *   DESCRIPTION: TO DO
  *   INPUTS: none
  *   OUTPUTS: none
- *   RETURN VALUE: none
+ *   RETURN VALUE: 0
  *   SIDE EFFECTS: 
  */
-int terminal_close(int fd) {return 0;}
+int terminal_close(int fd) {
+
+    return 0;
+}
 

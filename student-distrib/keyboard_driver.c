@@ -19,9 +19,11 @@ unsigned char alt_pressed = 0x0;
 static unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
 static unsigned char* buf_position = keyboard_buf;
 //static unsigned char* buf_end = keyboard_buf+128;
-static unsigned char screen_buf[SCREEN_SIZE*2];
+static unsigned char screen_buf[SCREEN_BYTES];
 
-#define BUF_END   keyboard_buf+128
+#define BUF_END_ADDR   keyboard_buf+128
+#define BUF_LINE_TWO_ADDR keyboard_buf+80
+#define NEWLINE_INDEX   80
 
 // Holds all possible key press combinations
 // [nonshifted value, shifted value]
@@ -58,6 +60,7 @@ void purge_buffer() {
         keyboard_buf[i] = '\0';
         buf_position = keyboard_buf; // move position back to the start of the buffer
     }
+    keyboard_buf[NEWLINE_INDEX] = '\n'; // accomodate for the new line
 }
 
 /*
@@ -88,7 +91,7 @@ void keyboard_irq_handler() {
             echo = scancodes[code][val]; // print char if key was valid
             if(echo != '\0') {
                 //putc(echo);
-                if(update_keyboard_buffer(echo)){ // if successfully wrote to the buffer
+                if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
                     putc_new(echo, screen_buf);
                 }
             }
@@ -100,7 +103,7 @@ void keyboard_irq_handler() {
     if (code == 0x0f){
         int i;
         for(i = 0; i < 4; i++) {
-            if(update_keyboard_buffer(' ')) {
+            if((add_to_keyboard_buffer(' ')) && (buf_position <= BUF_LINE_TWO_ADDR)) {
                 putc_new(' ', screen_buf);
             }
             else {
@@ -159,7 +162,9 @@ void keyboard_irq_handler() {
     }
     // BACKSPACE
     else if (code == 0x0e) {
-
+        if(remove_from_keyboard_buffer()){
+            unput_c();
+        }
     }
 
     // Handles all key presses that expect mutliple codes
@@ -195,6 +200,7 @@ void keyboard_irq_handler() {
  */
 void keyboard_init() {
     enable_irq(KEYBOARD_IRQ);
+    purge_buffer(); // make sure the buffer is clean when we first start
 }
 
 /*
@@ -210,27 +216,47 @@ unsigned char * get_keyboard_buffer() {
 }
 
 /*
- * update_keyboard_buffer
+ * add_to_keyboard_buffer
  *   DESCRIPTION: adds a character to the keyboard buffer if it isn't full, and clears if its a newline
  *   INPUTS: input -- character to try to print to the screen
  *   OUTPUTS: none
  *   RETURN VALUE: 1 if wrote to buffer or cleared the buffer, 0 if buffer was full
  *   SIDE EFFECTS: none
  */
-unsigned char update_keyboard_buffer(unsigned char input) {
-    if(input == '\n') { // user pressed enter
+unsigned char add_to_keyboard_buffer(unsigned char input) {
+    if(input == '\n' ) { // found a new line character
         purge_buffer();
-        return 1;
+        return 1;   
     }
     else {
-        if(buf_position < BUF_END){
+        if(buf_position < BUF_END_ADDR){
+            if(buf_position == BUF_LINE_TWO_ADDR) {
+                buf_position++;
+            }
             *buf_position = input;
             buf_position++;
             return 1;
         }
-        // couldn't add to buffer, buffer full
-        return 0;
+
     }
+    return 0;// couldn't add to buffer, buffer full
+}
+
+/*
+ * add_to_keyboard_buffer
+ *   DESCRIPTION: removes one character from the keyboard  buffer, helper function for backspace
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: 1 if removed character, 0 if buffer was full
+ *   SIDE EFFECTS: none
+ */
+unsigned char remove_from_keyboard_buffer() {
+    if(buf_position > keyboard_buf) { // if buffer is not empty 
+        buf_position--; 
+        *buf_position = ' ';
+        return 1;
+    }
+    return 0;
 }
 
 

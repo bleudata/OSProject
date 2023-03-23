@@ -483,23 +483,6 @@ void test_interrupts(void) {
     // }
 }
 
-/*
- * copy_screen
- *   DESCRIPTION: copies from video memory into a buffer
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: number of bytes copied
- *   SIDE EFFECTS: 
- */
-void copy_screen(unsigned char * buf) {
-    // // check for null pointer
-    unsigned char * screen = (unsigned char *) VIDEO;
-    if(buf == 0) { 
-        return;
-    }
-    memcpy(buf, screen, SCREEN_SIZE*2);
-
-}
 
 
 /* void putc_new(uint8_t c);
@@ -540,6 +523,24 @@ void putc_new(uint8_t c, unsigned char * buf) {
 }
 
 /*
+ * copy_screen
+ *   DESCRIPTION: copies from video memory into a buffer
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: number of bytes copied
+ *   SIDE EFFECTS: 
+ */
+void copy_screen(unsigned char * buf) {
+    // // check for null pointer
+    unsigned char * screen = (unsigned char *) VIDEO;
+    if(buf == 0) { 
+        return;
+    }
+    memcpy(buf, screen, SCREEN_SIZE*2);
+
+}
+
+/*
  * shift_screen_up
  *   DESCRIPTION: moves everything on the screen up one line and makes a blank line for the last line
  *   INPUTS: color -- upper four bits is background color, lower four bits is attribute color
@@ -550,6 +551,9 @@ void putc_new(uint8_t c, unsigned char * buf) {
 void shift_screen_up(unsigned char * buf) {
     int i;
     int offset = NUM_COLS*2; // text memory is 2 bytes, first byte is ascii, second is attribute
+    if(buf == 0) { // null pointer
+        return;
+    }
     for(i = 0; i < SCREEN_BYTES  - offset; i = i+2) {
         buf[i] = buf[i+offset]; //  ascii character
         buf[i+1] = GRAY_ON_BLACK; // attribute
@@ -564,7 +568,7 @@ void shift_screen_up(unsigned char * buf) {
 
 /*
  * color screen
- *   DESCRIPTION: Sets the color of the screen and the text on the screen
+ *   DESCRIPTION: Sets the color of the screen and the text on the screen, mostly for blue screen of death
  *   INPUTS: color -- upper four bits is background color, lower four bits is attribute color
  *   OUTPUTS: none
  *   RETURN VALUE: none
@@ -577,20 +581,33 @@ void color_screen(unsigned char color) {
     }
 }
 
+
+/*
+ * unput_c
+ *   DESCRIPTION: delete a character from video memory
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: deletes a character on the screen
+ */
 void unput_c() {
-    unsigned char * addr = video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1);
-    if(addr < video_mem) { // can't backspace beyond start of memory
+    unsigned char line_flag = 0;
+    unsigned char * addr = (unsigned char *) video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1);
+    if((unsigned char * )addr < (unsigned char *)video_mem) { // can't backspace beyond start of memory
         return;
     }
-    unsigned char c = *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1));
+    unsigned char c = *(unsigned char *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1));
     if(c == '\n' || c == '\r') {
         screen_y = (screen_y -1);
         screen_x = NUM_COLS - 1; // up one row, at the last column
+        line_flag = 1;
         
     } 
     *addr = ' '; // replace the character with space to get rid of it
     *(addr + 1) = ATTRIB;
-    screen_x--;
+    if(!line_flag) {
+        screen_x--;
+    }
     
 }
 
