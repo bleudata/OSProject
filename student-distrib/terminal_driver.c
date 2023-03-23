@@ -29,7 +29,7 @@ int terminal_open() {
  *   INPUTS: fd -- file descriptor
 *            buf -- array provided by user, data from keyboard buffer is copied into here
  *   OUTPUTS: none
- *   RETURN VALUE: number of bytes read
+ *   RETURN VALUE: number of bytes read or -1 for FAIL
  *   SIDE EFFECTS: 
  */
 int terminal_read(int fd, unsigned char * buf, int n) {
@@ -40,7 +40,11 @@ int terminal_read(int fd, unsigned char * buf, int n) {
 
     // validate input, null pointer provided by user
     if(buf == 0) {
-        return 0; 
+        return -1; 
+    }
+    // validate fd 
+    if (fd < 0) {
+        return -1;
     }
     // validate input, at most can read all of the keyboard buffer
     if(n > KEYBOARD_BUF_SIZE) { 
@@ -63,6 +67,12 @@ int terminal_read(int fd, unsigned char * buf, int n) {
  */
 int terminal_write(int fd, unsigned char * buf, int n) {
     int i;
+
+    // validate fd 
+    if (fd < 0) {
+        return -1;
+    }
+
     if(n > SCREEN_SIZE) {
         return -1;
     }

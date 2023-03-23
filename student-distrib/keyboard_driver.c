@@ -121,17 +121,12 @@ void keyboard_irq_handler() {
     }
     // CAPSLOCK
     else if (code == 0x3a) {
-        // if pressed we want to switch it when its been released from previous press
-       // printf("capslock pressed \n");
         if (capslock_released) {
-        //    printf("capslock release is on, switch caps status \n");
             capslock_on = capslock_on ? 0 : 1;
         } 
         capslock_released = 0;
     }
     else if (code == 0xba) {
-        // release code for capslock
-     //   printf("capslock released \n");
         capslock_released = 1;
     }
     // CTRL Left
@@ -187,7 +182,6 @@ void keyboard_irq_handler() {
     }
 
     send_eoi(KEYBOARD_IRQ); // send the irq
-    //printf("eoi sent");
 }
 
 /*
@@ -243,7 +237,7 @@ unsigned char add_to_keyboard_buffer(unsigned char input) {
 }
 
 /*
- * add_to_keyboard_buffer
+ * remove_from_keyboard_buffer
  *   DESCRIPTION: removes one character from the keyboard  buffer, helper function for backspace
  *   INPUTS: none
  *   OUTPUTS: none
