@@ -85,6 +85,9 @@ void keyboard_irq_handler() {
             echo = scancodes[code][val]; // print char if key was valid
             if(echo != '\0') {
                 putc(echo);
+                if (buf_position - keyboard_buf > 127) {
+                    
+                }
                 *buf_position = echo;
                 buf_position++;
             }
