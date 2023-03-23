@@ -1,7 +1,7 @@
 #include "rtc.h"
 
 static int rtc_irq_flag;
-static int rtc_uhz_per_syshz;
+static int rtc_uhz_per_syshz = 1;
 
 /*
  * rtc_init
