@@ -173,7 +173,9 @@ void generic_intel_handler(int vector) {
        return; // invalid vector number for this function
     }
     // printf("hihihihihihihihihi\n");
-   printf("%s \n", intel_handler_strings[vector]);
+
+    printf("%s \n", intel_handler_strings[vector]);
+    color_screen(BSOD);
     while(1); // infinite loop here for now, supposed to have this according to slides???
 }
 

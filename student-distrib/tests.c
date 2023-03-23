@@ -198,7 +198,7 @@ void launch_tests(test_t test_num){
 		TEST_OUTPUT("divide_zero_test", divide_zero_test());
 		break;
 	case MULT_EXCEPTIONS_TEST:
-		// divide_zero_test();
+		 //divide_zero_test();
 		// bound_error_test();
 		// invalid_opcode_test();
 		break;

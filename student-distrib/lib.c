@@ -3,11 +3,6 @@
 
 #include "lib.h"
 
-#define VIDEO       0xB8000
-#define NUM_COLS    80
-#define NUM_ROWS    25
-#define ATTRIB      0x7
-
 static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
@@ -486,4 +481,89 @@ void test_interrupts(void) {
     // for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
     //     video_mem[i << 1]++;
     // }
+}
+
+/*
+ * copy_screen
+ *   DESCRIPTION: copies from video memory into a buffer
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: number of bytes copied
+ *   SIDE EFFECTS: 
+ */
+void copy_screen(unsigned char * buf) {
+    // // check for null pointer
+    unsigned char * screen = (unsigned char *) VIDEO;
+    if(buf == 0) { 
+        return;
+    }
+    memcpy(buf, screen, SCREEN_SIZE*2);
+
+}
+
+
+/* void putc_new(uint8_t c);
+ * Inputs: uint_8* c = character to print
+ * Return Value: void
+ *  Function: Output a character to the console */
+void putc_new(uint8_t c, unsigned char * buf) {
+    if(c == '\n' || c == '\r') {
+        //screen_y++;
+        if((screen_y + 1) > NUM_ROWS-1) { // if currently on the last row
+            
+            copy_screen(buf);
+            shift_screen_up(buf);
+            //screen_y = screen_y;
+          //  printf("%d ", screen_y);
+            //screen_y = NUM_ROWS-1;
+           //memcopy(video_mem, buf, SCREEN_SIZE);
+        }
+        else {
+            screen_y = (screen_y + 1) % NUM_ROWS;
+        }
+        
+    } else {
+        if((screen_x+1) > NUM_COLS-1) {
+            if((screen_y + 1) > NUM_ROWS-1) {
+                copy_screen(buf);
+                shift_screen_up(buf);
+            }
+            else {
+                screen_y = (screen_y + 1) % NUM_ROWS;
+            }
+            screen_x = 0;
+        }
+
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+        screen_x++;
+        screen_x %= NUM_COLS;
+        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+    }
+}
+
+void shift_screen_up(unsigned char * buf) {
+    int i;
+    int offset = NUM_COLS*2;
+    for(i = 0; i < SCREEN_SIZE*2  - offset; i = i+2) {
+        buf[i] = buf[i+offset];
+        //buf[i] = ' ';
+        buf[i+1] = GRAY_ON_BLACK;
+        //test= buf[i];
+        //printf("  test : %d", test);
+
+    }
+    for(i = SCREEN_SIZE*2 - offset; i < SCREEN_SIZE*2; i = i+2) {
+        buf[i] = ' ';
+        buf[i+1] = GRAY_ON_BLACK;
+    }
+    memmove(video_mem, buf, SCREEN_SIZE*2);
+}
+
+void color_screen(unsigned char color) {
+    int i;
+    int offset = NUM_COLS*2;
+    for(i = 1; i < SCREEN_SIZE*2; i = i+2) {        
+        video_mem[i] = color;
+    }
 }

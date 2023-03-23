@@ -18,6 +18,7 @@ unsigned char alt_pressed = 0x0;
 /*Keyboard buffer variables*/
 static unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
 static unsigned char* buf_position = keyboard_buf;
+static unsigned char screen_buf[SCREEN_SIZE*2];
 
 
 
@@ -73,7 +74,7 @@ void keyboard_irq_handler() {
     if(code >= SCAN_CODE_START && code <= SCAN_CODE_END) { // check if key is invalid for print
         unsigned char val = 0;
         if ((code >= 0x10 && code <= 0x19) || (code >= 0x1e && code <= 0x26) || (code >= 0x2c && code <= 0x32)) {
-            val = shift_pressed ^ capslock_on;
+            val = shift_pressed ^ capslock_on; 
         }
         else {
             val = shift_pressed;
@@ -84,7 +85,8 @@ void keyboard_irq_handler() {
         else {
             echo = scancodes[code][val]; // print char if key was valid
             if(echo != '\0') {
-                putc(echo);
+                //putc(echo);
+                putc_new(echo, screen_buf);
                 if (buf_position - keyboard_buf > 127) {
                     
                 }
@@ -186,3 +188,18 @@ void keyboard_irq_handler() {
 void keyboard_init() {
     enable_irq(KEYBOARD_IRQ);
 }
+
+/*
+ * get_keyboard_buffer
+ *   DESCRIPTION: returns pointer to keyboard buffer so it can be accessed by the terminal drvier
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: pointer to keyboard_buf
+ *   SIDE EFFECTS: none
+ */
+unsigned char * get_keyboard_buffer() {
+    return keyboard_buf;
+}
+
+
+

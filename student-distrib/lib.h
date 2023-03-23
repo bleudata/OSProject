@@ -7,6 +7,14 @@
 
 #include "types.h"
 
+#define VIDEO       0xB8000
+#define NUM_COLS    80
+#define NUM_ROWS    25
+#define SCREEN_SIZE     NUM_COLS*NUM_ROWS
+#define ATTRIB      0x7
+#define BSOD        0x1F
+#define GRAY_ON_BLACK   0x07
+
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
 int32_t puts(int8_t *s);
@@ -25,7 +33,10 @@ int32_t strncmp(const int8_t* s1, const int8_t* s2, uint32_t n);
 int8_t* strcpy(int8_t* dest, const int8_t*src);
 int8_t* strncpy(int8_t* dest, const int8_t*src, uint32_t n);
 void test_interrupts(void);
-
+void copy_screen(unsigned char * buf);
+void putc_new(uint8_t c, unsigned char * buf);
+void shift_screen_up(unsigned char * buf);
+void color_screen(unsigned char color);
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);
 int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);

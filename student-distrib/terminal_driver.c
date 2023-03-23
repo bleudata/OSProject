@@ -9,8 +9,8 @@
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 
+static unsigned char* screen_buf[SCREEN_SIZE];
 
-static unsigned char* screen_buf;
 
 
 
@@ -25,27 +25,44 @@ static unsigned char* screen_buf;
 int terminal_open() {return 0;}
 /*
  * terminal_read
- *   DESCRIPTION: TO DO
- *   INPUTS: none
+ *   DESCRIPTION: Reads from the keyboard buffer and copies specified number of bytes into an array given by the user
+ *   INPUTS: fd -- file descriptor
+*            buf -- array provided by user, data from keyboard buffer is copied into here
  *   OUTPUTS: none
- *   RETURN VALUE: none
+ *   RETURN VALUE: number of bytes read
  *   SIDE EFFECTS: 
  */
 int terminal_read(int fd, unsigned char * buf, int n) {
     // Return data from one line that ended in \n or a full buffer
+    int i;
+    unsigned char * keyboard_buf;
+    keyboard_buf = get_keyboard_buffer();
 
-    return 0;
+    // validate input, null pointer provided by user
+    if(buf == 0) {
+        return 0; 
+    }
+    // validate input, at most can read all of the keyboard buffer
+    if(n > KEYBOARD_BUF_SIZE) { 
+        n = KEYBOARD_BUF_SIZE; 
+    }
+
+    for(i = 0; i < n; i++) {
+        buf[i] = keyboard_buf[i]; 
+    }
+
+    return n;
 }
 /*
  * terminal_write
- *   DESCRIPTION: TO DO
+ *   DESCRIPTION: write data from input buffer to video memory to display on the screen
  *   INPUTS: none
  *   OUTPUTS: none
- *   RETURN VALUE: none
+ *   RETURN VALUE: number or bytes written if successful, else -1; 
  *   SIDE EFFECTS: 
  */
 int terminal_write(int fd, unsigned char * buf, int n) {
-    // Move the data in the keyboard buffer into the screen buffer and display screen (write to video memory)
+    
 
     return 0;
 }
