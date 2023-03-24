@@ -22,6 +22,9 @@ static unsigned char* buf_position = keyboard_buf;
 //static unsigned char* buf_end = keyboard_buf+128;
 static unsigned char screen_buf[SCREEN_BYTES];
 
+/* Tells us when the enter key is hit*/
+static unsigned char enter_flag = 0;
+
 #define BUF_END_ADDR   keyboard_buf+128
 #define BUF_LINE_TWO_ADDR keyboard_buf+80
 #define NEWLINE_INDEX   80
@@ -59,8 +62,8 @@ void purge_buffer() {
     int i;
     for (i = 0; i < KEYBOARD_BUF_SIZE; i++) {
         keyboard_buf[i] = '\0';
-        buf_position = keyboard_buf; // move position back to the start of the buffer
     }
+    buf_position = keyboard_buf; // move position back to the start of the buffer
     keyboard_buf[NEWLINE_INDEX] = '\n'; // accomodate for the new line
 }
 
@@ -75,7 +78,6 @@ void purge_buffer() {
 void keyboard_irq_handler() {
     int code = inb(KEYBOARD_PORT);
     unsigned char echo;
-    //printf("keyboard handler \n");
 
     if(code >= SCAN_CODE_START && code <= SCAN_CODE_END) { // check if key is invalid for print
         unsigned char val = 0;
@@ -225,6 +227,7 @@ unsigned char * get_keyboard_buffer() {
  */
 unsigned char add_to_keyboard_buffer(unsigned char input) {
     if(input == '\n' ) { // found a new line character
+        enter_flag = 1;
         purge_buffer();
         return 1;   
     }
@@ -260,4 +263,10 @@ unsigned char remove_from_keyboard_buffer() {
 }
 
 
+unsigned char get_enter_flag() {
+    return enter_flag;
+}
 
+void clear_enter_flag(){
+    enter_flag = 0;
+}

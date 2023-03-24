@@ -22,4 +22,9 @@ unsigned char add_to_keyboard_buffer(unsigned char input);
 // attempt to remove a character from the keyboard buffer
 unsigned char remove_from_keyboard_buffer(); 
 
+// Returns value of enter_flag
+extern unsigned char get_enter_flag();
+
+// Sets enter_flag to 0
+extern void clear_enter_flag();
 #endif /*KEYBOARD_DRIVER_H*/

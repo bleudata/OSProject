@@ -34,9 +34,10 @@ int terminal_open() {
  */
 int terminal_read(int fd, unsigned char * buf, int n) {
     // Return data from one line that ended in \n or a full buffer
-    int i;
+    int i, ret; // loop counter and index, also counts the number of characters read
     unsigned char * keyboard_buf;
     keyboard_buf = get_keyboard_buffer();
+    unsigned char current;
 
     // validate input, null pointer provided by user
     if(buf == 0) {
@@ -46,18 +47,32 @@ int terminal_read(int fd, unsigned char * buf, int n) {
     if (fd < 0) { // for testing just use 1 for fd
         return -1;
     }
+    if (n < 0) { // for testing just use 1 for fd
+        return -1;
+    }
     // validate input, at most can read all of the keyboard buffer
     if(n > KEYBOARD_BUF_SIZE) { 
         n = KEYBOARD_BUF_SIZE; 
     }
     
-    // need to check for \0 to see if the buffer is empty 
-    
-    for(i = 0; i < n; i++) { // \n or \0
-        buf[i] = keyboard_buf[i]; 
-    }
+    i = 0;
+    ret = 0;
 
-    return n;
+    while((i < n) && (keyboard_buf[i] != '\0')) {
+        current = keyboard_buf[i];
+        if (current == '\n' && !get_enter_flag()) {
+            i++;
+        }
+        else if (current == '\n' && get_enter_flag()) {
+            clear_enter_flag();
+            break;
+        }
+        buf[i] = current; 
+        ret++;
+        i++;
+    }
+  
+    return ret;
 }
 /*
  * terminal_write
@@ -82,20 +97,19 @@ int terminal_write(int fd, unsigned char * buf, int n) {
     for(i = 0; i < n; i ++) {
         putc_new(buf[i], 0);
     }
-
+    update_cursor(get_x_position(), get_y_position());
 
     return n;
 }
 /*
  * terminal_close
- *   DESCRIPTION: TO DO
+ *   DESCRIPTION: Closes the terminal 
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: 0
  *   SIDE EFFECTS: 
  */
-int terminal_close(int fd) {
-
+int terminal_close() {
     return 0;
 }
 
