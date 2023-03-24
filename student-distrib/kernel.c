@@ -159,6 +159,7 @@ void entry(unsigned long magic, unsigned long addr) {
     enable_irq(PIC2_IRQ); 
     keyboard_init();
     rtc_init();
+    enable_cursor(MAX_SCANLINE, MAX_SCANLINE); 
     
     printf("unmasked keyboard and rtc irqs");
     /* Enable interrupts */

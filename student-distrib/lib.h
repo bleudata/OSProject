@@ -15,6 +15,9 @@
 #define ATTRIB      0x7
 #define BSOD        0x1F
 #define GRAY_ON_BLACK   0x07
+#define MAX_SCANLINE    14 // number of pixels for character height - 1
+#define VGA_ADDR_REG    0x3D4
+#define VGA_DATA_REG    0x3D5
 
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
@@ -24,6 +27,8 @@ int8_t *strrev(int8_t* s);
 uint32_t strlen(const int8_t* s);
 void clear(void);
 void clear_reset_cursor(void);
+void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
+void update_cursor(int x, int y);
 
 void* memset(void* s, int32_t c, uint32_t n);
 void* memset_word(void* s, int32_t c, uint32_t n);
@@ -39,7 +44,8 @@ void copy_screen(unsigned char * buf);
 void shift_screen_up(unsigned char * buf);
 void color_screen(unsigned char color);
 void unput_c();
-unsigned char get_newline_flag();
+int get_x_position();
+int get_y_position();
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);
 int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);

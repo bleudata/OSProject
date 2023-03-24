@@ -31,6 +31,42 @@ void clear_reset_cursor(void) {
     screen_x = screen_y = 0;
 }
 
+/*
+ * enable_cursor
+ *   DESCRIPTION: enables the cursor 
+ *   INPUTS: cursor_start -- scanline for cursor to start on 
+ *           cursor_end -- scanline for cursor to end on 
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS: cursor will be displayed on the screen
+ */
+void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
+{
+    outb(0x0A, VGA_ADDR_REG); // select cursor start register 
+    outb((inb(VGA_DATA_REG) & 0xC0) | cursor_start, VGA_DATA_REG);// bit 5 = 0 to enable cursor, bits 0-4 cursor scanline start, probably 15
+    outb(0x0B, VGA_ADDR_REG);
+    outb((inb(VGA_DATA_REG) & 0xE0) | cursor_end, VGA_DATA_REG); // bits 6-7 cursor skew, bits 0-4 cursor end line, probably 15
+}
+
+
+/*
+ * update_cursor
+ *   DESCRIPTION: moves cursor to new position on the screen
+ *   INPUTS: x -- x position on the screen
+ *           y -- y position on the screen
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS: cursor will be moved to a new location on the screen
+ */
+void update_cursor(int x, int y)
+{
+    uint16_t pos = y * NUM_COLS + x;
+    outb(0x0F, VGA_ADDR_REG); // cursor location low
+    outb((uint8_t) (pos & 0xFF),VGA_DATA_REG);
+    outb(0x0E, VGA_ADDR_REG); // cursor location high
+    outb((uint8_t) ((pos >> 8) & 0xFF), VGA_DATA_REG);
+}
+
 /* Standard printf().
  * Only supports the following format strings:
  * %%  - print a literal '%' character
@@ -609,5 +645,29 @@ void unput_c() {
         screen_x--;
     }
     
+}
+
+/*
+ * get_x_position
+ *   DESCRIPTION: gets the current x position on the screen, helper for updating the cursor
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
+int get_x_position() {
+    return screen_x;
+}
+
+/*
+ * get_y_position
+ *   DESCRIPTION: gets the current y position on the screen, helper for updating the cursor
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
+int get_y_position() {
+    return screen_y;
 }
 

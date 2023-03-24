@@ -43,15 +43,17 @@ int terminal_read(int fd, unsigned char * buf, int n) {
         return -1; 
     }
     // validate fd 
-    if (fd < 0) {
+    if (fd < 0) { // for testing just use 1 for fd
         return -1;
     }
     // validate input, at most can read all of the keyboard buffer
     if(n > KEYBOARD_BUF_SIZE) { 
         n = KEYBOARD_BUF_SIZE; 
     }
-
-    for(i = 0; i < n; i++) {
+    
+    // need to check for \0 to see if the buffer is empty 
+    
+    for(i = 0; i < n; i++) { // \n or \0
         buf[i] = keyboard_buf[i]; 
     }
 
@@ -73,12 +75,9 @@ int terminal_write(int fd, unsigned char * buf, int n) {
         return -1;
     }
 
-    if(n > SCREEN_SIZE) {
+    if(buf == 0) {
         return -1;
     }
-    // if(n > SCREEN_SIZE) {
-    //     n = SCREEN_SIZE;
-    // }
 
     for(i = 0; i < n; i ++) {
         putc_new(buf[i], 0);
@@ -99,4 +98,5 @@ int terminal_close(int fd) {
 
     return 0;
 }
+
 

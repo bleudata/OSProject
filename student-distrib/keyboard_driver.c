@@ -86,6 +86,7 @@ void keyboard_irq_handler() {
         }
         if (ctrl_pressed && code == 0x26) { // 0x26 is the scan code for L/l
             clear_reset_cursor();
+            update_cursor(0,0); // move cursor back to top left of the screen
         }
         else {
             echo = scancodes[code][val]; // print char if key was valid
@@ -93,6 +94,7 @@ void keyboard_irq_handler() {
                 //putc(echo);
                 if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
                     putc_new(echo, screen_buf);
+                    update_cursor(get_x_position(), get_y_position()); 
                 }
             }
         }
@@ -105,6 +107,7 @@ void keyboard_irq_handler() {
         for(i = 0; i < 4; i++) {
             if((add_to_keyboard_buffer(' ')) && (buf_position <= BUF_LINE_TWO_ADDR)) {
                 putc_new(' ', screen_buf);
+                update_cursor(get_x_position(), get_y_position());
             }
             else {
                 break;
@@ -159,6 +162,7 @@ void keyboard_irq_handler() {
     else if (code == 0x0e) {
         if(remove_from_keyboard_buffer()){
             unput_c();
+            update_cursor(get_x_position(), get_y_position());
         }
     }
 
