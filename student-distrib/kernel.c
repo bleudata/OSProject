@@ -37,6 +37,8 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Set MBI to the address of the Multiboot information structure. */
     mbi = (multiboot_info_t *) addr;
+    module_t* file_sys_ptr = (module_t*)(mbi->mods_addr);  // get the address of filesys module struct and cast it to a module struct ptr
+    uint32_t* file_sys_start = (uint32_t*)(file_sys_ptr->mod_start);  // get the filesystem start address and cast it to uint32_t ptr
 
     /* Print out the flags. */
     printf("flags = 0x%#x\n", (unsigned)mbi->flags);
@@ -147,6 +149,9 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("done with pic init");
 
     init_paging();
+
+    //initialize file_system global variables
+    file_init(file_sys_start);
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

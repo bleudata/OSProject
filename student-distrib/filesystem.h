@@ -3,15 +3,17 @@
 
 #include "lib.h"
 
-#define FILENAME_LENGTH 4
+#define FILENAME_LENGTH 32
 
+//64 bytes size
 typedef struct __attribute__ ((packed)){
     int8_t filename[FILENAME_LENGTH];
     int32_t filetype;
     int32_t inode_num;
-    int8_t reserved[24]
+    int8_t reserved[24];
 } d_entry;
 
+//4KB size
 typedef struct __attribute__ ((packed)){
     int32_t dir_count;
     int32_t inode_count;
@@ -20,11 +22,13 @@ typedef struct __attribute__ ((packed)){
     d_entry dir_entries[63];
 }boot_block_struct;
 
+//4KB size
 typedef struct __attribute__ ((packed)){
     int32_t length;
     int32_t data_block_num[1023];
 }inode_block_struct;
 
+//4KB size
 typedef union{
     boot_block_struct boot_type;
     inode_block_struct inode_type;
