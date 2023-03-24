@@ -27,8 +27,8 @@ int8_t *strrev(int8_t* s);
 uint32_t strlen(const int8_t* s);
 void clear(void);
 void clear_reset_cursor(void);
-void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
-void update_cursor(int x, int y);
+// void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
+// void update_cursor(int x, int y);
 
 void* memset(void* s, int32_t c, uint32_t n);
 void* memset_word(void* s, int32_t c, uint32_t n);

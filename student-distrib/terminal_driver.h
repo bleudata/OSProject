@@ -8,6 +8,8 @@ extern int terminal_read(int fd, unsigned char * buf, int n);
 extern int terminal_write(int fd, unsigned char * buf, int n);
 extern int terminal_close(int fd); // assuming don't need other params?
 
+void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
+void update_cursor(int x, int y);
 
 
 #endif /*TERMINAL_DRIVER_H*/

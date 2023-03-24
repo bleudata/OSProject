@@ -7,6 +7,7 @@
 #include "i8259.h"
 #include "tests.h"
 #include "keyboard_driver.h"
+#include "terminal_driver.h"
 
 /*Variables that keep track of CapsLock, Shift, Ctrl*/
 unsigned char capslock_on = 0x0;
