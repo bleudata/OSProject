@@ -86,6 +86,7 @@ void keyboard_irq_handler() {
         }
         if (ctrl_pressed && code == 0x26) { // 0x26 is the scan code for L/l
             clear_reset_cursor();
+            purge_buffer();
             update_cursor(0,0); // move cursor back to top left of the screen
         }
         else {
