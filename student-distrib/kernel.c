@@ -12,6 +12,7 @@
 #include "idt_asm.h"
 #include "tests.h"
 #include "paging.h"
+#include "filesystem.h"
 
 
 #define RUN_TESTS
@@ -151,7 +152,7 @@ void entry(unsigned long magic, unsigned long addr) {
     init_paging();
 
     //initialize file_system global variables
-    file_init(file_sys_start);
+    filesys_init(file_sys_start);
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
@@ -171,15 +172,21 @@ void entry(unsigned long magic, unsigned long addr) {
     
     printf("Enabling Interrupts\n");
     sti();
-
+    // if(file_sys_start == boot_block){
+    //     printf("sys_start same as bootblock");
+    // }
+    // if((file_sys_start + 4096) == inode_array){
+    //     printf("sys_start+4096 same as inode_array");
+    // }
 #ifdef RUN_TESTS
     clear_reset_cursor(); // clear screen and reset cursor
     /* Run tests */
     //launch_tests(IDT_TEST);
-    //launch_tests(PAGE_ACCESS_TEST);
+    launch_tests(PAGE_ACCESS_TEST);
     //launch_tests(PAGE_FAULT_TEST);
     //launch_tests(DIVIDE_ZERO_TEST);
-    launch_tests(MULT_EXCEPTIONS_TEST);
+    //launch_tests(MULT_EXCEPTIONS_TEST);
+    launch_tests(FILE_READ_TEST);
 #endif
     /* Execute the first program ("shell") ... */
 

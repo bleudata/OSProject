@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "filesystem.h"
 
 #define PASS 1
 #define FAIL 0
@@ -171,6 +172,17 @@ int invalid_opcode_test(){
 
 
 /* Checkpoint 2 tests */
+int file_read_test(){
+	TEST_HEADER;
+	d_entry fish_dentry;
+	file_open((uint8_t*)"frame0.txt", &fish_dentry);
+	uint32_t file_length = get_file_length(fish_dentry.inode_num);
+	uint8_t buf[file_length];
+	file_read(fish_dentry.inode_num, buf, file_length);
+	printf("%s", buf);
+
+	return PASS;
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -201,6 +213,9 @@ void launch_tests(test_t test_num){
 		// divide_zero_test();
 		// bound_error_test();
 		// invalid_opcode_test();
+		break;
+	case FILE_READ_TEST:
+		TEST_OUTPUT("file_read_test", file_read_test());
 		break;
 	default:
 		printf("bad test number\n");

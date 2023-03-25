@@ -2,17 +2,17 @@
 
 #define BLOCK_SIZE 4096
 
-file_sys_block* boot_block;
-file_sys_block* inode_array;
-file_sys_block* data_array;
+boot_b_struct* boot_block;
+inode_struct* inode_array;
+data_struct* data_array;
 uint32_t file_counter;
 
 //initialize the global variables boot_block, inode_array, data_array
 // if there is memory issues, it is probably because of this :)
-void file_init(uint32_t* fileimg_address){
-    boot_block = (file_sys_block*)fileimg_address;
-    inode_array = (file_sys_block*)(fileimg_address) + 1;
-    data_array = (file_sys_block*)(fileimg_address) + 1 + boot_block->boot_type.inode_count;
+void filesys_init(uint32_t* fileimg_address){
+    boot_block = (boot_b_struct*)fileimg_address;
+    inode_array = (inode_struct*)(fileimg_address) + 1;
+    data_array = (data_struct*)(fileimg_address) + 1 + boot_block->inode_count;
     file_counter = 0;
 }
 
@@ -24,11 +24,11 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
         return -1;
     }
 
-    int num_dir_entries = boot_block->boot_type.dir_count;
+    int num_dir_entries = boot_block->dir_count;
     uint32_t str_length = strlen((int8_t*)fname);
     int i;
     for(i = 0; i<num_dir_entries ; i++){
-        if(strncmp((int8_t*)fname, boot_block->boot_type.dir_entries[i].filename, str_length) == 0){ 
+        if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, str_length) == 0){ 
             //filename matches
             return read_dentry_by_index(i, dentry); 
         }
@@ -41,7 +41,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
 int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
     
     //index out of bounds check, dentry null check
-    int num_dir_entries = boot_block->boot_type.dir_count;
+    int num_dir_entries = boot_block->dir_count;
     if(index < 0 || index > num_dir_entries-1){ 
         return -1;
     }
@@ -50,8 +50,8 @@ int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
     }
     
     //copy dentry info from bootblock to the caller's dentry struct
-    int str_length = strlen(boot_block->boot_type.dir_entries[index].filename);
-    memcpy(dentry, &(boot_block->boot_type.dir_entries[index]), str_length);
+    int str_length = strlen(boot_block->dir_entries[index].filename);
+    memcpy(dentry, &(boot_block->dir_entries[index]), str_length);
 
     return 0;
 }
@@ -87,9 +87,9 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
     }
     */
-    inode_block_struct cur_inode = inode_array[inode];
-    int file_remainder = cur_inode.length - offset;
-    unsigned int data_block_count = boot_block->boot_type.data_count;
+    inode_struct* cur_inode = inode_array+inode;
+    int file_remainder = cur_inode->length - offset;
+    unsigned int data_block_count = boot_block->data_count;
 
     int bytes_left;
     if(file_remainder < length){
@@ -105,7 +105,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     unsigned int bytes_read = 0;
     int i, block_number;
     for(i = 0; i < bytes_left ; i++){
-        block_number = cur_inode.data_block_num[block_index];
+        block_number = cur_inode->data_block_num[block_index];
         if(block_number<0 || block_number >= data_block_count){
             return -1;
         }
@@ -204,9 +204,9 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
         return -1;
     }
     //copy filename to buffer
-    memcpy(buf, boot_block->boot_type.dir_entries[file_counter].filename, 32);
+    memcpy(buf, boot_block->dir_entries[file_counter].filename, 32);
     file_counter +=1;
-    int num_dir_entries = boot_block->boot_type.dir_count;
+    int num_dir_entries = boot_block->dir_count;
     if(file_counter == num_dir_entries){
         file_counter = 0;
     }
@@ -220,6 +220,10 @@ int32_t dir_write(int32_t fd, void* buf, int32_t nbytes){
     return -1;
 }
 
+//inode and block number start at zero right???
+uint32_t get_file_length(int32_t inode_num){
+    return inode_array[inode_num].length;
+}
 
 //fish frame 0
 //fish frame 1
