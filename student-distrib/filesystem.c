@@ -29,10 +29,9 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
         if(strncmp(fname, boot_block->boot_type.dir_entries[i].filename, str_length) == 0){ 
             //filename matches
             return read_dentry_by_index(i, dentry); 
-            break;
         }
     }
-    return 0;
+    return -1;
 }
 
 //dentry = &(boot_block->boot_type.dir_entries[index]); WRONG!
@@ -40,7 +39,8 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
 int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
     
     //index out of bounds check, dentry null check
-    if(index < 0 || index > 62){
+    int num_dir_entries = boot_block->boot_type.dir_count;
+    if(index < 0 || index > num_dir_entries-1){ 
         return -1;
     }
     if(dentry == NULL){
@@ -58,6 +58,7 @@ int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
 //read data from file's data blocks and put them into the buffer
 // offset: number of bytes to skip
 // length: number of bytes to read
+// return number of bytes read
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
     /*
     inode_block_struct cur_inode = inode_array[inode];
@@ -86,6 +87,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     */
     inode_block_struct cur_inode = inode_array[inode];
     int file_remainder = cur_inode.length - offset;
+    unsigned int data_block_count = boot_block->boot_type.data_count;
 
     int bytes_left;
     if(file_remainder < length){
@@ -98,10 +100,16 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     unsigned int block_offset = offset % BLOCK_SIZE; //- num_blocks_skip*BLOCK_SIZE
     unsigned int block_remainder = BLOCK_SIZE - start_block_offset;
 
-    int i;
+    unsigned int bytes_read = 0;
+    int i, block_number;
     for(i = 0; i < bytes_left ; i++){
-        
+        block_number = cur_inode.data_block_num[block_index];
+        if(block_number<0 || block_number >= data_block_count){
+            return -1;
+        }
+
         memcpy(buf, data_array[block_index].data + block_offset, 1);
+        bytes_read += 1;
         buf += 1;
         block_remainder -=1;
         if(block_remainder == 0){
@@ -110,23 +118,54 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
         }
 
     }
-
+    return bytes_read;
 }
 
-int32_t f_open(const uint8_t* filename);
+int32_t f_open(const uint8_t* filename, d_entry * dentry){
+    //d_entry * dentry;
+    return read_dentry_by_name(filename, dentry);
+}
+
 int32_t f_close(int32_t fd){
     return 0;
 }
-int32_t f_read(int32_t fd, void* buf, int32_t nbytes);
+
+//reads one file
+// nbytes: bytes to read
+//return num of bytes read
+int32_t f_read(int32_t fd, void* buf, int32_t nbytes){
+    //sanity check
+
+    return read_data(fd, 0 , buf , nbytes); //fd -> inode num for cp2
+}
+
 int32_t f_write(int32_t fd, void* buf, int32_t nbytes){
     return -1;
 }
 
-int32_t d_open(const uint8_t* filename);
+int32_t d_open(const uint8_t* filename, d_entry* dentry){
+    return read_dentry_by_index(0, dentry);
+}
+
 int32_t d_close(int32_t fd){
     return 0;
 }
-int32_t d_read(int32_t fd, void* buf, int32_t nbytes);
+
+// print/read directory "." and the rest of the files
+// read one filename, also keep track of which file number you are on
+int32_t d_read(int32_t fd, void* buf, int32_t nbytes){
+    // buf = (char*)buf;
+    // "hello18sth24" 
+    // buf[4] = 0x06;
+}
+
 int32_t d_write(int32_t fd, void* buf, int32_t nbytes){
     return -1;
 }
+
+
+//fish frame 0
+//fish frame 1
+// read non text 
+// read largefilename.txt should not work
+// read largefilename.tx should work
