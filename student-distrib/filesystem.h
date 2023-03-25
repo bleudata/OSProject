@@ -32,6 +32,7 @@ typedef struct __attribute__ ((packed)){
 typedef union{
     boot_block_struct boot_type;
     inode_block_struct inode_type;
+    uint8_t data[4096];
 }file_sys_block;
 
 
@@ -41,14 +42,15 @@ void filesys_init(file_sys_block* fileimg_address);
 
 
 //fopen (arguments are same as system call) (design choice)
-//fclose
-//fwrite
-//fread
+int32_t f_open(const uint8_t* filename);
+int32_t f_close(int32_t fd);
+int32_t f_read(int32_t fd, void* buf, int32_t nbytes);
+int32_t f_write(int32_t fd, void* buf, int32_t nbytes);
 
-//d_open
-//d_close
-//dwrite
-//dread
+int32_t d_open(const uint8_t* filename);
+int32_t d_close(int32_t fd);
+int32_t d_read(int32_t fd, void* buf, int32_t nbytes);
+int32_t d_write(int32_t fd, void* buf, int32_t nbytes);
 
 //read_dentry_by_name
 int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry);

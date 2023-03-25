@@ -18,7 +18,7 @@ void file_init(uint32_t* fileimg_address){
 int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     //calls read_dentry_by_index
     //null check for name and dentry
-    if(fname == nullptr || dentry == nullptr){
+    if(fname == NULL || dentry == NULL){
         return -1;
     }
 
@@ -43,7 +43,7 @@ int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
     if(index < 0 || index > 62){
         return -1;
     }
-    if(dentry == nullptr){
+    if(dentry == NULL){
         return -1;
     }
     
@@ -59,16 +59,74 @@ int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
 // offset: number of bytes to skip
 // length: number of bytes to read
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
-    file_sys_block cur_inode = inode_array[inode];
+    /*
+    inode_block_struct cur_inode = inode_array[inode];
     unsigned int num_blocks_skip = offset / BLOCK_SIZE;
-    unsigned int start_block_offset = offset - num_blocks_skip*BLOCK_SIZE;
+    unsigned int start_block_offset = offset % BLOCK_SIZE; //- num_blocks_skip*BLOCK_SIZE
     unsigned int start_block_remainder = BLOCK_SIZE - start_block_offset;
 
+    int file_remainder = cur_inode.length - offset;
+    int bytes_left;
+    if(file_remainder < length){
+        bytes_left = file_remainder;
+    }else{
+        bytes_left = length;
+    }
+    
+    //first block, including first and last edge case
+
+    //middle blocks
+
+    //last block 
     int num_blocks = (cur_inode.length/BLOCK_SIZE) + ;
     for(i = num_blocks_skip; i < num_blocks; i++ ){
         //read from each block
 
     }
-    
+    */
+    inode_block_struct cur_inode = inode_array[inode];
+    int file_remainder = cur_inode.length - offset;
 
+    int bytes_left;
+    if(file_remainder < length){
+        bytes_left = file_remainder;
+    }else{
+        bytes_left = length;
+    }
+
+    unsigned int block_index = offset / BLOCK_SIZE; //number of blocks to skip(start block index)
+    unsigned int block_offset = offset % BLOCK_SIZE; //- num_blocks_skip*BLOCK_SIZE
+    unsigned int block_remainder = BLOCK_SIZE - start_block_offset;
+
+    int i;
+    for(i = 0; i < bytes_left ; i++){
+        
+        memcpy(buf, data_array[block_index].data + block_offset, 1);
+        buf += 1;
+        block_remainder -=1;
+        if(block_remainder == 0){
+            block_remainder = BLOCK_SIZE;
+            block_index +=1;
+        }
+
+    }
+
+}
+
+int32_t f_open(const uint8_t* filename);
+int32_t f_close(int32_t fd){
+    return 0;
+}
+int32_t f_read(int32_t fd, void* buf, int32_t nbytes);
+int32_t f_write(int32_t fd, void* buf, int32_t nbytes){
+    return -1;
+}
+
+int32_t d_open(const uint8_t* filename);
+int32_t d_close(int32_t fd){
+    return 0;
+}
+int32_t d_read(int32_t fd, void* buf, int32_t nbytes);
+int32_t d_write(int32_t fd, void* buf, int32_t nbytes){
+    return -1;
 }
