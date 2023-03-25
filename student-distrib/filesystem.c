@@ -5,6 +5,7 @@
 file_sys_block* boot_block;
 file_sys_block* inode_array;
 file_sys_block* data_array;
+uint32_t file_counter;
 
 //initialize the global variables boot_block, inode_array, data_array
 // if there is memory issues, it is probably because of this :)
@@ -12,6 +13,7 @@ void file_init(uint32_t* fileimg_address){
     boot_block = (file_sys_block*)fileimg_address;
     inode_array = (file_sys_block*)(fileimg_address) + 1;
     data_array = (file_sys_block*)(fileimg_address) + 1 + boot_block->boot_type.inode_count;
+    file_counter = 0;
 }
 
 //goes through dir_entries array in bootblock and finds the dir entry with matching name
@@ -23,10 +25,10 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     }
 
     int num_dir_entries = boot_block->boot_type.dir_count;
-    uint32_t str_length = strlen(fname);
+    uint32_t str_length = strlen((int8_t*)fname);
     int i;
     for(i = 0; i<num_dir_entries ; i++){
-        if(strncmp(fname, boot_block->boot_type.dir_entries[i].filename, str_length) == 0){ 
+        if(strncmp((int8_t*)fname, boot_block->boot_type.dir_entries[i].filename, str_length) == 0){ 
             //filename matches
             return read_dentry_by_index(i, dentry); 
         }
@@ -98,7 +100,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
     unsigned int block_index = offset / BLOCK_SIZE; //number of blocks to skip(start block index)
     unsigned int block_offset = offset % BLOCK_SIZE; //- num_blocks_skip*BLOCK_SIZE
-    unsigned int block_remainder = BLOCK_SIZE - start_block_offset;
+    unsigned int block_remainder = BLOCK_SIZE - block_offset;
 
     unsigned int bytes_read = 0;
     int i, block_number;
@@ -121,45 +123,100 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     return bytes_read;
 }
 
-int32_t f_open(const uint8_t* filename, d_entry * dentry){
+/*
+ * file_open
+ *   DESCRIPTION: initializes caller's dentry struct
+ *   INPUTS: filename, dentry struct ptr
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0:success, -1:fail
+ */
+int32_t file_open(const uint8_t* filename, d_entry * dentry){
     //d_entry * dentry;
     return read_dentry_by_name(filename, dentry);
 }
 
-int32_t f_close(int32_t fd){
+/*
+ * file_close
+ *   DESCRIPTION: does nothing
+ *   INPUTS: file descriptor
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0:success
+ */
+int32_t file_close(int32_t fd){
     return 0;
 }
 
-//reads one file
-// nbytes: bytes to read
-//return num of bytes read
-int32_t f_read(int32_t fd, void* buf, int32_t nbytes){
-    //sanity check
 
-    return read_data(fd, 0 , buf , nbytes); //fd -> inode num for cp2
+/*
+ * file_read
+ *   DESCRIPTION: read nybte bytes of one file into input buffer
+ *   INPUTS: fd: file descriptor, buf: input buffer, nbytes: no. bytes to read
+ *   OUTPUTS: none
+ *   RETURN VALUE: number of bytes read
+ */
+int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
+
+    if(buf == NULL){
+        return -1;
+    }
+
+    return read_data(fd, 0 , buf , nbytes); //fd -> inode num only for cp2
 }
 
-int32_t f_write(int32_t fd, void* buf, int32_t nbytes){
+/*
+ * file_write
+ *   DESCRIPTION: does nothing
+ *   INPUTS: fd: file descriptor, buf: input buffer, nbytes: no. bytes to write
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0:success, -1:fail
+ */
+int32_t file_write(int32_t fd, void* buf, int32_t nbytes){
     return -1;
 }
 
-int32_t d_open(const uint8_t* filename, d_entry* dentry){
+/*
+ * dir_open
+ *   DESCRIPTION: initializes caller's dentry struct with dir info
+ *   INPUTS: filename, dentry struct ptr
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0:success, -1:fail
+ */
+int32_t dir_open(const uint8_t* filename, d_entry* dentry){
     return read_dentry_by_index(0, dentry);
 }
 
-int32_t d_close(int32_t fd){
+int32_t dir_close(int32_t fd){
     return 0;
 }
 
 // print/read directory "." and the rest of the files
 // read one filename, also keep track of which file number you are on
-int32_t d_read(int32_t fd, void* buf, int32_t nbytes){
-    // buf = (char*)buf;
-    // "hello18sth24" 
-    // buf[4] = 0x06;
+/*
+ * dir_read
+ *   DESCRIPTION: reads one filename at a time, updates file counter
+ *   INPUTS: fd:file descriptor??? , buf: output buffer, nbytes??? 
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0:success, -1:fail ???
+ */
+int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
+    //fd -> inode num only for cp2
+    if(buf == NULL){
+        return -1;
+    }
+    //copy filename to buffer
+    memcpy(buf, boot_block->boot_type.dir_entries[file_counter].filename, 32);
+    file_counter +=1;
+    int num_dir_entries = boot_block->boot_type.dir_count;
+    if(file_counter == num_dir_entries){
+        file_counter = 0;
+    }
+    return 0;
 }
+// buf = (char*)buf;
+// "hello18(separator)sth24" 
+// buf[4] = 0x06;
 
-int32_t d_write(int32_t fd, void* buf, int32_t nbytes){
+int32_t dir_write(int32_t fd, void* buf, int32_t nbytes){
     return -1;
 }
 

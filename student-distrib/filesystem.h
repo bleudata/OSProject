@@ -7,7 +7,7 @@
 
 //64 bytes size
 typedef struct __attribute__ ((packed)){
-    int8_t filename[FILENAME_LENGTH];
+    int8_t filename[FILENAME_LENGTH]; // ???
     int32_t filetype;
     int32_t inode_num;
     int8_t reserved[24];
@@ -42,15 +42,15 @@ void filesys_init(file_sys_block* fileimg_address);
 
 
 //fopen (arguments are same as system call) (design choice)
-int32_t f_open(const uint8_t* filename);
-int32_t f_close(int32_t fd);
-int32_t f_read(int32_t fd, void* buf, int32_t nbytes);
-int32_t f_write(int32_t fd, void* buf, int32_t nbytes);
+int32_t file_open(const uint8_t* filename,  d_entry* dentry);
+int32_t file_close(int32_t fd);
+int32_t file_read(int32_t fd, void* buf, int32_t nbytes);
+int32_t file_write(int32_t fd, void* buf, int32_t nbytes);
 
-int32_t d_open(const uint8_t* filename);
-int32_t d_close(int32_t fd);
-int32_t d_read(int32_t fd, void* buf, int32_t nbytes);
-int32_t d_write(int32_t fd, void* buf, int32_t nbytes);
+int32_t dir_open(const uint8_t* filename, d_entry* dentry);
+int32_t dir_close(int32_t fd);
+int32_t dir_read(int32_t fd, void* buf, int32_t nbytes);
+int32_t dir_write(int32_t fd, void* buf, int32_t nbytes);
 
 //read_dentry_by_name
 int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry);
