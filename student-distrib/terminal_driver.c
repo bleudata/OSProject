@@ -13,14 +13,13 @@
 
 /*
  * terminal_open
- *   DESCRIPTION: TO DO
- *   INPUTS: none
+ *   DESCRIPTION: Doesn't actually do anything, just need to match system call params
+ *   INPUTS: filename -- name of file to open
  *   OUTPUTS: none
  *   RETURN VALUE: 0
  *   SIDE EFFECTS:  none
  */
-int terminal_open() {
- 
+int32_t terminal_open(const uint8_t* filename) {
     return 0;
 }
 /*
@@ -32,9 +31,9 @@ int terminal_open() {
  *   RETURN VALUE: number of bytes read or -1 for FAIL
  *   SIDE EFFECTS: 
  */
-int terminal_read(int fd, unsigned char * buf, int n) {
+int32_t terminal_read(int fd, unsigned char * buf, int n) {
     // Return data from one line that ended in \n or a full buffer
-    int i, ret; // loop counter and index, also counts the number of characters read
+    int32_t i, ret; // loop counter and index, also counts the number of characters read
     unsigned char * keyboard_buf;
     keyboard_buf = get_keyboard_buffer();
     unsigned char current;
@@ -60,18 +59,21 @@ int terminal_read(int fd, unsigned char * buf, int n) {
     i = 0;
     ret = 0;
 
-    while((i < n) && (keyboard_buf[i] != '\0')) {
+    while((i < n) /*&& (keyboard_buf[i] != '\0')*/) {
         current = keyboard_buf[i];
-        if (current == '\n' && !get_enter_flag()) {
-            i++;
-        }
-        else if (current == '\n' && get_enter_flag()) {
-            clear_enter_flag();
-            break;
-        }
+        // if (current == '\n' && !get_enter_flag()) {
+        //     i++;
+        // }
+        // else if (current == '\n' && get_enter_flag()) {
+        //     clear_enter_flag();
+        //     break;
+        // }
         buf[i] = current; 
         ret++;
         i++;
+        if(current == '\n') {
+            break;
+        }
     }
   
     return ret;
@@ -84,7 +86,7 @@ int terminal_read(int fd, unsigned char * buf, int n) {
  *   RETURN VALUE: number or bytes written if successful, else -1; 
  *   SIDE EFFECTS: 
  */
-int terminal_write(int fd, unsigned char * buf, int n) {
+int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
     int i;
 
     // validate fd 
@@ -107,13 +109,13 @@ int terminal_write(int fd, unsigned char * buf, int n) {
 }
 /*
  * terminal_close
- *   DESCRIPTION: Closes the terminal 
- *   INPUTS: none
+ *   DESCRIPTION: Closes the terminal, 
+ *   INPUTS: fd - file descriptor just to match params of system call write function
  *   OUTPUTS: none
  *   RETURN VALUE: 0
  *   SIDE EFFECTS: 
  */
-int terminal_close() {
+int32_t terminal_close(int32_t fd) {
     return 0;
 }
 

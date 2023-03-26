@@ -184,7 +184,7 @@ int invalid_opcode_test(){
 int terminal_open_test() {
 	TEST_HEADER;
 	int result; 
-	result = terminal_open();
+	result = terminal_open(0); // 0 is dummy value since param doesn't actually get used
 	return result ? PASS: FAIL;
 }
 
@@ -214,7 +214,7 @@ int terminal_read_test() {
 	int result;
 	unsigned char* buf;
 	unsigned char allocated_buf[128];
-	int i, k;
+	int i;
 
 	/* Check invalid inputs */
 	result = terminal_read(0, buf, 128);
@@ -245,9 +245,9 @@ int terminal_read_test() {
 	}
 	unsigned char* keyboard = get_keyboard_buffer();
 	for (i = 0; i < 128; i++, keyboard++) {
-		if (*keyboard == '\n') {
-			keyboard++;
-		}
+		// if (*keyboard == '\n') {
+		// 	keyboard++;
+		// }
 		if (*keyboard != allocated_buf[i]) {
 			printf("Failed to copy buffer correctly");
 			return FAIL;
