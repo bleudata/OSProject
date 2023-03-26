@@ -17,6 +17,7 @@
 #define RTC_REG_C_DISABLE   0x8C
 
 #define RTC_BUFF_SIZE       4
+#define RTC_BYTE_SHIFT      8
 
 #define RTC_HZ              1024
 #define RTC_HZ_MIN          2
@@ -33,6 +34,6 @@ extern int rtc_read();
 
 extern int rtc_write(uint8_t *buffer);
 
-extern int rtc_get_uHz();
+extern uint32_t rtc_get_uHz();
 
 #endif /*RTC_H*/
