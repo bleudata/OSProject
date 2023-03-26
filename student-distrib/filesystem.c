@@ -24,6 +24,11 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
         return -1;
     }
 
+    if(strlen(fname) > 32){
+        printf("string over 32 chars \n");
+        return -1;
+    }
+
     int num_dir_entries = boot_block->dir_count;
     uint32_t str_length = strlen((int8_t*)fname);
     int i;
@@ -114,6 +119,10 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
  */
 int32_t file_open(const uint8_t* filename, d_entry * dentry){
     //d_entry * dentry;
+    if(strlen(filename) > 32){
+        printf("string over 32 chars \n");
+        return -1;
+    }
     return read_dentry_by_name(filename, dentry);
 }
 
@@ -190,14 +199,20 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
     if(file_counter >= num_dir_entries){
         return 0;
     }
+    int num_bytes_read;
+    if(nbytes < 32){
+        num_bytes_read = nbytes;
+    }else{
+        num_bytes_read = 32;
+    }
     //copy filename to buffer (min of nbytes and 32)
-    memcpy(buf, boot_block->dir_entries[file_counter].filename, nbytes);
+    memcpy(buf, boot_block->dir_entries[file_counter].filename, num_bytes_read);
     file_counter +=1;
     
     // if(file_counter == num_dir_entries){
     //     file_counter = 0;
     // } resetting shouldnt an automatic thing, why??
-    return 0;
+    return num_bytes_read;
 }
 
 

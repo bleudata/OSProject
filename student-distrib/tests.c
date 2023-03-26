@@ -172,7 +172,7 @@ int invalid_opcode_test(){
 
 
 /* Checkpoint 2 tests */
-int file_read_test(){
+int text_file_read(){
 	TEST_HEADER;
 	d_entry fish_dentry;
 	file_open((uint8_t*)"frame0.txt", &fish_dentry);
@@ -187,6 +187,103 @@ int file_read_test(){
 	}
 	return PASS;
 }
+
+int non_text_file_read(){
+	TEST_HEADER;
+
+	d_entry dentry;
+	file_open((uint8_t*)"grep", &dentry);
+	uint32_t file_length = get_file_length(dentry.inode_num);
+	uint8_t buf[file_length];
+	int32_t bytes_read = file_read(dentry.inode_num, buf, file_length);
+	printf("file read call done, num_bytes_read: %d \n", bytes_read);
+	
+	int i;
+	for(i = 0; i< file_length ; i++){
+		printf("%c", buf[i]);
+	}
+	return PASS;
+}
+
+int length_33_filename_test(){
+	TEST_HEADER;
+
+	d_entry dentry;
+	if(-1 == file_open((uint8_t*)"verylargetextwithverylongname.txt", &dentry)){
+		return PASS;
+	}
+	return FAIL;
+
+	uint32_t file_length = get_file_length(dentry.inode_num);
+	uint8_t buf[file_length];
+	int32_t bytes_read = file_read(dentry.inode_num, buf, file_length);
+	printf("file read call done, num_bytes_read: %d \n", bytes_read);
+	
+	int i;
+	for(i = 0; i< file_length ; i++){
+		printf("%c", buf[i]);
+	}
+	return PASS;
+}
+
+int length_32_filename_test(){
+	TEST_HEADER;
+
+	d_entry dentry;
+	if(0 == file_open((uint8_t*)"verylargetextwithverylongname.tx", &dentry)){
+		
+		return PASS;
+	}
+	return FAIL;
+	
+	// uint32_t file_length = get_file_length(dentry.inode_num);
+	// uint8_t buf[file_length];
+	// int32_t bytes_read = file_read(dentry.inode_num, buf, file_length);
+	// printf("file read call done, num_bytes_read: %d \n", bytes_read);
+	
+	// int i;
+	// for(i = 0; i< file_length ; i++){
+	// 	printf("%c", buf[i]);
+	// }
+	// return PASS;
+}
+
+int dir_read_test(){
+	TEST_HEADER;
+	
+	uint8_t buf[32];
+	while(0 != dir_read(0, buf, 32)){
+		int i;
+		for(i = 0; i<32; i++){
+			if(buf[i] != 0){
+				printf("%c", buf[i]);
+			}
+			// printf("%c", buf[i]);
+			buf[i] = 0;
+		}
+		printf(" \n");
+	}
+
+	return PASS;
+}
+
+int read_data_test(){
+	TEST_HEADER;
+	d_entry fish_dentry;
+	file_open((uint8_t*)"frame0.txt", &fish_dentry);
+
+	uint32_t file_length = get_file_length(fish_dentry.inode_num);
+	uint8_t buf[file_length];
+	int32_t bytes_read = read_data(fish_dentry.inode_num, 16,buf, 4);
+	printf("read data call done, num_bytes_read: %d \n", bytes_read);
+
+	int i;
+	for(i = 0; i< bytes_read ; i++){
+		printf("%c", buf[i]);
+	}
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -218,9 +315,31 @@ void launch_tests(test_t test_num){
 		// bound_error_test();
 		// invalid_opcode_test();
 		break;
-	case FILE_READ_TEST:
-		TEST_OUTPUT("file_read_test", file_read_test());
+	case TEXT_FILE_READ_TEST:
+		TEST_OUTPUT("text_file_read_test", text_file_read());
 		break;
+	
+	case NON_TEXT_FILE_READ_TEST:
+		TEST_OUTPUT("non_text_file_read_test", non_text_file_read());
+		break;
+	
+	case LENGTH_33_FILENAME_TEST:
+		TEST_OUTPUT("length_33_filename_test", length_33_filename_test());
+		break;
+	
+	case LENGTH_32_FILENAME_TEST:
+		TEST_OUTPUT("length_32_filename_test", length_32_filename_test());
+		break;
+	
+	case DIR_READ_TEST:
+		TEST_OUTPUT("dir_read_test", dir_read_test());
+		break;
+	
+	case READ_DATA_TEST:
+		TEST_OUTPUT("read_data_test", read_data_test());
+		break;
+	
+
 	default:
 		printf("bad test number\n");
 		break;
