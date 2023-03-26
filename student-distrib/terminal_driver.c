@@ -43,7 +43,7 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
         return -1; 
     }
     // validate fd 
-    if (fd < 0) { // for testing just use 1 for fd
+    if (fd != 0) { // for testing just use 1 for fd
         return -1;
     }
     if (n < 0) { // for testing just use 1 for fd
@@ -90,7 +90,7 @@ int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
     int i;
 
     // validate fd 
-    if (fd < 0) {
+    if (fd != 1) {
         return -1;
     }
     // check for null pointer

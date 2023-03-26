@@ -212,12 +212,11 @@ int terminal_close_test() {
 int terminal_read_test() {
 	TEST_HEADER;
 	int result;
-	unsigned char* buf;
 	unsigned char allocated_buf[128];
 	int i;
 
 	/* Check invalid inputs */
-	result = terminal_read(0, buf, 128);
+	result = terminal_read(0, NULL, 128);
 	if (result >= 0) {
 		printf("Didnt Check for Null Buf arg.");
 		return FAIL;
@@ -243,11 +242,9 @@ int terminal_read_test() {
 		printf("Failed to copy buffer correctly.");
 		return FAIL;
 	}
+	
 	unsigned char* keyboard = get_keyboard_buffer();
 	for (i = 0; i < 128; i++, keyboard++) {
-		// if (*keyboard == '\n') {
-		// 	keyboard++;
-		// }
 		if (*keyboard != allocated_buf[i]) {
 			printf("Failed to copy buffer correctly");
 			return FAIL;
@@ -275,14 +272,14 @@ int terminal_write_test() {
 		return FAIL;
 	}
 
-	result = terminal_write(0, allocated_buf, -1);
+	result = terminal_write(1, allocated_buf, -1);
 	if (result >= 0) {
 		printf("Didnt Check for Invalid Byte Number.");
 		return FAIL;
 	}
 
 	/* Should check If it actually writes to screen */
-	result = terminal_write(0, allocated_buf, 128); 
+	result = terminal_write(1, allocated_buf, 128); 
 	if (result < 0) {
 		return FAIL;
 	}
@@ -324,10 +321,10 @@ void launch_tests(test_t test_num){
 		// invalid_opcode_test();
 		break;
 	case TERMINAL_TEST:
-		// terminal_open_test();
-		// terminal_read_test();
-		// terminal_write_test();
-		// terminal_close_test();
+		terminal_open_test();
+		terminal_read_test();
+		terminal_write_test();
+		terminal_close_test();
 		break;
 	default:
 		printf("bad test number\n");
