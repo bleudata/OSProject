@@ -7,7 +7,7 @@
 
 //64 bytes size
 typedef struct __attribute__ ((packed)){
-    int8_t filename[FILENAME_LENGTH]; // ???
+    int8_t filename[FILENAME_LENGTH]; 
     int32_t filetype;
     int32_t inode_num;
     int8_t reserved[24];
@@ -17,7 +17,7 @@ typedef struct __attribute__ ((packed)){
 typedef struct __attribute__ ((packed)){
     int32_t dir_count;
     int32_t inode_count;
-    int32_t data_count;
+    int32_t data_block_count;
     int8_t reserved[52];
     d_entry dir_entries[63];
 }boot_b_struct;

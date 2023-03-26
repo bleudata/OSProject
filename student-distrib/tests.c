@@ -178,9 +178,13 @@ int file_read_test(){
 	file_open((uint8_t*)"frame0.txt", &fish_dentry);
 	uint32_t file_length = get_file_length(fish_dentry.inode_num);
 	uint8_t buf[file_length];
-	file_read(fish_dentry.inode_num, buf, file_length);
-	printf("%s", buf);
-
+	int32_t bytes_read = file_read(fish_dentry.inode_num, buf, file_length);
+	printf("file read call done, num_bytes_read: %d \n", bytes_read);
+	//printf("%s", buf);
+	int i;
+	for(i = 0; i< file_length ; i++){
+		printf("%c", buf[i]);
+	}
 	return PASS;
 }
 /* Checkpoint 3 tests */
