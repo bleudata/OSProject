@@ -6,7 +6,8 @@ typedef enum {
 	PAGE_FAULT_TEST,
     PAGE_ACCESS_TEST,
 	DIVIDE_ZERO_TEST,
-	MULT_EXCEPTIONS_TEST
+	MULT_EXCEPTIONS_TEST,
+	TERMINAL_TEST
 } test_t;
 
 // test launcher

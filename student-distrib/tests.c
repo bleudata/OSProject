@@ -256,72 +256,42 @@ int terminal_read_test() {
 	return PASS;
 }
 
-/* terminal_read_out_bounds_test
+/* terminal_write_test
  * 
  * try to read more 
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
  */
-int terminal_read_out_bounds_test() {
+int terminal_write_test() {
 	TEST_HEADER;
-	// int n = 130;
-	// int result;
-	// unsigned char test[15];
-	// result = terminal_read(0, test, n);
-	// return result;
-	return 0;
-}
-
-/* terminal_write_in_bounds_test
- * 
- * try to write 10, valid number, characters to the screen
- * Inputs: None
- * Outputs: PASS/FAIL
- * Side Effects: None
- */
-int terminal_write_in_bounds_test() {
-	TEST_HEADER;
-	int n = 10;
 	int result;
-	unsigned char test[] = {"hello this is a test"};
-	result = terminal_write(0, test, n);
-	return result;
+	unsigned char allocated_buf[128] = " terminal write test "; 
+
+	/* Check invalid inputs */
+	result = terminal_write(-1, allocated_buf, 128);
+	if (result >= 0) {
+		printf("Didnt Check for Invalid File Descriptor.");
+		return FAIL;
+	}
+
+	result = terminal_write(0, allocated_buf, -1);
+	if (result >= 0) {
+		printf("Didnt Check for Invalid Byte Number.");
+		return FAIL;
+	}
+
+	/* Should check If it actually writes to screen */
+	result = terminal_write(0, allocated_buf, 128); 
+	if (result < 0) {
+		return FAIL;
+	}
+
+	return PASS;
 }
 
-/* terminal_write_out_bounds_test
- * 
- * try to write more than 128 characters to the screen
- * Inputs: None
- * Outputs: PASS/FAIL
- * Side Effects: None
- */
-int terminal_write_out_bounds_test() {
-	TEST_HEADER;
-	int n = SCREEN_SIZE + 10; // want to be larger than the screen
-	int result;
-	unsigned char test[] = {"overflow overflow overflow overflow "};
-	result = terminal_write(0, test, n);
-	return result;
-}
 
-/* terminal_write_out_bounds_test
- * 
- * try to read then write to the screen
- * Inputs: None
- * Outputs: none
- * Side Effects: Prints to screen
- */
-void terminal_read_write_test() {
-	// TEST_HEADER;
-	// int n = 10; // want to be larger than the screen
-	// int result;
-	// unsigned char test[] = {"0123456789"};
-	// unsigned char user_array[] = {"xxxxxxxxxxxx"};
-	// result = terminal_write(0, test, n);
 
-	// return result;
-}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -352,6 +322,12 @@ void launch_tests(test_t test_num){
 		//  divide_zero_test();
 		// bound_error_test();
 		// invalid_opcode_test();
+		break;
+	case TERMINAL_TEST:
+		// terminal_open_test();
+		// terminal_read_test();
+		// terminal_write_test();
+		// terminal_close_test();
 		break;
 	default:
 		printf("bad test number\n");

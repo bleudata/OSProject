@@ -177,7 +177,8 @@ void entry(unsigned long magic, unsigned long addr) {
     //launch_tests(PAGE_ACCESS_TEST);
     //launch_tests(PAGE_FAULT_TEST);
     //launch_tests(DIVIDE_ZERO_TEST);
-    launch_tests(MULT_EXCEPTIONS_TEST);
+    // launch_tests(MULT_EXCEPTIONS_TEST);
+    launch_tests(TERMINAL_TEST);
 #endif
     /* Execute the first program ("shell") ... */
 
