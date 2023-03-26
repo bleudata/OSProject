@@ -50,6 +50,8 @@ int terminal_read(int fd, unsigned char * buf, int n) {
     if (n < 0) { // for testing just use 1 for fd
         return -1;
     }
+
+    // TODO: Change if this is actually an error
     // validate input, at most can read all of the keyboard buffer
     if(n > KEYBOARD_BUF_SIZE) { 
         n = KEYBOARD_BUF_SIZE; 
@@ -93,6 +95,8 @@ int terminal_write(int fd, unsigned char * buf, int n) {
     if(buf == 0) {
         return -1;
     }
+
+    // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
 
     for(i = 0; i < n; i ++) {
         putc_new(buf[i], 0);

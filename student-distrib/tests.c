@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "terminal_driver.h"
+#include "keyboard_driver.h"
 
 #define PASS 1
 #define FAIL 0
@@ -201,21 +202,58 @@ int terminal_close_test() {
 	return result ? PASS: FAIL;
 }
 
-/* terminal_read_in_bounds_test
+/* terminal_read_test
  * 
  * try to open terminal
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
  */
-int terminal_read_in_bounds_test() {
+int terminal_read_test() {
 	TEST_HEADER;
-	// int n = 10;
-	// int result;
-	// unsigned char test[15];
-	// result = terminal_read(0, test, n);
-	// return result;
-	return 0;
+	int result;
+	unsigned char* buf;
+	unsigned char allocated_buf[128];
+	int i, k;
+
+	/* Check invalid inputs */
+	result = terminal_read(0, buf, 128);
+	if (result >= 0) {
+		printf("Didnt Check for Null Buf arg.");
+		return FAIL;
+	}
+
+	result = terminal_read(-1, allocated_buf, 128);
+	if (result >= 0) {
+		printf("Didnt Check for Invlaid File Descriptor.");
+		return FAIL;
+	}
+
+	result = terminal_read(0, allocated_buf, -1);
+	if (result >= 0) {
+		printf("Didnt Check for Invlaid Byte Number.");
+		return FAIL;
+	}
+
+	/* Check If Buf is filled correctly */
+	// all we did was check if the buffers are the same without the enters
+	i = 0;
+	result = terminal_read(0, allocated_buf, 128);
+	if (result < 0) {
+		printf("Failed to copy buffer correctly.");
+		return FAIL;
+	}
+	unsigned char* keyboard = get_keyboard_buffer();
+	for (i = 0; i < 128; i++, keyboard++) {
+		if (*keyboard == '\n') {
+			keyboard++;
+		}
+		if (*keyboard != allocated_buf[i]) {
+			printf("Failed to copy buffer correctly");
+			return FAIL;
+		}
+	}
+	return PASS;
 }
 
 /* terminal_read_out_bounds_test
