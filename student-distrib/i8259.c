@@ -112,38 +112,15 @@ void send_eoi(uint32_t irq_num) {
 
 
 /*
- * rtc_irq_handler
- *   DESCRIPTION: calls the test_interrupts function from lib.c when an rtc interrupt occurs
+ * keyboard_init
+ *   DESCRIPTION: initializes the keyboard by enabling its irq on the PIC
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: none
- *   SIDE EFFECTS: prints various characters to the screen based on test_interrupts function
+ *   SIDE EFFECTS: enables keyboard irq on PIC
  */
-void rtc_irq_handler() {
-    int result;
-    test_interrupts();
-    outb(RTC_REG_C, RTC_REG_PORT); // select register c
-    result = inb(RTC_RW_PORT); // need to read from c register or the interrupt won't happen again
-    send_eoi(RTC_IRQ);
-}
-
-
-/*
- * rtc_init
- *   DESCRIPTION: initializes periodic rtc interrupts and enables rtc irq on the PIC
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: enables period rtc interrupts, enables rtc irq on PIC, 
- *                 temporarily disables nmi, but re-enabled at end of function
- */
-void rtc_init() {
-    outb(RTC_REG_B_DISABLE, RTC_REG_PORT); // set to register b and disable nmi
-    char prev = inb(RTC_RW_PORT); // get current value from register b
-    outb(RTC_REG_B_DISABLE, RTC_REG_PORT); // set to register b and disable nmi
-    outb(prev | 0x40, RTC_RW_PORT); // set bit 6 to 1 using 0x40 to enable periodic interrupts
-    enable_irq(RTC_IRQ);
-    nmi_enable();
+void keyboard_init() {
+    enable_irq(KEYBOARD_IRQ);
 }
 
 /*

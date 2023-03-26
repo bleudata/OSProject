@@ -6,6 +6,7 @@
 #include "x86_desc.h"
 #include "i8259.h"
 #include "tests.h"
+#include "rtc.h"
 #include "keyboard_driver.h"
 
 // array of strings to print for each vector 0-19 exception
@@ -151,7 +152,11 @@ void setup_idt() {
     }
     else if(vector == RTC_VECTOR) {
         //printf("entered rtc if statement");
-        rtc_irq_handler(); // this is from pic file
+        int rtc_ctr = 0;
+        while(rtc_ctr < rtc_get_uHz()){
+            rtc_irq_handler(); // this is from rtc file
+            rtc_ctr++;
+        }
     }
     else if(vector == SYSTEM_CALL_VECTOR) {
         generic_system_call_handler();
