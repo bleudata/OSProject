@@ -78,13 +78,13 @@ void keyboard_irq_handler() {
 
     if(code >= SCAN_CODE_START && code <= SCAN_CODE_END) { // check if key is invalid for print
         unsigned char val = 0;
-        if ((code >= 0x10 && code <= 0x19) || (code >= 0x1e && code <= 0x26) || (code >= 0x2c && code <= 0x32)) {
+        if ((code >= Q_PRESS && code <= P_PRESS) || (code >= A_PRESS && code <= L_PRESS) || (code >= Z_PRESS && code <= M_PRESS)) {
             val = shift_pressed ^ capslock_on; 
         }
         else {
             val = shift_pressed;
         }
-        if (ctrl_pressed && code == 0x26) { // 0x26 is the scan code for L/l
+        if (ctrl_pressed && code == L_PRESS) { // 0x26 is the scan code for L/l
             clear_reset_cursor();
             purge_buffer();
             update_cursor(0,0); // move cursor back to top left of the screen
@@ -103,7 +103,7 @@ void keyboard_irq_handler() {
 
     // Function Buttons (Not done Alt and F2,F3,F4) TODO: CKPT 5 
     //  TAB
-    if (code == 0x0f){
+    if (code == TAB_PRESS){
         int i;
         for(i = 0; i < 4; i++) {
             if((add_to_keyboard_buffer(' ')) && (buf_position <= BUF_LINE_TWO_ADDR)) {
@@ -117,50 +117,50 @@ void keyboard_irq_handler() {
     
     }
     // SHIFT
-    else if ((code == 0x2a) || (code == 0x36)) {
+    else if ((code == L_SHIFT_PRESS) || (code == R_SHIFT_PRESS)) {
         shift_pressed = 1;
     }
-    else if ((code == 0xaa) || (code == 0xb6)) {
+    else if ((code == L_SHIFT_RELEASE) || (code == R_SHIFT_RELEASE)) {
         shift_pressed = 0;
     }
     // CAPSLOCK
-    else if (code == 0x3a) {
+    else if (code == CAPS_PRESS) {
         if (capslock_released) {
             capslock_on = capslock_on ? 0 : 1;
         } 
         capslock_released = 0;
     }
-    else if (code == 0xba) {
+    else if (code == CAPS_RELEASE) {
         capslock_released = 1;
     }
     // CTRL Left
-    else if (code == 0x1d) {
+    else if (code == L_CTRL_PRESS) {
         ctrl_pressed = 1;
     }
-    else if (code == 0x9d) {
+    else if (code == L_CTRL_RELEASE) {
         ctrl_pressed = 0;
     }
-    // ALT Right
-    else if (code == 0x38) {
+    // ALT Left
+    else if (code == L_ALT_PRESS) {
         alt_pressed = 1;
     }
-    else if (code == 0xb8) {
+    else if (code == L_ALT_RELEASE) {
         alt_pressed = 0;
     }
     // F2
-    else if (code == 0x3c) {
+    else if (code == F2_PRESS) {
 
     }
     // F3
-    else if (code == 0x3d) {
+    else if (code == F3_PRESS) {
 
     }
     // F4
-    else if (code == 0x3e) {
+    else if (code == F4_PRESS) {
 
     }
     // BACKSPACE
-    else if (code == 0x0e) {
+    else if (code == BACKSPACE) {
         if(remove_from_keyboard_buffer()){
             unput_c();
             update_cursor(get_x_position(), get_y_position());
@@ -168,20 +168,20 @@ void keyboard_irq_handler() {
     }
 
     // Handles all key presses that expect mutliple codes
-    else if (code == 0xe0) {
+    else if (code == MULT_KEY_CODES) {
         int next_code = inb(KEYBOARD_PORT);
         // CTRL Right
-        if (next_code == 0x1d) {
+        if (next_code == L_CTRL_PRESS) {
             ctrl_pressed = 1;
         }
-        else if (next_code == 0x9d) {
+        else if (next_code == L_CTRL_RELEASE) {
             ctrl_pressed = 0;
         }
         // ALT Right
-        else if (next_code == 0x38) {
+        else if (next_code == L_ALT_PRESS) {
             alt_pressed = 1;
         }
-        else if (next_code == 0xb8) {
+        else if (next_code == L_ALT_RELEASE) {
             alt_pressed = 0;
         }
     }

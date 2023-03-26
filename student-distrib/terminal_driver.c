@@ -93,7 +93,7 @@ int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
     if (fd < 0) {
         return -1;
     }
-
+    // check for null pointer
     if(buf == 0) {
         return -1;
     }

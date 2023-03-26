@@ -7,6 +7,30 @@
 #define SCAN_CODE_END       0x39
 #define KEYBOARD_BUF_SIZE   128
 
+// some scancodes
+#define Q_PRESS        0x10
+#define P_PRESS        0x19
+#define A_PRESS        0x1E
+#define L_PRESS        0x26
+#define Z_PRESS        0x2C
+#define M_PRESS        0x32
+#define TAB_PRESS      0x0F
+#define L_SHIFT_PRESS   0x2A
+#define R_SHIFT_PRESS   0x36
+#define L_SHIFT_RELEASE  0xAA
+#define R_SHIFT_RELEASE  0xB6
+#define CAPS_PRESS       0x3A
+#define CAPS_RELEASE     0xBA
+#define L_CTRL_PRESS     0x1D
+#define L_CTRL_RELEASE   0x9D
+#define L_ALT_PRESS      0x38
+#define L_ALT_RELEASE    0xB8
+#define F2_PRESS        0x3C
+#define F3_PRESS        0x3D
+#define F4_PRESS        0x3E
+#define BACKSPACE       0x0E
+#define MULT_KEY_CODES  0xE0
+
 // handle keyboard interrupt
 void keyboard_irq_handler();
 

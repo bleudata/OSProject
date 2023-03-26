@@ -8,6 +8,7 @@ extern int terminal_read(int32_t fd, unsigned char * buf, int32_t n);
 extern int terminal_write(int32_t fd, unsigned char * buf, int32_t n);
 extern int terminal_close(int32_t fd); // assuming don't need other params?
 
+// to properly move the cursor
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
 void update_cursor(int x, int y);
 
