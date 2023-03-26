@@ -12,7 +12,7 @@
 #include "idt_asm.h"
 #include "tests.h"
 #include "paging.h"
-
+#include "rtc.h"
 
 #define RUN_TESTS
 
@@ -171,10 +171,12 @@ void entry(unsigned long magic, unsigned long addr) {
     clear_reset_cursor(); // clear screen and reset cursor
     /* Run tests */
     //launch_tests(IDT_TEST);
-    //launch_tests(PAGE_ACCESS_TEST);
-    //launch_tests(PAGE_FAULT_TEST);
+    // launch_tests(PAGE_ACCESS_TEST);
+    // launch_tests(PAGE_FAULT_TEST);
     //launch_tests(DIVIDE_ZERO_TEST);
-    launch_tests(MULT_EXCEPTIONS_TEST);
+    // launch_tests(MULT_EXCEPTIONS_TEST);
+    launch_tests(RTC_NEW_HZ);
+    //launch_tests(RTC_GET_SYSHZ_PER_UHZ);
 #endif
     /* Execute the first program ("shell") ... */
 

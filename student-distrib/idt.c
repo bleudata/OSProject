@@ -152,11 +152,7 @@ void setup_idt() {
     }
     else if(vector == RTC_VECTOR) {
         //printf("entered rtc if statement");
-        int rtc_ctr = 0;
-        while(rtc_ctr < rtc_get_uHz()){
-            rtc_irq_handler(); // this is from rtc file
-            rtc_ctr++;
-        }
+        rtc_irq_handler(); // this is from rtc file
     }
     else if(vector == SYSTEM_CALL_VECTOR) {
         generic_system_call_handler();

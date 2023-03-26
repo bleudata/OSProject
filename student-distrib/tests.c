@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -171,6 +172,75 @@ int invalid_opcode_test(){
 
 
 /* Checkpoint 2 tests */
+
+int rtc_open_no_errors(){
+	int result = rtc_open();
+	if(result == 0){
+		return PASS;
+	}
+	else{
+		return FAIL;
+	}
+}
+
+int rtc_test_changing_freq(){
+	rtc_open();
+	uint8_t buffer[4] = {0x00, 0x00, 0x00, 0x04};
+	int result_write = rtc_write(buffer);
+	if(result_write == 0){
+		return PASS;
+	}
+	else{
+		return FAIL;
+	}
+}
+
+int rtc_test_reading_freq(){
+	int result = rtc_read();
+	if(result == 0){
+		return PASS;
+	}
+	else{
+		return FAIL;
+	}
+}
+
+int rtc_test_big_HZ(){
+	rtc_open();
+	uint8_t buffer[4] = {0x80, 0x00, 0x00, 0x00};
+	int result = rtc_write(buffer);
+	if(result == 0){
+		return PASS;
+	}
+	else{
+		return FAIL;
+	}
+}
+
+int rtc_test_power_two(){
+	rtc_open();
+	uint8_t buffer[4] = {0x00, 0x00, 0x75, 0x13};
+	int result = rtc_write(buffer);
+	if(result == 0){
+		return PASS;
+	}
+	else{
+		return FAIL;
+	}
+}
+
+int rtc_test_buff_overflow(){
+	rtc_open();
+	uint8_t buffer[7] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	int result = rtc_write(buffer);
+	if(result == 0){
+		return PASS;
+	}
+	else{
+		return FAIL;
+	}
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -199,8 +269,31 @@ void launch_tests(test_t test_num){
 		break;
 	case MULT_EXCEPTIONS_TEST:
 		// divide_zero_test();
-		// bound_error_test();
+		 bound_error_test();
 		// invalid_opcode_test();
+		break;
+	case RTC_OPEN:
+		TEST_OUTPUT("rtc_open works", rtc_open_no_errors());
+		break;
+	case RTC_NEW_HZ:
+		TEST_OUTPUT("rtc_test_changing_freq", rtc_test_changing_freq());
+		while(1){
+			TEST_OUTPUT("rtc_read intervals from new frequency", rtc_test_reading_freq());
+		}
+		break;
+	case RTC_HZ_TOO_BIG:
+		TEST_OUTPUT("rtc_test_big_HZ, should fail if requested frequency is too big ( > 1024)", rtc_test_big_HZ());
+		break;
+	case RTC_TEST_READ:
+		while(1){
+			TEST_OUTPUT("rtc_read test intervals", rtc_test_reading_freq());
+		}
+		break;
+	case RTC_HZ_POWER_TWO:
+		TEST_OUTPUT("rtc_test_power_two, should fail if requested frequency is not a power of 2", rtc_test_power_two());
+		break;
+	case RTC_HZ_BUFF_OF:
+		TEST_OUTPUT("rtc_test_buff_overflow, should fail if the input buffer is not exactly 4 bytes", rtc_test_buff_overflow());
 		break;
 	default:
 		printf("bad test number\n");
