@@ -50,7 +50,7 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
         return -1;
     }
     // validate n
-    if (n < 0 || n > BYTE_LIMIT) { // for testing just use 1 for fd
+    if (n < 0) { // for testing just use 1 for fd
         return -1;
     }
 
@@ -94,9 +94,10 @@ int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
     if(buf == 0) {
         return -1;
     }
-    if (n < 0 || n > BYTE_LIMIT) { 
+    if (n < 0) { 
         return -1;
     }
+    //How to check if n is different size than buf ? go through buf till you find a null and count then compare??
 
     for(i = 0; i < n; i ++) {
         putc_new(buf[i], 0);
