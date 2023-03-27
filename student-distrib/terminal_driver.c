@@ -60,7 +60,7 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
     ret = 0;
 
     while((i < n) /*&& (keyboard_buf[i] != '\0')*/) {
-        current = keyboard_buf[i];
+        // current = keyboard_buf[i];
         // if (current == '\n' && !get_enter_flag()) {
         //     i++;
         // }
@@ -68,7 +68,7 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
         //     clear_enter_flag();
         //     break;
         // }
-        buf[i] = current; 
+        buf[i] =  keyboard_buf[i];
         ret++;
         i++;
         if(current == '\n') {
@@ -89,6 +89,7 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
 int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
     int i;
 
+
     // validate fd 
     if (fd != 1) {
         return -1;
@@ -97,8 +98,9 @@ int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
     if(buf == 0) {
         return -1;
     }
-
-    // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
+    if (n < 0 || n > 127) { 
+        return -1;
+    }
 
     for(i = 0; i < n; i ++) {
         putc_new(buf[i], 0);

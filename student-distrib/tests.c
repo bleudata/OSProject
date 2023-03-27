@@ -205,7 +205,7 @@ int terminal_close_test() {
 
 /* terminal_read_test
  * 
- * try to open terminal
+ * try to read terminal
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
@@ -256,7 +256,7 @@ int terminal_read_test() {
 
 /* terminal_write_test
  * 
- * try to read more 
+ * try to write and test bad inputs 
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
@@ -267,6 +267,11 @@ int terminal_write_test() {
 	unsigned char allocated_buf[128] = " terminal write test "; 
 
 	/* Check invalid inputs */
+	result = terminal_write(1, NULL, 128);
+	if (result >= 0) {
+		printf("Didnt Check for Null Buf.");
+		return FAIL;
+	}
 	result = terminal_write(-1, allocated_buf, 128);
 	if (result >= 0) {
 		printf("Didnt Check for Invalid File Descriptor.");
@@ -280,7 +285,7 @@ int terminal_write_test() {
 	}
 
 	/* Should check If it actually writes to screen */
-	result = terminal_write(1, allocated_buf, 128); 
+	result = terminal_write(1, allocated_buf, 127); 
 	if (result < 0) {
 		return FAIL;
 	}

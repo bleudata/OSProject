@@ -179,7 +179,7 @@ void entry(unsigned long magic, unsigned long addr) {
     // launch_tests(PAGE_FAULT_TEST);
     //launch_tests(DIVIDE_ZERO_TEST);
     // // launch_tests(MULT_EXCEPTIONS_TEST);
-    // launch_tests(TERMINAL_TEST);
+    launch_tests(TERMINAL_TEST);
     // launch_tests(RTC_NEW_HZ);
     //launch_tests(RTC_GET_SYSHZ_PER_UHZ);
 #endif

@@ -110,19 +110,6 @@ void send_eoi(uint32_t irq_num) {
 }
 
 
-
-/*
- * keyboard_init
- *   DESCRIPTION: initializes the keyboard by enabling its irq on the PIC
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: enables keyboard irq on PIC
- */
-void keyboard_init() {
-    enable_irq(KEYBOARD_IRQ);
-}
-
 /*
  * nmi_enable
  *   DESCRIPTION: enables nmi (non maskable interrupts)

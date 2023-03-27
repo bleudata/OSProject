@@ -50,8 +50,6 @@ void disable_irq(uint32_t irq_num);
 void send_eoi(uint32_t irq_num);
 // handle keyboard interrupt
 void keyboard_irq_handler();
-// initialize keyboard
-void keyboard_init();
 // enable nmi
 void nmi_enable();
 // disable nmi
