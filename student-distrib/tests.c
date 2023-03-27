@@ -304,25 +304,6 @@ int rtc_open_no_errors(){
 	}
 }
 
-/* rtc_test_changing_freq
- * 
- * Description: Tests to see that changing the frequency returns no errors
- * Inputs: None
- * Outputs: PASS/FAIL
- * Side Effects: "Changes" the frequency of RTC from the user perspective
- */
-int rtc_test_changing_freq(){
-	rtc_open();
-	uint8_t buffer[4] = {0x00, 0x00, 0x00, 0x02};
-	int result_write = rtc_write(buffer, 4);
-	if(result_write == 0){
-		return PASS;
-	}
-	else{
-		return FAIL;
-	}
-}
-
 /* rtc_test_reading_freq
  * 
  * Description: Reads from rtc_read(), which returns at every tick from the RTC from the user perspective 
@@ -338,6 +319,94 @@ int rtc_test_reading_freq(){
 	else{
 		return FAIL;
 	}
+}
+
+/* rtc_test_changing_freq
+ * 
+ * Description: Tests to see that changing the frequency returns no errors
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: "Changes" the frequency of RTC from the user perspective
+ */
+int rtc_test_changing_freq(){
+	rtc_open();
+	uint8_t buffer[4] = {0x00, 0x00, 0x00, 0x02};
+	int result_write = rtc_write(buffer, 4);
+	
+	int ctr = 0;
+	while(ctr < 10){
+		printf("%x", rtc_test_reading_freq());
+		ctr++;
+	}
+	
+	//setting Hz to 4
+	buffer[3] = 0x04;
+	result_write = rtc_write(buffer, 4);
+	ctr = 0;
+	while(ctr < 10){
+		printf("%x", rtc_test_reading_freq());
+		ctr++;
+	}
+	
+	//setting Hz to 8
+	buffer[3] = 0x08;
+	result_write = rtc_write(buffer, 4);
+	ctr = 0;
+	while(ctr < 20){
+		printf("%x", rtc_test_reading_freq());
+		ctr++;
+	}
+
+	//setting Hz to 64
+	buffer[3] = 0x20;
+	result_write = rtc_write(buffer, 4);
+	ctr = 0;
+	while(ctr < 40){
+		printf("%x", rtc_test_reading_freq());
+		ctr++;
+	}
+
+
+	//setting Hz to 128
+	buffer[3] = 0x80;
+	result_write = rtc_write(buffer, 4);
+	ctr = 0;
+	printf("\n");
+	while(ctr < 321){
+		printf("%x", rtc_test_reading_freq());
+		if(ctr % 80 == 0 && (ctr != 0 && ctr != 320)){
+			printf("\n");
+		}
+		ctr++;
+	}
+
+	//setting to 512
+	buffer[3] = 0x00;
+	buffer[2] = 0x02;
+	result_write = rtc_write(buffer, 4);
+	ctr = 0;
+	printf("\n");
+	while(ctr < 321){
+		printf("%x", rtc_test_reading_freq());
+		if(ctr % 80 == 0 && (ctr != 0 && ctr != 320)){
+			printf("\n");
+		}
+		ctr++;
+	}
+
+	//setting to 1024
+	buffer[2] = 0x04;
+	result_write = rtc_write(buffer, 4);
+	ctr = 0;
+	printf("\n");
+	while(ctr < 641){
+		printf("%x", rtc_test_reading_freq());
+		if(ctr % 80 == 0 && (ctr != 0)){
+			printf("\n");
+		}
+		ctr++;
+	}
+	return PASS;
 }
 
 /* rtc_test_big_HZ
@@ -438,11 +507,7 @@ void launch_tests(test_t test_num){
 		TEST_OUTPUT("rtc_open works", rtc_open_no_errors());
 		break;
 	case RTC_NEW_HZ:
-		TEST_OUTPUT("rtc_test_changing_freq", rtc_test_changing_freq());
-		TEST_OUTPUT("rtc_read test new intervals", 1);
-		while(1){
-			printf("%x", rtc_read());
-		}
+		TEST_OUTPUT("rtc_write works", rtc_test_changing_freq());
 		break;
 	case RTC_HZ_TOO_BIG:
 		TEST_OUTPUT("rtc_test_big_HZ, should fail if requested frequency is too big ( > 1024)", rtc_test_big_HZ());
