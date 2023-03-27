@@ -31,7 +31,7 @@ int32_t terminal_open(const uint8_t* filename) {
  *   RETURN VALUE: number of bytes read or -1 for FAIL
  *   SIDE EFFECTS: 
  */
-int32_t terminal_read(int fd, void * buf, int n) {
+int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     // Return data from one line that ended in \n or a full buffer
     int32_t i, ret; // loop counter and index, also counts the number of characters read
     unsigned char * new_buf = (unsigned char *)buf;
@@ -86,11 +86,10 @@ int32_t terminal_read(int fd, void * buf, int n) {
         ret++;
         i++;
         if(keyboard_buf[i] == '\n') {
-            new_buf[i] =keyboard_buf[i];
             break;
         }
     }
-    purge_and_align_keyboard_buffer(ret);
+    purge_and_align_keyboard_buffer(ret + 1);
   
     return ret;
 }
