@@ -332,7 +332,7 @@ int rtc_test_changing_freq(){
 	rtc_open();
 	uint8_t buffer[4] = {0x00, 0x00, 0x00, 0x02};
 	int result_write = rtc_write(buffer, 4);
-	
+
 	int ctr = 0;
 	while(ctr < 10){
 		printf("%x", rtc_test_reading_freq());
@@ -357,7 +357,7 @@ int rtc_test_changing_freq(){
 		ctr++;
 	}
 
-	//setting Hz to 64
+	//setting Hz to 32
 	buffer[3] = 0x20;
 	result_write = rtc_write(buffer, 4);
 	ctr = 0;
