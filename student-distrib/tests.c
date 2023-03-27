@@ -289,7 +289,7 @@ int terminal_write_test() {
 
 /* rtc_open_no_errors
  * 
- * try to write to the terminal and test bad inputs 
+ * Description: Tests to make sure that user RTC init function works fine with no errors
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
@@ -306,15 +306,15 @@ int rtc_open_no_errors(){
 
 /* rtc_test_changing_freq
  * 
- * try to write to the terminal and test bad inputs 
+ * Description: Tests to see that changing the frequency returns no errors
  * Inputs: None
  * Outputs: PASS/FAIL
- * Side Effects: None
+ * Side Effects: "Changes" the frequency of RTC from the user perspective
  */
 int rtc_test_changing_freq(){
 	rtc_open();
-	uint8_t buffer[4] = {0x00, 0x00, 0x00, 0x04};
-	int result_write = rtc_write(buffer);
+	uint8_t buffer[4] = {0x00, 0x00, 0x00, 0x02};
+	int result_write = rtc_write(buffer, 4);
 	if(result_write == 0){
 		return PASS;
 	}
@@ -325,7 +325,7 @@ int rtc_test_changing_freq(){
 
 /* rtc_test_reading_freq
  * 
- * try to write to the terminal and test bad inputs 
+ * Description: Reads from rtc_read(), which returns at every tick from the RTC from the user perspective 
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
@@ -342,7 +342,7 @@ int rtc_test_reading_freq(){
 
 /* rtc_test_big_HZ
  * 
- * try to write to the terminal and test bad inputs 
+ * Description: Tests that too big of a frequency is not written into the RTC
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
@@ -350,7 +350,7 @@ int rtc_test_reading_freq(){
 int rtc_test_big_HZ(){
 	rtc_open();
 	uint8_t buffer[4] = {0x80, 0x00, 0x00, 0x00};
-	int result = rtc_write(buffer);
+	int result = rtc_write(buffer, 4);
 	if(result == 0){
 		return PASS;
 	}
@@ -361,7 +361,7 @@ int rtc_test_big_HZ(){
 
 /* rtc_test_power_two
  * 
- * try to write to the terminal and test bad inputs 
+ * Description: Tests that a non-power of 2 number is not written into the RTC
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
@@ -369,7 +369,7 @@ int rtc_test_big_HZ(){
 int rtc_test_power_two(){
 	rtc_open();
 	uint8_t buffer[4] = {0x00, 0x00, 0x75, 0x13};
-	int result = rtc_write(buffer);
+	int result = rtc_write(buffer, 4);
 	if(result == 0){
 		return PASS;
 	}
@@ -380,15 +380,16 @@ int rtc_test_power_two(){
 
 /* rtc_test_buff_overflow
  * 
- * try to write to the terminal and test bad inputs 
+ * Description: Tests that only a buffer of size 4 is processed into the RTC
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
  */
+
 int rtc_test_buff_overflow(){
 	rtc_open();
-	uint8_t buffer[7] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	int result = rtc_write(buffer);
+	uint8_t buffer[7] = {0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00};
+	int result = rtc_write(buffer, 7);
 	if(result == 0){
 		return PASS;
 	}
@@ -438,23 +439,25 @@ void launch_tests(test_t test_num){
 		break;
 	case RTC_NEW_HZ:
 		TEST_OUTPUT("rtc_test_changing_freq", rtc_test_changing_freq());
+		TEST_OUTPUT("rtc_read test new intervals", 1);
 		while(1){
-			TEST_OUTPUT("rtc_read intervals from new frequency", rtc_test_reading_freq());
+			printf("%x", rtc_read());
 		}
 		break;
 	case RTC_HZ_TOO_BIG:
 		TEST_OUTPUT("rtc_test_big_HZ, should fail if requested frequency is too big ( > 1024)", rtc_test_big_HZ());
 		break;
 	case RTC_TEST_READ:
+		TEST_OUTPUT("rtc_read test intervals", 1);
 		while(1){
-			TEST_OUTPUT("rtc_read test intervals", rtc_test_reading_freq());
+			printf("%x", rtc_read());
 		}
 		break;
 	case RTC_HZ_POWER_TWO:
 		TEST_OUTPUT("rtc_test_power_two, should fail if requested frequency is not a power of 2", rtc_test_power_two());
 		break;
 	case RTC_HZ_BUFF_OF:
-		TEST_OUTPUT("rtc_test_buff_overflow, should fail if the input buffer is not exactly 4 bytes", rtc_test_buff_overflow());
+		TEST_OUTPUT("rtc_test_buff_overflow, FAIL if overflow", rtc_test_buff_overflow());
 		break;
 	default:
 		printf("bad test number\n");

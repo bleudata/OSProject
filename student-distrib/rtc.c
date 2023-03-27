@@ -17,7 +17,7 @@ void rtc_init() {
     outb(RTC_REG_B_DISABLE, RTC_REG_PORT); // set to register b and disable nmi
     char prev = inb(RTC_RW_PORT); // get current value from register b
     outb(RTC_REG_B_DISABLE, RTC_REG_PORT); // set to register b and disable nmi
-    outb(prev | 0x40, RTC_RW_PORT); // set bit 6 to 1 using 0x40 to enable periodic interrupts
+    outb(prev | RTC_PER_IRQ, RTC_RW_PORT); // set bit 6 to 1 using 0x40 to enable periodic interrupts
     enable_irq(RTC_IRQ);
     nmi_enable();
 }
@@ -40,39 +40,78 @@ void rtc_irq_handler() {
         rtc_ctr++;
     }
     else{
-        rtc_ctr = 0;
-        rtc_irq_flag = 1;
+        rtc_ctr = RTC_GLOB_RES_VAR;
+        rtc_irq_flag = RTC_FLAG_SET;
     }
 }
+
+/*
+ * rtc_open
+ *   DESCRIPTION: opens the RTC on the user end and sets it to the default of 1024 Hz
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 on success
+ *   SIDE EFFECTS: accesses RTC registers and sets frequency to 1024 Hz
+ */
 
 int rtc_open(){
     uint16_t rate = RTC_RATE;
     outb(RTC_REG_A_DISABLE, RTC_REG_PORT); // set index to register A, disable NMI
     char prev = inb(RTC_RW_PORT);	// get initial value of register A, should be 32kHz
     outb(RTC_REG_A_DISABLE, RTC_REG_PORT);		// reset index to A
-    outb((prev & 0xf0) | rate, RTC_RW_PORT); //write only our rate to A. Note, rate is the bottom 4 bits.
+    outb((prev & RTC_DATA_UPPER_BYTE) | rate, RTC_RW_PORT); //write only our rate to A. Note, rate is the bottom 4 bits.
 
-    rtc_syshz_per_uhz = 1; //since its init, the system frequency of interrupts will always be 1 of itself
+    rtc_syshz_per_uhz = RTC_GLOB_RES_RATE; //since its init, the system frequency of interrupts will always be 1 of itself
 
-    return 0;
+    return RTC_PASS;
 }
+
+/*
+ * rtc_close
+ *   DESCRIPTION: closes the RTC on the user end and sets it to the default of 1024 Hz, or setting the syshz per uhz rate back to 1 and counter to 0
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 on success
+ *   SIDE EFFECTS: resets global variables to reflect a clock rate of 1024 Hz from the user perspective
+ */
 
 int rtc_close(){
     rtc_ctr = 0;
-    rtc_syshz_per_uhz = 1; //reset the # of interrupts per system freq to be just 1, so its itself
-    return 0;
+    rtc_syshz_per_uhz = RTC_GLOB_RES_RATE; //reset the # of interrupts per system freq to be just 1, so its itself
+    return RTC_PASS;
 }
+
+/*
+ * rtc_read
+ *   DESCRIPTION: a function that returns once the interrupt of the RTC is processed/sent/handled a.k.a "gives" the user the tick rate
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 on success
+ *   SIDE EFFECTS: resets the global rtc irq flag to 0 after an interrupt is processed
+ */
 
 int rtc_read(){
-    while(rtc_irq_flag != 1);
-    rtc_irq_flag = 0;
-    return 0;
+    while(rtc_irq_flag != RTC_FLAG_SET);
+    rtc_irq_flag = RTC_GLOB_RES_VAR;
+    return RTC_PASS;
 }
 
-int rtc_write(uint8_t *buffer){
+/*
+ * rtc_write
+ *   DESCRIPTION: writes a new frequency to the RTC from the user; is limited to be between 2 and 1024 Hz, and must be passed through a buffer.
+ *                This is virtualized, therefore it only affects how many system interrupts are processed as one user interrupt
+ *   INPUTS: 4-byte buffer, buffer
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 on success, -1 if buffer is of incorrect size or any of the other conditions are unture (not a power of 2, requested frequency too big or too small)
+ *   SIDE EFFECTS: writes to the syshz per uhz variable and affects the frequency at which rtc_read() returns, but does not actually change the system RTC frequency
+ */
+
+int rtc_write(void *buf, int32_t nbytes){
     /*checking to make sure buffer is exactly 4 bytes, otherwise return -1*/
-    if(sizeof(buffer) != RTC_BUFF_SIZE){
-        return -1;
+    uint8_t *buffer = (uint8_t*)buf;
+
+    if(nbytes != RTC_BUFF_SIZE){
+        return RTC_FAIL;
     }
 
     /*if buffer is a valid size, calculate the requested frequency from the buffer*/ 
@@ -80,17 +119,17 @@ int rtc_write(uint8_t *buffer){
     int i;
     for(i = 0; i < RTC_BUFF_SIZE; i++){
         req_freq = req_freq | buffer[i];
-        if(i != 3){
+        if(i != RTC_BUFF_LAST_BYTE){
             req_freq = req_freq << RTC_BYTE_SHIFT;
         }
     }
 
     /*checking that the requested user frequency is between 2 Hz and 1024 Hz inclusive and is a power of 2, otherwise return -1*/
-    if(req_freq < RTC_HZ_MIN || req_freq > RTC_HZ || (req_freq & (req_freq - 1)) != 0){
-        return -1;
+    if(req_freq < RTC_HZ_MIN || req_freq > RTC_HZ || (req_freq & (req_freq - RTC_POW_2_DECR)) != 0){
+        return RTC_FAIL;
     }
 
     /*Should load the ratio of 1 system cycle per however many requested user cycles*/
     rtc_syshz_per_uhz = RTC_HZ / req_freq;
-    return 0;
+    return RTC_PASS;
 }
