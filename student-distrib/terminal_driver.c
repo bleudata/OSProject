@@ -31,15 +31,18 @@ int32_t terminal_open(const uint8_t* filename) {
  *   RETURN VALUE: number of bytes read or -1 for FAIL
  *   SIDE EFFECTS: 
  */
-int32_t terminal_read(int fd, unsigned char * buf, int n) {
+int32_t terminal_read(int fd, void * buf, int n) {
     // Return data from one line that ended in \n or a full buffer
     int32_t i, ret; // loop counter and index, also counts the number of characters read
+    unsigned char * new_buf = (unsigned char *)buf;
+  // now use newBuf instead of buf
     unsigned char * keyboard_buf;
     keyboard_buf = get_keyboard_buffer();
-    unsigned char current;
+    //purge_keyboard_buffer(); // clear the buffer for terminal read
+    // unsigned char current;
 
     // validate input, null pointer provided by user
-    if(buf == 0) {
+    if(new_buf == 0) {
         return -1; 
     }
     // validate fd 
@@ -55,12 +58,23 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
     if(n > KEYBOARD_BUF_SIZE) { 
         n = KEYBOARD_BUF_SIZE; 
     }
+    //can at most read the size of the input buffer
+    // if(sizeof(new_buf) < n) { 
+    //     n = sizeof(new_buf);
+    // }
     
     i = 0;
     ret = 0;
 
-    while((i < n) /*&& (keyboard_buf[i] != '\0')*/) {
-        current = keyboard_buf[i];
+    // Loop while we wait for an enter
+    // printf(" enter count isnt 0 \n");
+    while(get_enter_count() < 1);
+    // printf("passed enter count\n");
+    // Read the keyboard buffer and delete it 
+    while(i < n) /*&& (keyboard_buf[i] != '\n')*/ {
+        // printf("indexes %d %d \n",i, n);
+
+        // current = keyboard_buf[i];
         // if (current == '\n' && !get_enter_flag()) {
         //     i++;
         // }
@@ -68,13 +82,15 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
         //     clear_enter_flag();
         //     break;
         // }
-        buf[i] = current; 
+        new_buf[i] =keyboard_buf[i]; 
         ret++;
         i++;
-        if(current == '\n') {
+        if(keyboard_buf[i] == '\n') {
+            new_buf[i] =keyboard_buf[i];
             break;
         }
     }
+    purge_and_align_keyboard_buffer(ret);
   
     return ret;
 }
@@ -86,22 +102,27 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
  *   RETURN VALUE: number or bytes written if successful, else -1; 
  *   SIDE EFFECTS: 
  */
-int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
+int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
     int i;
+    const unsigned char * new_buf = (unsigned char*) buf;
 
     // validate fd 
     if (fd != 1) {
         return -1;
     }
     // check for null pointer
-    if(buf == 0) {
+    if(new_buf == 0) {
+        return -1;
+    }
+    if(n < 0) { // cant read negative bytes
         return -1;
     }
 
+    
     // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
 
     for(i = 0; i < n; i ++) {
-        putc_new(buf[i], 0);
+        putc_new(new_buf[i], 0);
     }
     update_cursor(get_x_position(), get_y_position());
 
