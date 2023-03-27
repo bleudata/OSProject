@@ -2,13 +2,21 @@
 
 #define BLOCK_SIZE 4096
 
+// pointers to locations inside the filesystem
 boot_b_struct* boot_block;
 inode_struct* inode_array;
 data_struct* data_array;
 uint32_t file_counter;
 
-//initialize the global variables boot_block, inode_array, data_array
-// if there is memory issues, it is probably because of this :)
+
+// if there are memory issues, might be because of this :_(
+/*
+ * filesys_init()
+ *   DESCRIPTION: initialize the global variables boot_block, inode_array, data_array
+ *   INPUTS: fileimg_address: address of start of filesystem
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ */
 void filesys_init(uint32_t* fileimg_address){
     boot_block = (boot_b_struct*)fileimg_address;
     inode_array = (inode_struct*)(fileimg_address) + 1;
@@ -17,28 +25,38 @@ void filesys_init(uint32_t* fileimg_address){
 }
 
 //goes through dir_entries array in bootblock and finds the dir entry with matching name
+/*
+ * read_dentry_by_name() - helper function
+ *   DESCRIPTION: goes through dir_entries array in bootblock and finds the dentry with matching name
+ *                and copies over info to caller's dentry struct
+ *                calls read_dentry_by_index helper function
+ *   INPUTS: fname: filename of target dentry, dentry: address of caller's dentry struct
+ *   OUTPUTS: fills up caller's dentry struct if matching filename is found
+ *   RETURN VALUE: 0:success, -1:fail
+ */
 int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
-    //calls read_dentry_by_index
+    
     //null check for name and dentry
     if(fname == NULL || dentry == NULL){
         return -1;
     }
-
+    // invalid filename, over 32 chars
     if(strlen(fname) > 32){
-        printf("string over 32 chars \n");
+        //printf("string over 32 chars \n");
         return -1;
     }
 
     int num_dir_entries = boot_block->dir_count;
     uint32_t str_length = strlen((int8_t*)fname);
-    int i;
+    int i; //loop over dir_entries array and find dentry with matching filename's index, call read_dentry_by_index
     for(i = 0; i<num_dir_entries ; i++){
         if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, str_length) == 0){ 
             //filename matches
-            printf("found matching file: ");
-            printf("%s \n", boot_block->dir_entries[i].filename);
-            printf("index is: ");
-            printf("%d \n", i);
+
+            // printf("found matching file: ");
+            // printf("%s \n", boot_block->dir_entries[i].filename);
+            // printf("index is: ");
+            // printf("%d \n", i);
             return read_dentry_by_index(i, dentry); 
         }
     }
@@ -46,7 +64,13 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
 }
 
 //dentry = &(boot_block->boot_type.dir_entries[index]); WRONG!
-//read_dentry_by_index
+/*
+ * read_dentry_by_index() - helper function
+ *   DESCRIPTION: copies over dentry information at specified index over to caller's dentry struct
+ *   INPUTS: index: index of dentry in dir_entries array, dentry: caller's dentry struct address
+ *   OUTPUTS: fills up caller's dentry struct
+ *   RETURN VALUE: 0:success, -1:fail
+ */
 int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
     
     //index out of bounds check, dentry null check
@@ -63,19 +87,22 @@ int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
     return 0;
 }
 
-//read_data, offset = no. of bytes offset to start reading from in the file
-//read data from file's data blocks and put them into the buffer
-// offset: number of bytes to skip
-// length: number of bytes to read
-// return number of bytes read
+//inode num and datablocknum start from 0 and are indexes to their arrays
+/*
+ * read_data() - helper function
+ *   DESCRIPTION: reads data in file's data blocks, write into caller's buffer
+ *   INPUTS: inode: index of inode, offset: num bytes to skip, length: num bytes to read, buf: buffer to store info to
+ *   OUTPUTS: fills up buffer with info read from file
+ *   RETURN VALUE: number of bytes read
+ */
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
     
-    inode_struct* cur_inode = &(inode_array[inode]);
-    printf("file length: %d \n",cur_inode->length );
-    int file_remainder = cur_inode->length - offset;
-    unsigned int data_block_count = boot_block->data_block_count;
+    inode_struct* cur_inode = &(inode_array[inode]); //ptr to inode of file to read from
+    //printf("file length: %d \n",cur_inode->length );
+    int file_remainder = cur_inode->length - offset; //remaining bytes in file to read
+    unsigned int data_block_count = boot_block->data_block_count; //num of data blocks for sanity check
 
-    int bytes_left;
+    int bytes_left; //determine actual number of bytes left
     if(file_remainder < length){
         bytes_left = file_remainder;
     }else{
@@ -83,24 +110,24 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     }
 
     unsigned int block_index = offset / BLOCK_SIZE; //number of blocks to skip(start block index)
-    unsigned int block_offset = offset % BLOCK_SIZE; //- num_blocks_skip*BLOCK_SIZE
-    unsigned int block_remainder = BLOCK_SIZE - block_offset;
+    unsigned int block_offset = offset % BLOCK_SIZE; // same as "- num_blocks_skip*BLOCK_SIZE", which byte to start reading from 0 indexed
+    unsigned int block_remainder = BLOCK_SIZE - block_offset; //remaining bytes to read in block
 
     unsigned int bytes_read = 0;
-    int i, block_number;
+    int i, block_number; // loop through bytes left
     for(i = 0; i < bytes_left ; i++){
-        block_number = cur_inode->data_block_num[block_index];
+        block_number = cur_inode->data_block_num[block_index]; //use block index to get correct block number
 
         if(block_number<0 || block_number >= data_block_count){ //sanity check
             return -1;
         }
 
-        buf[i] = data_array[block_number].data[block_offset];
+        buf[i] = data_array[block_number].data[block_offset]; //copy 1 byte of data to buffer
         bytes_read += 1;
         //buf += 1;
         block_remainder -=1;
         block_offset++;
-        if(block_remainder == 0){
+        if(block_remainder == 0){ //end of block, move to new block
             block_remainder = BLOCK_SIZE;
             block_index +=1;
             block_offset = 0;
@@ -119,8 +146,9 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
  */
 int32_t file_open(const uint8_t* filename, d_entry * dentry){
     //d_entry * dentry;
+    // filename length check
     if(strlen(filename) > 32){
-        printf("string over 32 chars \n");
+        //printf("string over 32 chars \n");
         return -1;
     }
     return read_dentry_by_name(filename, dentry);
@@ -147,6 +175,7 @@ int32_t file_close(int32_t fd){
  */
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
 
+    //sanity check
     if(buf == NULL){
         return -1;
     }

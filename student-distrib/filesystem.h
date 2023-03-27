@@ -4,13 +4,18 @@
 #include "lib.h"
 
 #define FILENAME_LENGTH 32
+#define DENTRY_RESERVED_BYTE_NUM 24
+#define BOOT_B_RESEREVED_BYTE_NUM 52
+#define NUM_DIR_ENTRIES 63
+#define INODE_MAX_BLOCK_NUM 1023
+#define DATA_BLOCK_NUM_BYTES 4096
 
 //64 bytes size
 typedef struct __attribute__ ((packed)){
     int8_t filename[FILENAME_LENGTH]; 
     int32_t filetype;
     int32_t inode_num;
-    int8_t reserved[24];
+    int8_t reserved[DENTRY_RESERVED_BYTE_NUM]; //24
 } d_entry;
 
 //4KB size
@@ -18,22 +23,22 @@ typedef struct __attribute__ ((packed)){
     int32_t dir_count;
     int32_t inode_count;
     int32_t data_block_count;
-    int8_t reserved[52];
-    d_entry dir_entries[63];
+    int8_t reserved[BOOT_B_RESEREVED_BYTE_NUM]; //52
+    d_entry dir_entries[NUM_DIR_ENTRIES]; //63
 }boot_b_struct;
 
 //4KB size
 typedef struct __attribute__ ((packed)){
     int32_t length;
-    int32_t data_block_num[1023];
+    int32_t data_block_num[INODE_MAX_BLOCK_NUM]; //1023
 }inode_struct;
 
 //4KB size
 typedef struct __attribute__ ((packed)){
-    uint8_t data[4096];
+    uint8_t data[DATA_BLOCK_NUM_BYTES]; //4096
 }data_struct;
 
-//4KB size
+//4KB size bad bad idea..
 // typedef union{
 //     boot_block_struct boot_type;
 //     inode_block_struct inode_type;
@@ -46,12 +51,19 @@ typedef struct __attribute__ ((packed)){
 extern void filesys_init(uint32_t* fileimg_address);
 
 
-//fopen (arguments are same as system call) (design choice)
+//fopen (arguments are same as system call) (+design choice for dentry things)
 int32_t file_open(const uint8_t* filename,  d_entry* dentry);
+
+//file_close: does nothing
 int32_t file_close(int32_t fd);
+
+// file read: read data from file into buffer
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes);
+
+// file_write: read-only filesytem, so write does nothing
 int32_t file_write(int32_t fd, void* buf, int32_t nbytes);
 
+// dir_open: reads 
 int32_t dir_open(const uint8_t* filename, d_entry* dentry);
 int32_t dir_close(int32_t fd);
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes);
