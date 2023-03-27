@@ -11,6 +11,8 @@
 
 // static unsigned char* screen_buf[SCREEN_BYTES];
 
+#define BYTE_LIMIT 127
+
 /*
  * terminal_open
  *   DESCRIPTION: Doesn't actually do anything, just need to match system call params
@@ -22,6 +24,7 @@
 int32_t terminal_open(const uint8_t* filename) {
     return 0;
 }
+
 /*
  * terminal_read
  *   DESCRIPTION: Reads from the keyboard buffer and copies specified number of bytes into an array given by the user
@@ -46,7 +49,8 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
     if (fd != 0) { // for testing just use 1 for fd
         return -1;
     }
-    if (n < 0) { // for testing just use 1 for fd
+    // validate n
+    if (n < 0 || n > BYTE_LIMIT) { // for testing just use 1 for fd
         return -1;
     }
 
@@ -59,15 +63,7 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
     i = 0;
     ret = 0;
 
-    while((i < n) /*&& (keyboard_buf[i] != '\0')*/) {
-        // current = keyboard_buf[i];
-        // if (current == '\n' && !get_enter_flag()) {
-        //     i++;
-        // }
-        // else if (current == '\n' && get_enter_flag()) {
-        //     clear_enter_flag();
-        //     break;
-        // }
+    while((i < n)) {
         buf[i] =  keyboard_buf[i];
         ret++;
         i++;
@@ -78,6 +74,7 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
   
     return ret;
 }
+
 /*
  * terminal_write
  *   DESCRIPTION: write data from input buffer to video memory to display on the screen
@@ -89,7 +86,6 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
 int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
     int i;
 
-
     // validate fd 
     if (fd != 1) {
         return -1;
@@ -98,7 +94,7 @@ int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
     if(buf == 0) {
         return -1;
     }
-    if (n < 0 || n > 127) { 
+    if (n < 0 || n > BYTE_LIMIT) { 
         return -1;
     }
 
@@ -109,6 +105,7 @@ int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
 
     return n;
 }
+
 /*
  * terminal_close
  *   DESCRIPTION: Closes the terminal, 

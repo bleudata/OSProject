@@ -134,9 +134,6 @@ int page_access_test(){
  */
 int divide_zero_test(){
 	TEST_HEADER;
-	// printf("Handling Divide by 0 Test..\n");
-	// int j = 0;
-	// int i = 10 /j;
 	asm volatile("int $0");
 	return FAIL;
 }
@@ -150,9 +147,6 @@ int divide_zero_test(){
  */
 int bound_error_test(){
 	TEST_HEADER;
-	// printf("Handling Divide by 0 Test..\n");
-	// int j = 0;
-	// int i = 10 /j;
 	asm volatile("int $5");
 	return FAIL;
 }
@@ -168,7 +162,6 @@ int bound_error_test(){
 int invalid_opcode_test(){
 	TEST_HEADER;
 	asm volatile("mov %cr6, %eax");
-	//if it reaches this point its 0
 	return FAIL;
 }
 
@@ -206,6 +199,7 @@ int terminal_close_test() {
 /* terminal_read_test
  * 
  * try to read terminal
+ * Compares the keyboard buffer to the buffer that we fill in read
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
@@ -236,8 +230,6 @@ int terminal_read_test() {
 	}
 
 	/* Check If Buf is filled correctly */
-	// all we did was check if the buffers are the same without the enters
-	i = 0;
 	result = terminal_read(0, allocated_buf, 128);
 	if (result < 0) {
 		printf("Failed to copy buffer correctly.");
@@ -256,7 +248,7 @@ int terminal_read_test() {
 
 /* terminal_write_test
  * 
- * try to write and test bad inputs 
+ * try to write to the terminal and test bad inputs 
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
@@ -295,7 +287,13 @@ int terminal_write_test() {
 
 
 
-
+/* rtc_open_no_errors
+ * 
+ * try to write to the terminal and test bad inputs 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 int rtc_open_no_errors(){
 	int result = rtc_open();
 	if(result == 0){
@@ -306,6 +304,13 @@ int rtc_open_no_errors(){
 	}
 }
 
+/* rtc_test_changing_freq
+ * 
+ * try to write to the terminal and test bad inputs 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 int rtc_test_changing_freq(){
 	rtc_open();
 	uint8_t buffer[4] = {0x00, 0x00, 0x00, 0x04};
@@ -318,6 +323,13 @@ int rtc_test_changing_freq(){
 	}
 }
 
+/* rtc_test_reading_freq
+ * 
+ * try to write to the terminal and test bad inputs 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 int rtc_test_reading_freq(){
 	int result = rtc_read();
 	if(result == 0){
@@ -328,6 +340,13 @@ int rtc_test_reading_freq(){
 	}
 }
 
+/* rtc_test_big_HZ
+ * 
+ * try to write to the terminal and test bad inputs 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 int rtc_test_big_HZ(){
 	rtc_open();
 	uint8_t buffer[4] = {0x80, 0x00, 0x00, 0x00};
@@ -340,6 +359,13 @@ int rtc_test_big_HZ(){
 	}
 }
 
+/* rtc_test_power_two
+ * 
+ * try to write to the terminal and test bad inputs 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 int rtc_test_power_two(){
 	rtc_open();
 	uint8_t buffer[4] = {0x00, 0x00, 0x75, 0x13};
@@ -352,6 +378,13 @@ int rtc_test_power_two(){
 	}
 }
 
+/* rtc_test_buff_overflow
+ * 
+ * try to write to the terminal and test bad inputs 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 int rtc_test_buff_overflow(){
 	rtc_open();
 	uint8_t buffer[7] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -375,7 +408,6 @@ void launch_tests(test_t test_num){
 	switch (test_num)
 	{
 	case IDT_TEST:
-		
 		TEST_OUTPUT("idt_test", idt_test());
 		break;
 
@@ -391,7 +423,7 @@ void launch_tests(test_t test_num){
 		TEST_OUTPUT("divide_zero_test", divide_zero_test());
 		break;
 	case MULT_EXCEPTIONS_TEST:
-		//  divide_zero_test();
+		// divide_zero_test();
 		// bound_error_test();
 		// invalid_opcode_test();
 		break;

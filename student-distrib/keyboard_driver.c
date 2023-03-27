@@ -23,9 +23,8 @@ static unsigned char* buf_position = keyboard_buf;
 static unsigned char screen_buf[SCREEN_BYTES];
 // unsigned char enter_flag = 0;
 
-#define BUF_END_ADDR   keyboard_buf+127 // need minus one because the last index is the newline
-#define BUF_LINE_TWO_ADDR keyboard_buf+80
-#define NEWLINE_INDEX   80
+#define BUF_END_ADDR        keyboard_buf+127 // need minus one because the last index is the newline
+#define BUF_LINE_TWO_ADDR   keyboard_buf+80
 
 // Holds all possible key press combinations
 // [nonshifted value, shifted value]
@@ -92,7 +91,6 @@ void keyboard_irq_handler() {
         else {
             echo = scancodes[code][val]; // print char if key was valid
             if(echo != '\0') {
-                //putc(echo);
                 if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
                     putc_new(echo, screen_buf);
                     update_cursor(get_x_position(), get_y_position()); 
@@ -259,10 +257,3 @@ unsigned char remove_from_keyboard_buffer() {
 }
 
 
-// unsigned char get_enter_flag() {
-//     return enter_flag;
-// }
-
-// void clear_enter_flag(){
-//     enter_flag = 0;
-// }
