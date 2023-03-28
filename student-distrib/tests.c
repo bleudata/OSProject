@@ -252,30 +252,28 @@ int terminal_read_test() {
 	// }
 	// return PASS;
 
-	purge_keyboard_buffer();
-	// printf("starting read test: \n");
+	// test to hold mutliple enters "ece\n391\n"
+	printf("Testing Reading and Writing Keyboard. \n");
 	for (i = 0; i < 1000000000; i ++) ;
-	printf("\n starting read \n");
-	terminal_read(0, allocated_buf, 40);
-	// for(i = 0; i < 20; i++) {
-	// 	printf("Character %c\n ", allocated_buf[i]);
-	// }
-	printf("\n starting write \n");
-	terminal_write(1, allocated_buf, 45);
-	printf(" \n done");
-	printf("\n starting read \n");
-	// now the keyboard buffer should have 391\n
-	unsigned char * keyboard_buf;
-    keyboard_buf = get_keyboard_buffer();
+	printf("starting read \n");
+	result = terminal_read(0, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("starting write \n");
+	result = terminal_write(1, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("starting read \n");
+	result = terminal_read(0, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("starting write \n");
+	result = terminal_write(1, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("done");
 
-	for(i = 0; i < 10; i++) {
-		printf("Character %c\n ", keyboard_buf[i]);
-	}
-	// terminal_read(0, allocated_buf, 40);
-	// printf("\n starting write \n");
-	// terminal_write(1, allocated_buf, 45);
-	printf(" \n done");
-	return 0;
+	return PASS;
 }
 
 /* terminal_write_test

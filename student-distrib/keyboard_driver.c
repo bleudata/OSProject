@@ -78,7 +78,7 @@ void keyboard_irq_handler() {
             if (echo == '\n') {
                 enter_count++;
             }
-            else if((echo != '\0')) {
+            if((echo != '\0')) {
                 //putc(echo);
                 if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
                     if(echo == '\t') { // special case for tab

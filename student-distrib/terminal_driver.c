@@ -69,28 +69,17 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     // Loop while we wait for an enter
     // printf(" enter count isnt 0 \n");
     while(get_enter_count() < 1);
-    // printf("passed enter count\n");
-    // Read the keyboard buffer and delete it 
-    while(i < n) /*&& (keyboard_buf[i] != '\n')*/ {
-        // printf("indexes %d %d \n",i, n);
 
-        // current = keyboard_buf[i];
-        // if (current == '\n' && !get_enter_flag()) {
-        //     i++;
-        // }
-        // else if (current == '\n' && get_enter_flag()) {
-        //     clear_enter_flag();
-        //     break;
-        // }
+    // Read the keyboard buffer and delete it 
+    while((i < n) && (keyboard_buf[i] != '\n')) {
         new_buf[i] =keyboard_buf[i]; 
         ret++;
         i++;
-        if(keyboard_buf[i] == '\n') {
-            break;
-        }
     }
-    purge_and_align_keyboard_buffer(ret + 1);
-  
+    new_buf[i] = '\n';
+    ret++;
+    purge_and_align_keyboard_buffer(ret);
+    
     return ret;
 }
 /*
