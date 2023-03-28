@@ -38,10 +38,18 @@ void keyboard_irq_handler();
 // initialize keyboard
 void keyboard_init();
 
+// fills whole keyboard buffer with \0
 extern void purge_keyboard_buffer();
+
+// purges part of the buffer and shifts left anything remaining in the keyboard buffer
 extern void purge_and_align_keyboard_buffer(int n);
+
+// purges part of the keyboard buffer
 extern void partial_purge_keyboard_buffer(int n);
+
+// shifts elements remaining in the keyboard buffer to the beginning
 extern void align_keyboard_buffer(int new_start);
+
 // returns a pointer to the keyboard buffer so the terminal driver can access its contents
 unsigned char * get_keyboard_buffer();
 

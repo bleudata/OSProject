@@ -486,33 +486,36 @@ void test_interrupts(void) {
 }
 
 
-
-/* void putc_new(uint8_t c);
- * Inputs: uint_8* c = character to print, supports vertical scrolling
- * Return Value: void
- *  Function: Output a character to the console */
+/*
+ * putc_new
+ *   DESCRIPTION: prints one character to the screen, with vertical scrolling enabled
+ *   INPUTS: c -- character to print
+ *           buf -- buffer respresenting the whole screen for when we need to vertical scroll
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: edits the screen, might shift everything up one line for vertical scrolling
+ */
 void putc_new(uint8_t c, unsigned char * buf) {
     if(c == '\n' || c == '\r') {
-        //screen_y++;
-        if((screen_y + 1) > NUM_ROWS-1) { // if currently on the last row
+        if((screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
             copy_screen(buf);
             shift_screen_up(buf);
         }
         else {
-            screen_y = (screen_y + 1); // % NUM_ROWS;
+            screen_y = (screen_y + 1); // next row
         }
         screen_x = 0;
         
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c; // add the character and attrib colors to video memory
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         if((screen_x+1) > NUM_COLS-1) {
-            if((screen_y + 1) > NUM_ROWS-1) {
+            if((screen_y + 1) > NUM_ROWS-1) { // might need to shift the screen
                 copy_screen(buf);
                 shift_screen_up(buf);
             }
             else {
-                screen_y = (screen_y + 1);// % NUM_ROWS;
+                screen_y = (screen_y + 1);
             }
             screen_x = 0;
         }
@@ -520,17 +523,17 @@ void putc_new(uint8_t c, unsigned char * buf) {
             screen_x++; 
         }
         screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS));// % NUM_ROWS;
+        screen_y = (screen_y + (screen_x / NUM_COLS));
     }
 }
 
 /*
  * copy_screen
  *   DESCRIPTION: copies from video memory into a buffer
- *   INPUTS: none
+ *   INPUTS: buf -- contains all the data from the screen
  *   OUTPUTS: none
- *   RETURN VALUE: number of bytes copied
- *   SIDE EFFECTS: 
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: writes to thes screen
  */
 void copy_screen(unsigned char * buf) {
     // // check for null pointer
@@ -599,21 +602,16 @@ void unput_c(unsigned char input) {
         return;
     }
     unsigned char c = *(unsigned char *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1));
-    // if(input == '\n') { // newline in the keyboard
-    //     screen_y = (screen_y -1);
-    // }
-    // else {
-        if(c == '\n' || c == '\r') { // not newline in keyboard buffer but still need to get rid of a newline
-            screen_y = (screen_y -1);
-            screen_x = NUM_COLS - 1; // up one row, at the last column  
-            
-        }    
-        *addr = ' '; // replace the character with space to get rid of it
-        *(addr + 1) = ATTRIB;
-        if(!line_flag) {
-            screen_x--;
-        } 
-   // }
+    if(c == '\n' || c == '\r') { // not newline in keyboard buffer but still need to get rid of a newline
+        screen_y = (screen_y -1);
+        screen_x = NUM_COLS - 1; // up one row, at the last column  
+        
+    }    
+    *addr = ' '; // replace the character with space to get rid of it
+    *(addr + 1) = ATTRIB;
+    if(!line_flag) {
+        screen_x--;
+    } 
 }
 
 /*

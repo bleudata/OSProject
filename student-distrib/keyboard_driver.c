@@ -25,9 +25,9 @@ unsigned char enter_count = 0;
 
 #define BUF_END_ADDR        keyboard_buf+127 // need minus one because the last index is the newline
 #define BUF_LINE_TWO_ADDR   keyboard_buf+80
-#define NEWLINE_INDEX   80
+#define NEWLINE_INDEX       80
 
-// Holds all possible key press combinations
+// Array that holds Shifted Values
 // [nonshifted value, shifted value]
 static unsigned char scancodes[58][2] = { // values 0x00 - 0x39
     {'\0', '\0'}, {'\0', '\0'}, {'1', '!'},    {'2', '@'}, 
@@ -312,7 +312,7 @@ unsigned char add_to_keyboard_buffer(unsigned char input) {
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: 2 if character removed was tab, 1 if removed another character, 0 if buffer was empty
- *   SIDE EFFECTS: none
+ *   SIDE EFFECTS: changes the keyboard buffer
  */
 unsigned char remove_from_keyboard_buffer() {
     unsigned char retval;
@@ -330,7 +330,14 @@ unsigned char remove_from_keyboard_buffer() {
     return 0;
 }
 
-
+/*
+ * get_enter_count
+ *   DESCRIPTION: returns the number of enters in the keyboard buf
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: number of enters
+ *   SIDE EFFECTS: none
+ */
 unsigned char get_enter_count() {
     return enter_count;
 }

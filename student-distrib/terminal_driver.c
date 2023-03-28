@@ -24,10 +24,11 @@ int32_t terminal_open(const uint8_t* filename) {
  * terminal_read
  *   DESCRIPTION: Reads from the keyboard buffer and copies specified number of bytes into an array given by the user
  *   INPUTS: fd -- file descriptor
-*            buf -- array provided by user, data from keyboard buffer is copied into here
+ *            buf -- array provided by user, data from keyboard buffer is copied into here
+ *            n - the number of bytes we want to read from the buffer
  *   OUTPUTS: none
  *   RETURN VALUE: number of bytes read or -1 for FAIL
- *   SIDE EFFECTS: 
+ *   SIDE EFFECTS: empties part of the keyboard buffer
  */
 int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     // Return data from one line that ended in \n or a full buffer
@@ -50,15 +51,13 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
         return -1;
     }
 
-    // TODO: Change if this is actually an error
-    // validate input, at most can read all of the keyboard buffer
+    // validate input
     if(n > KEYBOARD_BUF_SIZE) { 
         n = KEYBOARD_BUF_SIZE; 
     }
     
     i = 0;
     ret = 0;
-
     // Loop while we wait for an enter
     while(get_enter_count() < 1);
 
@@ -78,10 +77,12 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
 /*
  * terminal_write
  *   DESCRIPTION: write data from input buffer to video memory to display on the screen
- *   INPUTS: none
+ *   INPUTS: fd - file descriptor
+ *          buf - the buffer to read from to print to the screen
+ *          n  - number of bytes to print 
  *   OUTPUTS: none
  *   RETURN VALUE: number or bytes written if successful, else -1; 
- *   SIDE EFFECTS: 
+ *   SIDE EFFECTS: write to the screen 
  */
 int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
     int i;
