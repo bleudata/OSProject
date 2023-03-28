@@ -328,7 +328,10 @@ int terminal_open_test() {
 	TEST_HEADER;
 	int result; 
 	result = terminal_open(0); // 0 is dummy value since param doesn't actually get used
-	return result ? PASS: FAIL;
+	if (result != 0) {
+		return FAIL;
+	}
+	return PASS;
 }
 
 /* terminal_close_test
@@ -342,7 +345,10 @@ int terminal_close_test() {
 	TEST_HEADER;
 	int result; 
 	result = terminal_close(0); 
-	return result ? PASS: FAIL;
+	if (result != 0) {
+		return FAIL;
+	}
+	return PASS;
 }
 
 /* terminal_read_test
@@ -357,65 +363,53 @@ int terminal_read_test() {
 	TEST_HEADER;
 	int result;
 	unsigned char allocated_buf[128];
-	int i;
+	
 
 	/* Check invalid inputs */
-	// result = terminal_read(0, NULL, 128);
-	// if (result >= 0) {
-	// 	printf("Didnt Check for Null Buf arg.");
-	// 	return FAIL;
-	// }
+	printf("test 1\n");
+	result = terminal_read(0, NULL, 128);
+	if (result >= 0) {
+		printf("Didnt Check for Null Buf arg.");
+		return FAIL;
+	}
+	printf("test2\n");
+	result = terminal_read(-1, allocated_buf, 128);
+	if (result >= 0) {
+		printf("Didnt Check for Invlaid File Descriptor.");
+		return FAIL;
+	}
 
-	// result = terminal_read(-1, allocated_buf, 128);
-	// if (result >= 0) {
-	// 	printf("Didnt Check for Invlaid File Descriptor.");
-	// 	return FAIL;
-	// }
+	printf("test3\n");
+	result = terminal_read(0, allocated_buf, -1);
+	if (result >= 0) {
+		printf("Didnt Check for Invlaid Byte Number.");
+		return FAIL;
+	}
 
-	// result = terminal_read(0, allocated_buf, -1);
-	// if (result >= 0) {
-	// 	printf("Didnt Check for Invlaid Byte Number.");
-	// 	return FAIL;
-	// }
-
-	// /* Check If Buf is filled correctly */
-	// // all we did was check if the buffers are the same without the enters
-	// i = 0;
-	// result = terminal_read(0, allocated_buf, 20);
-	// if (result < 0) {
-	// 	printf("Failed to copy buffer correctly.");
-	// 	return FAIL;
-	// }
+	/* Check If Buf is filled correctly */
+	// all we did was check if the buffers are the same without the enters
 	
-	// unsigned char* keyboard = get_keyboard_buffer();
-	// for (i = 0; i < 128; i++, keyboard++) {
-	// 	if (*keyboard != allocated_buf[i]) {
-	// 		printf("Failed to copy buffer correctly");
-	// 		return FAIL;
-	// 	}
-	// }
-	// return PASS;
-
+	printf("finished tests\n");
 	// test to hold mutliple enters "ece\n391\n"
-	printf("Testing Reading and Writing Keyboard. \n");
-	for (i = 0; i < 1000000000; i ++) ;
-	printf("starting read \n");
-	result = terminal_read(0, allocated_buf, 200);
-	if (result == -1) 
-		return FAIL;
-	printf("starting write \n");
-	result = terminal_write(1, allocated_buf, 200);
-	if (result == -1) 
-		return FAIL;
-	printf("starting read \n");
-	result = terminal_read(0, allocated_buf, 200);
-	if (result == -1) 
-		return FAIL;
-	printf("starting write \n");
-	result = terminal_write(1, allocated_buf, 200);
-	if (result == -1) 
-		return FAIL;
-	printf("done");
+	// printf("Testing Reading and Writing Keyboard. \n");
+	// for (i = 0; i < 1000000000; i ++) ;
+	// printf("starting read \n");
+	// result = terminal_read(0, allocated_buf, 200);
+	// if (result == -1) 
+	// 	return FAIL;
+	// printf("starting write \n");
+	// result = terminal_write(1, allocated_buf, 200);
+	// if (result == -1) 
+	// 	return FAIL;
+	// printf("starting read \n");
+	// result = terminal_read(0, allocated_buf, 200);
+	// if (result == -1) 
+	// 	return FAIL;
+	// printf("starting write \n");
+	// result = terminal_write(1, allocated_buf, 200);
+	// if (result == -1) 
+	// 	return FAIL;
+	// printf("done");
 
 	return PASS;
 }
@@ -430,7 +424,7 @@ int terminal_read_test() {
 int terminal_write_test() {
 	TEST_HEADER;
 	int result;
-	unsigned char allocated_buf[128] = " terminal write test "; 
+	unsigned char allocated_buf[128] = " terminal write test \n"; 
 
 	/* Check invalid inputs */
 	result = terminal_write(1, NULL, 128);
@@ -697,10 +691,10 @@ void launch_tests(test_t test_num){
 	
 
 	case TERMINAL_TEST:
-		//terminal_open_test();
-		terminal_read_test();
-		terminal_write_test();
-		//terminal_close_test();
+		// TEST_OUTPUT("terminal_open_test", terminal_open_test());
+		// TEST_OUTPUT("terminal_read_test", terminal_read_test());
+		// TEST_OUTPUT("terminal_write_test", terminal_write_test());
+		TEST_OUTPUT("terminal_close_test", terminal_close_test());
 		break;
 	case RTC_OPEN:
 		TEST_OUTPUT("rtc_open works", rtc_open_no_errors());

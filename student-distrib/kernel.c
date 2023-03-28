@@ -190,14 +190,14 @@ void entry(unsigned long magic, unsigned long addr) {
     // launch_tests(PAGE_FAULT_TEST);
     //launch_tests(DIVIDE_ZERO_TEST);
     //launch_tests(MULT_EXCEPTIONS_TEST);
-    //launch_tests(TEXT_FILE_READ_TEST);
-    //launch_tests(NON_TEXT_FILE_READ_TEST);
-    //launch_tests(LENGTH_32_FILENAME_TEST);
-    //launch_tests(LENGTH_33_FILENAME_TEST);
-    //launch_tests(DIR_READ_TEST);
-    //launch_tests(READ_DATA_TEST);
-    //launch_tests(TERMINAL_TEST);
-    launch_tests(RTC_NEW_HZ);
+    // launch_tests(TEXT_FILE_READ_TEST);
+    // launch_tests(NON_TEXT_FILE_READ_TEST);
+    // launch_tests(LENGTH_32_FILENAME_TEST);
+    // launch_tests(LENGTH_33_FILENAME_TEST);
+    // launch_tests(DIR_READ_TEST);
+    // launch_tests(READ_DATA_TEST);
+    launch_tests(TERMINAL_TEST);
+    // launch_tests(RTC_NEW_HZ);
     //launch_tests(RTC_HZ_BUFF_OF);
     //launch_tests(RTC_GET_SYSHZ_PER_UHZ);
 #endif
