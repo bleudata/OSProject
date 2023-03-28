@@ -42,15 +42,15 @@ extern void rtc_init();
 extern void rtc_irq_handler();
 
 //user rtc initialization function
-extern int rtc_open();
+extern int32_t rtc_open(const uint8_t* filename);
 
 //user rtc closing function
-extern int rtc_close();
+extern int32_t rtc_close(int32_t fd);
 
 //user rtc read function that handles end of interrupts from user perspective
-extern int rtc_read();
+extern int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes);
 
 //user rtc write function to set the rtc
-extern int rtc_write(void *buffer, int32_t nbytes);
+extern int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes);
 
 #endif /*RTC_H*/

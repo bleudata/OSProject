@@ -54,7 +54,7 @@ void rtc_irq_handler() {
  *   SIDE EFFECTS: accesses RTC registers and sets frequency to 1024 Hz
  */
 
-int rtc_open(){
+int32_t rtc_open(const uint8_t* filename){
     uint16_t rate = RTC_RATE;
     outb(RTC_REG_A_DISABLE, RTC_REG_PORT); // set index to register A, disable NMI
     char prev = inb(RTC_RW_PORT);	// get initial value of register A, should be 32kHz
@@ -75,7 +75,7 @@ int rtc_open(){
  *   SIDE EFFECTS: resets global variables to reflect a clock rate of 1024 Hz from the user perspective
  */
 
-int rtc_close(){
+int32_t rtc_close(int32_t fd){
     rtc_ctr = 0;
     rtc_syshz_per_uhz = RTC_GLOB_RES_RATE; //reset the # of interrupts per system freq to be just 1, so its itself
     return RTC_PASS;
@@ -90,7 +90,7 @@ int rtc_close(){
  *   SIDE EFFECTS: resets the global rtc irq flag to 0 after an interrupt is processed
  */
 
-int rtc_read(){
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
     while(rtc_irq_flag != RTC_FLAG_SET);
     rtc_irq_flag = RTC_GLOB_RES_VAR;
     return RTC_PASS;
@@ -106,7 +106,7 @@ int rtc_read(){
  *   SIDE EFFECTS: writes to the syshz per uhz variable and affects the frequency at which rtc_read() returns, but does not actually change the system RTC frequency
  */
 
-int rtc_write(void *buf, int32_t nbytes){
+int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes){
     /*checking to make sure buffer is exactly 4 bytes, otherwise return -1*/
     uint8_t *buffer = (uint8_t*)buf;
 

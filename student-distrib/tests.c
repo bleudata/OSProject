@@ -472,6 +472,11 @@ int rtc_open_no_errors(){
 	}
 }
 
+static int32_t file = 0;
+static uint8_t* filename = 0;
+static uint8_t* buff [4];
+
+
 /* rtc_test_reading_freq
  * 
  * Description: Reads from rtc_read(), which returns at every tick from the RTC from the user perspective 
@@ -480,7 +485,7 @@ int rtc_open_no_errors(){
  * Side Effects: None
  */
 int rtc_test_reading_freq(){
-	int result = rtc_read();
+	int result = rtc_read(file, buff, 4);
 	if(result == 0){
 		return PASS;
 	}
@@ -488,6 +493,7 @@ int rtc_test_reading_freq(){
 		return FAIL;
 	}
 }
+
 
 /* rtc_test_changing_freq
  * 
@@ -497,9 +503,9 @@ int rtc_test_reading_freq(){
  * Side Effects: "Changes" the frequency of RTC from the user perspective
  */
 int rtc_test_changing_freq(){
-	rtc_open();
+	rtc_open(filename);
 	uint8_t buffer[4] = {0x00, 0x00, 0x00, 0x02};
-	int result_write = rtc_write(buffer, 4);
+	int result_write = rtc_write(file, buffer, 4);
 
 	int ctr = 0;
 	while(ctr < 10){
@@ -509,7 +515,7 @@ int rtc_test_changing_freq(){
 	
 	//setting Hz to 4
 	buffer[3] = 0x04;
-	result_write = rtc_write(buffer, 4);
+	result_write = rtc_write(file, buffer, 4);
 	ctr = 0;
 	while(ctr < 10){
 		printf("%x", rtc_test_reading_freq());
@@ -518,7 +524,7 @@ int rtc_test_changing_freq(){
 	
 	//setting Hz to 8
 	buffer[3] = 0x08;
-	result_write = rtc_write(buffer, 4);
+	result_write = rtc_write(file, buffer, 4);
 	ctr = 0;
 	while(ctr < 20){
 		printf("%x", rtc_test_reading_freq());
@@ -527,7 +533,7 @@ int rtc_test_changing_freq(){
 
 	//setting Hz to 32
 	buffer[3] = 0x20;
-	result_write = rtc_write(buffer, 4);
+	result_write = rtc_write(file, buffer, 4);
 	ctr = 0;
 	while(ctr < 40){
 		printf("%x", rtc_test_reading_freq());
@@ -537,7 +543,7 @@ int rtc_test_changing_freq(){
 
 	//setting Hz to 128
 	buffer[3] = 0x80;
-	result_write = rtc_write(buffer, 4);
+	result_write = rtc_write(file, buffer, 4);
 	ctr = 0;
 	printf("\n");
 	while(ctr < 321){
@@ -551,7 +557,7 @@ int rtc_test_changing_freq(){
 	//setting to 512
 	buffer[3] = 0x00;
 	buffer[2] = 0x02;
-	result_write = rtc_write(buffer, 4);
+	result_write = rtc_write(file, buffer, 4);
 	ctr = 0;
 	printf("\n");
 	while(ctr < 321){
@@ -564,7 +570,7 @@ int rtc_test_changing_freq(){
 
 	//setting to 1024
 	buffer[2] = 0x04;
-	result_write = rtc_write(buffer, 4);
+	result_write = rtc_write(file, buffer, 4);
 	ctr = 0;
 	printf("\n");
 	while(ctr < 641){
@@ -585,9 +591,9 @@ int rtc_test_changing_freq(){
  * Side Effects: None
  */
 int rtc_test_big_HZ(){
-	rtc_open();
+	rtc_open(filename);
 	uint8_t buffer[4] = {0x80, 0x00, 0x00, 0x00};
-	int result = rtc_write(buffer, 4);
+	int result = rtc_write(file, buffer, 4);
 	if(result == 0){
 		return PASS;
 	}
@@ -604,9 +610,9 @@ int rtc_test_big_HZ(){
  * Side Effects: None
  */
 int rtc_test_power_two(){
-	rtc_open();
+	rtc_open(filename);
 	uint8_t buffer[4] = {0x00, 0x00, 0x75, 0x13};
-	int result = rtc_write(buffer, 4);
+	int result = rtc_write(file, buffer, 4);
 	if(result == 0){
 		return PASS;
 	}
@@ -624,9 +630,9 @@ int rtc_test_power_two(){
  */
 
 int rtc_test_buff_overflow(){
-	rtc_open();
+	rtc_open(filename);
 	uint8_t buffer[7] = {0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00};
-	int result = rtc_write(buffer, 7);
+	int result = rtc_write(file, buffer, 7);
 	if(result == 0){
 		return PASS;
 	}

@@ -28,7 +28,7 @@ unsigned char enter_count = 0;
 #define NEWLINE_INDEX       80
 
 // Array that holds Shifted Values
-// [nonshifted value, shifted value]
+// [nonshifted value, shifted value], \0 are function keys!! except the first two
 static unsigned char scancodes[58][2] = { // values 0x00 - 0x39
     {'\0', '\0'}, {'\0', '\0'}, {'1', '!'},    {'2', '@'}, 
     {'3', '#'},   {'4', '$'},   {'5', '%'},    {'6', '^'}, 
@@ -63,10 +63,10 @@ void keyboard_irq_handler() {
     if(code >= SCAN_CODE_START && code <= SCAN_CODE_END) { // check if key is invalid for print
         unsigned char val = 0;
         if ((code >= Q_PRESS && code <= P_PRESS) || (code >= A_PRESS && code <= L_PRESS) || (code >= Z_PRESS && code <= M_PRESS)) {
-            val = shift_pressed ^ capslock_on; 
+            val = shift_pressed ^ capslock_on; // if scancode is letter we care about caps lock and shift
         }
         else {
-            val = shift_pressed;
+            val = shift_pressed; // if scancode is anything else only care about shift :)
         }
         if (ctrl_pressed && code == L_PRESS) { // 0x26 is the scan code for L/l
             clear_reset_cursor();
@@ -78,7 +78,7 @@ void keyboard_irq_handler() {
             if (echo == '\n') {
                 enter_count++;
             }
-            if((echo != '\0')) {
+            if((echo != '\0')) { // if not function key
                 if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
                     if(echo == '\t') { // special case for tab
                         putc_new(' ', screen_buf); // need to print multiple spaces
