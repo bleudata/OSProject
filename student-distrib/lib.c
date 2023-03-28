@@ -587,30 +587,33 @@ void color_screen(unsigned char color) {
 /*
  * unput_c
  *   DESCRIPTION: delete a character from video memory
- *   INPUTS: none
+ *   INPUTS: input -- character in the keyboard buffer
  *   OUTPUTS: none
  *   RETURN VALUE: none
  *   SIDE EFFECTS: deletes a character on the screen
  */
-void unput_c() {
+void unput_c(unsigned char input) {
     unsigned char line_flag = 0;
     unsigned char * addr = (unsigned char *) video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1);
     if((unsigned char * )addr < (unsigned char *)video_mem) { // can't backspace beyond start of memory
         return;
     }
     unsigned char c = *(unsigned char *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1));
-    if(c == '\n' || c == '\r') {
-        screen_y = (screen_y -1);
-        screen_x = NUM_COLS - 1; // up one row, at the last column
-        line_flag = 1;
-        
-    } 
-    *addr = ' '; // replace the character with space to get rid of it
-    *(addr + 1) = ATTRIB;
-    if(!line_flag) {
-        screen_x--;
-    }
-    
+    // if(input == '\n') { // newline in the keyboard
+    //     screen_y = (screen_y -1);
+    // }
+    // else {
+        if(c == '\n' || c == '\r') { // not newline in keyboard buffer but still need to get rid of a newline
+            screen_y = (screen_y -1);
+            screen_x = NUM_COLS - 1; // up one row, at the last column  
+            
+        }    
+        *addr = ' '; // replace the character with space to get rid of it
+        *(addr + 1) = ATTRIB;
+        if(!line_flag) {
+            screen_x--;
+        } 
+   // }
 }
 
 /*

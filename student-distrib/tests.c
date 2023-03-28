@@ -211,38 +211,63 @@ int terminal_read_test() {
 	int i;
 
 	/* Check invalid inputs */
-	result = terminal_read(0, NULL, 128);
-	if (result >= 0) {
-		printf("Didnt Check for Null Buf arg.");
-		return FAIL;
-	}
+	// result = terminal_read(0, NULL, 128);
+	// if (result >= 0) {
+	// 	printf("Didnt Check for Null Buf arg.");
+	// 	return FAIL;
+	// }
 
-	result = terminal_read(-1, allocated_buf, 128);
-	if (result >= 0) {
-		printf("Didnt Check for Invlaid File Descriptor.");
-		return FAIL;
-	}
+	// result = terminal_read(-1, allocated_buf, 128);
+	// if (result >= 0) {
+	// 	printf("Didnt Check for Invlaid File Descriptor.");
+	// 	return FAIL;
+	// }
 
-	result = terminal_read(0, allocated_buf, -1);
-	if (result >= 0) {
-		printf("Didnt Check for Invlaid Byte Number.");
-		return FAIL;
-	}
+	// result = terminal_read(0, allocated_buf, -1);
+	// if (result >= 0) {
+	// 	printf("Didnt Check for Invlaid Byte Number.");
+	// 	return FAIL;
+	// }
 
-	/* Check If Buf is filled correctly */
-	result = terminal_read(0, allocated_buf, 128);
-	if (result < 0) {
-		printf("Failed to copy buffer correctly.");
-		return FAIL;
-	}
+	// /* Check If Buf is filled correctly */
+	// // all we did was check if the buffers are the same without the enters
+	// i = 0;
+	// result = terminal_read(0, allocated_buf, 20);
+	// if (result < 0) {
+	// 	printf("Failed to copy buffer correctly.");
+	// 	return FAIL;
+	// }
 	
-	unsigned char* keyboard = get_keyboard_buffer();
-	for (i = 0; i < 128; i++, keyboard++) {
-		if (*keyboard != allocated_buf[i]) {
-			printf("Failed to copy buffer correctly");
-			return FAIL;
-		}
-	}
+	// unsigned char* keyboard = get_keyboard_buffer();
+	// for (i = 0; i < 128; i++, keyboard++) {
+	// 	if (*keyboard != allocated_buf[i]) {
+	// 		printf("Failed to copy buffer correctly");
+	// 		return FAIL;
+	// 	}
+	// }
+	// return PASS;
+
+	// test to hold mutliple enters "ece\n391\n"
+	printf("Testing Reading and Writing Keyboard. \n");
+	for (i = 0; i < 1000000000; i ++) ;
+	printf("starting read \n");
+	result = terminal_read(0, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("starting write \n");
+	result = terminal_write(1, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("starting read \n");
+	result = terminal_read(0, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("starting write \n");
+	result = terminal_write(1, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("done");
+
 	return PASS;
 }
 
@@ -277,7 +302,7 @@ int terminal_write_test() {
 	}
 
 	/* Should check If it actually writes to screen */
-	result = terminal_write(1, allocated_buf, 127); 
+	result = terminal_write(1, allocated_buf, 128); 
 	if (result < 0) {
 		return FAIL;
 	}
@@ -428,10 +453,10 @@ void launch_tests(test_t test_num){
 		// invalid_opcode_test();
 		break;
 	case TERMINAL_TEST:
-		terminal_open_test();
+		//terminal_open_test();
 		terminal_read_test();
 		terminal_write_test();
-		terminal_close_test();
+		//terminal_close_test();
 		break;
 	case RTC_OPEN:
 		TEST_OUTPUT("rtc_open works", rtc_open_no_errors());

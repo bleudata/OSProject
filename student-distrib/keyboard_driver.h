@@ -31,12 +31,17 @@
 #define BACKSPACE       0x0E
 #define MULT_KEY_CODES  0xE0
 
+
 // handle keyboard interrupt
 void keyboard_irq_handler();
 
 // initialize keyboard
 void keyboard_init();
 
+extern void purge_keyboard_buffer();
+extern void purge_and_align_keyboard_buffer(int n);
+extern void partial_purge_keyboard_buffer(int n);
+extern void align_keyboard_buffer(int new_start);
 // returns a pointer to the keyboard buffer so the terminal driver can access its contents
 unsigned char * get_keyboard_buffer();
 
@@ -47,8 +52,10 @@ unsigned char add_to_keyboard_buffer(unsigned char input);
 unsigned char remove_from_keyboard_buffer(); 
 
 // Returns value of enter_flag
-extern unsigned char get_enter_flag();
+extern unsigned char get_enter_count();
 
 // Sets enter_flag to 0
 extern void clear_enter_flag();
+
+
 #endif /*KEYBOARD_DRIVER_H*/

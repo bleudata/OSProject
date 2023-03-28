@@ -9,10 +9,6 @@
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 
-// static unsigned char* screen_buf[SCREEN_BYTES];
-
-#define BYTE_LIMIT 127
-
 /*
  * terminal_open
  *   DESCRIPTION: Doesn't actually do anything, just need to match system call params
@@ -24,7 +20,6 @@
 int32_t terminal_open(const uint8_t* filename) {
     return 0;
 }
-
 /*
  * terminal_read
  *   DESCRIPTION: Reads from the keyboard buffer and copies specified number of bytes into an array given by the user
@@ -34,15 +29,16 @@ int32_t terminal_open(const uint8_t* filename) {
  *   RETURN VALUE: number of bytes read or -1 for FAIL
  *   SIDE EFFECTS: 
  */
-int32_t terminal_read(int fd, unsigned char * buf, int n) {
+int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     // Return data from one line that ended in \n or a full buffer
     int32_t i, ret; // loop counter and index, also counts the number of characters read
+    unsigned char * new_buf = (unsigned char *)buf;
+  // now use newBuf instead of buf
     unsigned char * keyboard_buf;
     keyboard_buf = get_keyboard_buffer();
-    unsigned char current;
 
     // validate input, null pointer provided by user
-    if(buf == 0) {
+    if(new_buf == 0) {
         return -1; 
     }
     // validate fd 
@@ -63,15 +59,19 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
     i = 0;
     ret = 0;
 
-    while((i < n)) {
-        buf[i] =  keyboard_buf[i];
+    // Loop while we wait for an enter
+    while(get_enter_count() < 1);
+
+    // Read the keyboard buffer and delete it 
+    while((i < n) && (keyboard_buf[i] != '\n')) {
+        new_buf[i] =keyboard_buf[i]; 
         ret++;
         i++;
-        if(current == '\n') {
-            break;
-        }
     }
-  
+    new_buf[i] = '\n';
+    ret++;
+    purge_and_align_keyboard_buffer(ret);
+    
     return ret;
 }
 
@@ -83,24 +83,27 @@ int32_t terminal_read(int fd, unsigned char * buf, int n) {
  *   RETURN VALUE: number or bytes written if successful, else -1; 
  *   SIDE EFFECTS: 
  */
-int32_t terminal_write(int32_t fd, unsigned char * buf, int32_t n) {
+int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
     int i;
+    const unsigned char * new_buf = (unsigned char*) buf;
 
     // validate fd 
     if (fd != 1) {
         return -1;
     }
     // check for null pointer
-    if(buf == 0) {
+    if(new_buf == 0) {
         return -1;
     }
-    if (n < 0) { 
+    if(n < 0) { // cant read negative bytes
         return -1;
     }
-    //How to check if n is different size than buf ? go through buf till you find a null and count then compare??
+
+    
+    // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
 
     for(i = 0; i < n; i ++) {
-        putc_new(buf[i], 0);
+        putc_new(new_buf[i], 0);
     }
     update_cursor(get_x_position(), get_y_position());
 

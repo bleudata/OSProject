@@ -43,7 +43,7 @@ void putc_new(uint8_t c, unsigned char * buf);
 void copy_screen(unsigned char * buf);
 void shift_screen_up(unsigned char * buf);
 void color_screen(unsigned char color);
-void unput_c();
+void unput_c(unsigned char input);
 int get_x_position();
 int get_y_position();
 /* Userspace address-check functions */
