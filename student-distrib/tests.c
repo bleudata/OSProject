@@ -197,6 +197,8 @@ int text_file_read(){
 		printf("%c", buf[i]);
 	}
 
+	file_close(0);
+
 	return PASS;
 }
 
@@ -229,6 +231,9 @@ int non_text_file_read(){
 		printf("%c", buf[i]);
 	}
 	printf("\n ");
+
+	file_close(0);
+
 	return PASS;
 }
 
@@ -362,10 +367,10 @@ int terminal_close_test() {
 int terminal_read_test() {
 	TEST_HEADER;
 	int result;
+	int i;
 	unsigned char allocated_buf[128];
 	
-
-	/* Check invalid inputs */
+	// /* Check invalid inputs */
 	printf("test 1\n");
 	result = terminal_read(0, NULL, 128);
 	if (result >= 0) {
@@ -388,28 +393,31 @@ int terminal_read_test() {
 
 	/* Check If Buf is filled correctly */
 	// all we did was check if the buffers are the same without the enters
+	for (i = 0; i < 128; i++) {
+		allocated_buf[i] = ' ';
+	}
 	
 	printf("finished tests\n");
 	// test to hold mutliple enters "ece\n391\n"
-	// printf("Testing Reading and Writing Keyboard. \n");
-	// for (i = 0; i < 1000000000; i ++) ;
-	// printf("starting read \n");
-	// result = terminal_read(0, allocated_buf, 200);
-	// if (result == -1) 
-	// 	return FAIL;
-	// printf("starting write \n");
-	// result = terminal_write(1, allocated_buf, 200);
-	// if (result == -1) 
-	// 	return FAIL;
-	// printf("starting read \n");
-	// result = terminal_read(0, allocated_buf, 200);
-	// if (result == -1) 
-	// 	return FAIL;
-	// printf("starting write \n");
-	// result = terminal_write(1, allocated_buf, 200);
-	// if (result == -1) 
-	// 	return FAIL;
-	// printf("done");
+	printf("Testing Reading and Writing Keyboard. \n");
+	for (i = 0; i < 1000000000; i ++) ;
+	printf("starting read \n");
+	result = terminal_read(0, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("starting write \n");
+	result = terminal_write(1, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("\nstarting read \n");
+	result = terminal_read(0, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("starting write \n");
+	result = terminal_write(1, allocated_buf, 200);
+	if (result == -1) 
+		return FAIL;
+	printf("done\n");
 
 	return PASS;
 }
@@ -453,7 +461,9 @@ int terminal_write_test() {
 	return PASS;
 }
 
-
+static int32_t file = 0;
+static uint8_t* filename = 0;
+static uint8_t* buff [4];
 
 /* rtc_open_no_errors
  * 
@@ -463,7 +473,7 @@ int terminal_write_test() {
  * Side Effects: None
  */
 int rtc_open_no_errors(){
-	int result = rtc_open();
+	int result = rtc_open(filename);
 	if(result == 0){
 		return PASS;
 	}
@@ -472,9 +482,7 @@ int rtc_open_no_errors(){
 	}
 }
 
-static int32_t file = 0;
-static uint8_t* filename = 0;
-static uint8_t* buff [4];
+
 
 
 /* rtc_test_reading_freq
@@ -698,9 +706,9 @@ void launch_tests(test_t test_num){
 
 	case TERMINAL_TEST:
 		// TEST_OUTPUT("terminal_open_test", terminal_open_test());
-		// TEST_OUTPUT("terminal_read_test", terminal_read_test());
+		TEST_OUTPUT("terminal_read_test", terminal_read_test());
 		// TEST_OUTPUT("terminal_write_test", terminal_write_test());
-		TEST_OUTPUT("terminal_close_test", terminal_close_test());
+		// TEST_OUTPUT("terminal_close_test", terminal_close_test());
 		break;
 	case RTC_OPEN:
 		TEST_OUTPUT("rtc_open works", rtc_open_no_errors());
@@ -713,9 +721,6 @@ void launch_tests(test_t test_num){
 		break;
 	case RTC_TEST_READ:
 		TEST_OUTPUT("rtc_read test intervals", 1);
-		while(1){
-			printf("%x", rtc_read());
-		}
 		break;
 	case RTC_HZ_POWER_TWO:
 		TEST_OUTPUT("rtc_test_power_two, should fail if requested frequency is not a power of 2", rtc_test_power_two());

@@ -62,6 +62,9 @@ unsigned char remove_from_keyboard_buffer();
 // Returns value of enter_flag
 extern unsigned char get_enter_count();
 
+// Decrements value of enter count
+extern void decrement_enter_count();
+
 // Sets enter_flag to 0
 extern void clear_enter_flag();
 

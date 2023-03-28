@@ -225,7 +225,9 @@ void purge_and_align_keyboard_buffer(int n) {
         buf_position = keyboard_buf;
     }
 }
-
+// ece
+// 391
+// 391\n
 /*
  * partial_purge_buffer
  *   DESCRIPTION: purges n characters in the buffer starting from index 0
@@ -340,4 +342,16 @@ unsigned char remove_from_keyboard_buffer() {
  */
 unsigned char get_enter_count() {
     return enter_count;
+}
+
+/*
+ * decrement_enter_count
+ *   DESCRIPTION: subtracts one from the keyboard buffer
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: number of enters
+ *   SIDE EFFECTS: none
+ */
+void decrement_enter_count() {
+    enter_count--;
 }

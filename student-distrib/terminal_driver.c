@@ -67,9 +67,10 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
         ret++;
         i++;
     }
-    new_buf[i] = '\n';
+    new_buf[i] = '\n'; // [\n\n]
     ret++;
     purge_and_align_keyboard_buffer(ret);
+    decrement_enter_count();
     
     return ret;
 }
