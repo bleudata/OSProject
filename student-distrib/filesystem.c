@@ -9,7 +9,7 @@ data_struct* data_array;
 uint32_t file_counter;
 
 //dentry struct variable, for cp2
-//d_entry cp2_dentry;
+d_entry cp2_dentry;
 
 // if there are memory issues, might be because of this 
 /*
@@ -43,7 +43,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
         return -1;
     }
     // invalid filename, over 32 chars
-    if(strlen(fname) > MAX_FILE_LENGTH){
+    if(strlen((int8_t*)fname) > MAX_FILE_LENGTH){
         //printf("string over 32 chars \n");
         return -1;
     }
@@ -146,14 +146,14 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
  *   OUTPUTS: none
  *   RETURN VALUE: 0:success, -1:fail
  */
-int32_t file_open(const uint8_t* filename, d_entry * dentry){
+int32_t file_open(const uint8_t* filename){
     //d_entry * dentry;
     // filename length check
-    if(strlen(filename) > MAX_FILE_LENGTH){
+    if(strlen((int8_t*)filename) > MAX_FILE_LENGTH){
         //printf("string over 32 chars \n");
         return -1;
     }
-    return read_dentry_by_name(filename, dentry);
+    return read_dentry_by_name(filename, &cp2_dentry);
 }
 
 /*
@@ -161,9 +161,12 @@ int32_t file_open(const uint8_t* filename, d_entry * dentry){
  *   DESCRIPTION: does nothing
  *   INPUTS: file descriptor
  *   OUTPUTS: none
- *   RETURN VALUE: 0:success fd from 0 to 7
+ *   RETURN VALUE: 0:success -1:fail
  */
 int32_t file_close(int32_t fd){
+    // if(fd<0 || fd >7){
+    //     return -1;
+    // }
     return 0;
 }
 
@@ -181,6 +184,9 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
     if(buf == NULL){
         return -1;
     }
+    // if(fd<0 || fd >7){
+    //     return -1;
+    // }
 
     return read_data(fd, ZERO_OFFSET , buf , nbytes); //fd -> inode num only for cp2
 }
@@ -193,6 +199,9 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
+    // if(fd<0 || fd >7){
+    //     return -1;
+    // }
     return -1;
 }
 
@@ -203,8 +212,8 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
  *   OUTPUTS: none
  *   RETURN VALUE: 0:success, -1:fail
  */
-int32_t dir_open(const uint8_t* filename, d_entry* dentry){
-    return read_dentry_by_index(0, dentry);
+int32_t dir_open(const uint8_t* filename){
+    return read_dentry_by_index(0, &cp2_dentry);
 }
 
 /*
@@ -215,6 +224,9 @@ int32_t dir_open(const uint8_t* filename, d_entry* dentry){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t dir_close(int32_t fd){
+    // if(fd<0 || fd >7){
+    //     return -1;
+    // }
     return 0;
 }
 
@@ -232,6 +244,9 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
     if(buf == NULL){ //sanity check
         return -1;
     }
+    // if(fd<0 || fd >7){
+    //     return -1;
+    // }
     int num_dir_entries = boot_block->dir_count;
 
     if(file_counter >= num_dir_entries){ //dont read non_existing file
@@ -261,6 +276,9 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
+    // if(fd<0 || fd >7){
+    //     return -1;
+    // }
     return -1;
 }
 
@@ -276,7 +294,16 @@ uint32_t get_file_length(int32_t inode_num){
     return inode_array[inode_num].length;
 }
 
-
+/*
+ * get_cp2_dentry_address
+ *   DESCRIPTION: return address of cp2_dentry
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: dentry address
+ */
+d_entry * get_cp2_dentry_address(){
+    return &cp2_dentry;
+}
 
 //fish frame 0
 // read non text 

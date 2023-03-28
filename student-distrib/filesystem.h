@@ -56,7 +56,7 @@ extern void filesys_init(uint32_t* fileimg_address);
 
 
 //fopen (args same as sys calls because called by them) (+design choice for dentry things)
-int32_t file_open(const uint8_t* filename,  d_entry* dentry);
+int32_t file_open(const uint8_t* filename);
 
 //file_close: does nothing
 int32_t file_close(int32_t fd);
@@ -68,7 +68,7 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes);
 int32_t file_write(int32_t fd, const void* buf, int32_t nbytes);
 
 // dir_open: reads 
-int32_t dir_open(const uint8_t* filename, d_entry* dentry);
+int32_t dir_open(const uint8_t* filename);
 
 // dir close: does nothing in cp2
 int32_t dir_close(int32_t fd);
@@ -90,5 +90,8 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
 // returns length of file in bytes
 uint32_t get_file_length(int32_t inode_num);
+
+//return address of cp2_dentry
+d_entry * get_cp2_dentry_address();
 
 #endif
