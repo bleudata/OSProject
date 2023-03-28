@@ -1,6 +1,8 @@
 #ifndef TESTS_H
 #define TESTS_H
 
+#define MAX_FILE_LENGTH_BYTES 32
+
 typedef enum {
 	IDT_TEST,
 	PAGE_FAULT_TEST,

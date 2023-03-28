@@ -172,14 +172,23 @@ int invalid_opcode_test(){
 
 
 /* Checkpoint 2 tests */
+
+/* text_file_read()
+ * 
+ * test opening, reading and closing text file
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 int text_file_read(){
 	TEST_HEADER;
+	// frame0.txt  frame1.txt verylargetextwithverylongname.txt 
 	d_entry fish_dentry;
 	file_open((uint8_t*)"frame0.txt", &fish_dentry);
 	uint32_t file_length = get_file_length(fish_dentry.inode_num);
-	uint8_t buf[file_length];
+	uint8_t buf[file_length+1];
 	int32_t bytes_read = file_read(fish_dentry.inode_num, buf, file_length);
-	printf("file read call done, num_bytes_read: %d \n", bytes_read);
+	//printf("file read call done, num_bytes_read: %d \n", bytes_read);
 	//printf("%s", buf);
 	int i;
 	for(i = 0; i< file_length ; i++){
@@ -188,23 +197,43 @@ int text_file_read(){
 	return PASS;
 }
 
+/* non_text_file_read()
+ * 
+ * test opening, reading and closing non text file
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 int non_text_file_read(){
 	TEST_HEADER;
-
+	// cat counter fish grep hello ls pingpong shell syserr sigtest testprint 
 	d_entry dentry;
 	file_open((uint8_t*)"grep", &dentry);
 	uint32_t file_length = get_file_length(dentry.inode_num);
 	uint8_t buf[file_length];
 	int32_t bytes_read = file_read(dentry.inode_num, buf, file_length);
-	printf("file read call done, num_bytes_read: %d \n", bytes_read);
-	
+	//printf("file read call done, num_bytes_read: %d \n", bytes_read);
+	printf("the first few bytes: ");
 	int i;
-	for(i = 0; i< file_length ; i++){
+	for(i = 0; i< 5 ; i++){
+		printf("%c", buf[i]);
+		//use terminal write instead of printf();
+	}
+	printf("\nthe last few bytes: ");
+	for(i = file_length-37; i<file_length; i++){
 		printf("%c", buf[i]);
 	}
+	printf("\n ");
 	return PASS;
 }
 
+/* length_33_filename_test()
+ * 
+ * tests opening long name file (over 32 characters)
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 int length_33_filename_test(){
 	TEST_HEADER;
 
@@ -214,18 +243,14 @@ int length_33_filename_test(){
 	}
 	return FAIL;
 
-	uint32_t file_length = get_file_length(dentry.inode_num);
-	uint8_t buf[file_length];
-	int32_t bytes_read = file_read(dentry.inode_num, buf, file_length);
-	printf("file read call done, num_bytes_read: %d \n", bytes_read);
-	
-	int i;
-	for(i = 0; i< file_length ; i++){
-		printf("%c", buf[i]);
-	}
-	return PASS;
 }
 
+/* text_file_read()
+ * 
+ * test opening files with less than 32 characters
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ */
 int length_32_filename_test(){
 	TEST_HEADER;
 
@@ -236,30 +261,26 @@ int length_32_filename_test(){
 	}
 	return FAIL;
 	
-	// uint32_t file_length = get_file_length(dentry.inode_num);
-	// uint8_t buf[file_length];
-	// int32_t bytes_read = file_read(dentry.inode_num, buf, file_length);
-	// printf("file read call done, num_bytes_read: %d \n", bytes_read);
-	
-	// int i;
-	// for(i = 0; i< file_length ; i++){
-	// 	printf("%c", buf[i]);
-	// }
-	// return PASS;
 }
 
+/* dir_read_test()
+ * 
+ * test opening files with less than 32 characters
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ */
 int dir_read_test(){
 	TEST_HEADER;
 	
-	uint8_t buf[32];
-	while(0 != dir_read(0, buf, 32)){
+	uint8_t buf[MAX_FILE_LENGTH_BYTES];
+	while(0 != dir_read(0, buf, MAX_FILE_LENGTH_BYTES)){
 		int i;
-		for(i = 0; i<32; i++){
+		for(i = 0; i<MAX_FILE_LENGTH_BYTES; i++){
 			if(buf[i] != 0){
 				printf("%c", buf[i]);
 			}
 			// printf("%c", buf[i]);
-			buf[i] = 0;
+			buf[i] = 0; //reset the buffer after printing 
 		}
 		printf(" \n");
 	}
@@ -267,6 +288,12 @@ int dir_read_test(){
 	return PASS;
 }
 
+/* read_data_test()
+ * 
+ * test opening files with less than 32 characters
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ */
 int read_data_test(){
 	TEST_HEADER;
 	d_entry fish_dentry;

@@ -8,8 +8,10 @@ inode_struct* inode_array;
 data_struct* data_array;
 uint32_t file_counter;
 
+//dentry struct variable, for cp2
+//d_entry cp2_dentry;
 
-// if there are memory issues, might be because of this :_(
+// if there are memory issues, might be because of this 
 /*
  * filesys_init()
  *   DESCRIPTION: initialize the global variables boot_block, inode_array, data_array
@@ -41,7 +43,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
         return -1;
     }
     // invalid filename, over 32 chars
-    if(strlen(fname) > 32){
+    if(strlen(fname) > MAX_FILE_LENGTH){
         //printf("string over 32 chars \n");
         return -1;
     }
@@ -83,7 +85,7 @@ int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
     }
     
     //copy dentry info from bootblock to the caller's dentry struct
-    memcpy(dentry, &(boot_block->dir_entries[index]), 64);
+    memcpy(dentry, &(boot_block->dir_entries[index]), DENTRY_SIZE_BYTES); //64
     return 0;
 }
 
@@ -147,7 +149,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 int32_t file_open(const uint8_t* filename, d_entry * dentry){
     //d_entry * dentry;
     // filename length check
-    if(strlen(filename) > 32){
+    if(strlen(filename) > MAX_FILE_LENGTH){
         //printf("string over 32 chars \n");
         return -1;
     }
@@ -159,7 +161,7 @@ int32_t file_open(const uint8_t* filename, d_entry * dentry){
  *   DESCRIPTION: does nothing
  *   INPUTS: file descriptor
  *   OUTPUTS: none
- *   RETURN VALUE: 0:success
+ *   RETURN VALUE: 0:success fd from 0 to 7
  */
 int32_t file_close(int32_t fd){
     return 0;
@@ -180,7 +182,7 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
         return -1;
     }
 
-    return read_data(fd, 0 , buf , nbytes); //fd -> inode num only for cp2
+    return read_data(fd, ZERO_OFFSET , buf , nbytes); //fd -> inode num only for cp2
 }
 
 /*
@@ -190,13 +192,13 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
  *   OUTPUTS: none
  *   RETURN VALUE: 0:success, -1:fail
  */
-int32_t file_write(int32_t fd, void* buf, int32_t nbytes){
+int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
     return -1;
 }
 
 /*
  * dir_open
- *   DESCRIPTION: initializes caller's dentry struct with dir info
+ *   DESCRIPTION: initializes caller's dentry struct with "." dir info
  *   INPUTS: filename, dentry struct ptr
  *   OUTPUTS: none
  *   RETURN VALUE: 0:success, -1:fail
@@ -205,6 +207,13 @@ int32_t dir_open(const uint8_t* filename, d_entry* dentry){
     return read_dentry_by_index(0, dentry);
 }
 
+/*
+ * dir_close
+ *   DESCRIPTION: does nothing
+ *   INPUTS: fd: file descriptor
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0:success, -1:fail
+ */
 int32_t dir_close(int32_t fd){
     return 0;
 }
@@ -213,26 +222,26 @@ int32_t dir_close(int32_t fd){
 // read one filename, also keep track of which file number you are on
 /*
  * dir_read
- *   DESCRIPTION: reads one filename at a time, updates file counter
- *   INPUTS: fd:file descriptor??? , buf: output buffer, nbytes - to tell the function how long the buf provided is
+ *   DESCRIPTION: reads one filename at a time into buf, updates file counter
+ *   INPUTS: fd:file descriptor , buf: output buffer, nbytes - to tell the function how long the buf provided is
  *   OUTPUTS: none
  *   RETURN VALUE: number of bytes read
  */
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
-    //fd -> inode num only for cp2
-    if(buf == NULL){
+    //fd -> inode num only for cp2, not used in cp2
+    if(buf == NULL){ //sanity check
         return -1;
     }
     int num_dir_entries = boot_block->dir_count;
 
-    if(file_counter >= num_dir_entries){
+    if(file_counter >= num_dir_entries){ //dont read non_existing file
         return 0;
     }
     int num_bytes_read;
-    if(nbytes < 32){
+    if(nbytes < MAX_FILE_LENGTH){
         num_bytes_read = nbytes;
     }else{
-        num_bytes_read = 32;
+        num_bytes_read = MAX_FILE_LENGTH;
     }
     //copy filename to buffer (min of nbytes and 32)
     memcpy(buf, boot_block->dir_entries[file_counter].filename, num_bytes_read);
@@ -244,16 +253,30 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
     return num_bytes_read;
 }
 
-
-int32_t dir_write(int32_t fd, void* buf, int32_t nbytes){
+/*
+ * dir_write
+ *   DESCRIPTION: does nothing
+ *   INPUTS: fd:file descriptor, buf: buffer, nbytes: num bytes to write
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0:success, -1:fail
+ */
+int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
     return -1;
 }
 
-//inode and block number start at zero right???
+/*
+ * get_file_length()
+ *   DESCRIPTION: gets file length of file
+ *   INPUTS: inode num of file
+ *   OUTPUTS: none
+ *   RETURN VALUE: length of file in bytes
+ */
 uint32_t get_file_length(int32_t inode_num){
-    printf("INODE NUM: %d \n", inode_num);
+    //printf("INODE NUM: %d \n", inode_num);
     return inode_array[inode_num].length;
 }
+
+
 
 //fish frame 0
 // read non text 
@@ -287,3 +310,4 @@ uint32_t get_file_length(int32_t inode_num){
 
     }
     */
+
