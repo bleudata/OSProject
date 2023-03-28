@@ -9,8 +9,6 @@
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 
-// static unsigned char* screen_buf[SCREEN_BYTES];
-
 /*
  * terminal_open
  *   DESCRIPTION: Doesn't actually do anything, just need to match system call params
@@ -38,8 +36,6 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
   // now use newBuf instead of buf
     unsigned char * keyboard_buf;
     keyboard_buf = get_keyboard_buffer();
-    //purge_keyboard_buffer(); // clear the buffer for terminal read
-    // unsigned char current;
 
     // validate input, null pointer provided by user
     if(new_buf == 0) {
@@ -58,16 +54,11 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     if(n > KEYBOARD_BUF_SIZE) { 
         n = KEYBOARD_BUF_SIZE; 
     }
-    //can at most read the size of the input buffer
-    // if(sizeof(new_buf) < n) { 
-    //     n = sizeof(new_buf);
-    // }
     
     i = 0;
     ret = 0;
 
     // Loop while we wait for an enter
-    // printf(" enter count isnt 0 \n");
     while(get_enter_count() < 1);
 
     // Read the keyboard buffer and delete it 
