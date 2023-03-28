@@ -183,17 +183,24 @@ int invalid_opcode_test(){
 int text_file_read(){
 	TEST_HEADER;
 	// frame0.txt  frame1.txt verylargetextwithverylongname.txt 
-	d_entry fish_dentry;
-	file_open((uint8_t*)"frame0.txt", &fish_dentry);
-	uint32_t file_length = get_file_length(fish_dentry.inode_num);
+	//d_entry fish_dentry;
+	d_entry* fish_dentry = get_cp2_dentry_address();
+	//file_open((uint8_t*)"frame0.txt", &fish_dentry);
+	int32_t open_result = file_open((uint8_t*)"frame0.txt");
+	if(open_result == -1){
+		return FAIL;
+	}
+	uint32_t file_length = get_file_length(fish_dentry->inode_num);
 	uint8_t buf[file_length+1];
-	int32_t bytes_read = file_read(fish_dentry.inode_num, buf, file_length);
+	int32_t bytes_read = file_read(fish_dentry->inode_num, buf, file_length);
+	bytes_read = bytes_read; // doing nothing
 	//printf("file read call done, num_bytes_read: %d \n", bytes_read);
 	//printf("%s", buf);
 	int i;
 	for(i = 0; i< file_length ; i++){
 		printf("%c", buf[i]);
 	}
+
 	return PASS;
 }
 
@@ -207,11 +214,13 @@ int text_file_read(){
 int non_text_file_read(){
 	TEST_HEADER;
 	// cat counter fish grep hello ls pingpong shell syserr sigtest testprint 
-	d_entry dentry;
-	file_open((uint8_t*)"grep", &dentry);
-	uint32_t file_length = get_file_length(dentry.inode_num);
+	//d_entry dentry;
+	d_entry* dentry = get_cp2_dentry_address();
+	file_open((uint8_t*)"grep");
+	uint32_t file_length = get_file_length(dentry->inode_num);
 	uint8_t buf[file_length];
-	int32_t bytes_read = file_read(dentry.inode_num, buf, file_length);
+	int32_t bytes_read = file_read(dentry->inode_num, buf, file_length);
+	bytes_read = bytes_read; // doing nothing
 	//printf("file read call done, num_bytes_read: %d \n", bytes_read);
 	printf("the first few bytes: ");
 	int i;
@@ -220,7 +229,7 @@ int non_text_file_read(){
 		//use terminal write instead of printf();
 	}
 	printf("\nthe last few bytes: ");
-	for(i = file_length-37; i<file_length; i++){
+	for(i = file_length-50; i<file_length; i++){
 		printf("%c", buf[i]);
 	}
 	printf("\n ");
@@ -237,8 +246,8 @@ int non_text_file_read(){
 int length_33_filename_test(){
 	TEST_HEADER;
 
-	d_entry dentry;
-	if(-1 == file_open((uint8_t*)"verylargetextwithverylongname.txt", &dentry)){
+	//d_entry dentry;
+	if(-1 == file_open((uint8_t*)"verylargetextwithverylongname.txt")){
 		return PASS;
 	}
 	return FAIL;
@@ -254,8 +263,8 @@ int length_33_filename_test(){
 int length_32_filename_test(){
 	TEST_HEADER;
 
-	d_entry dentry;
-	if(0 == file_open((uint8_t*)"verylargetextwithverylongname.tx", &dentry)){
+	//d_entry dentry;
+	if(0 == file_open((uint8_t*)"verylargetextwithverylongname.tx")){
 		
 		return PASS;
 	}
@@ -296,13 +305,13 @@ int dir_read_test(){
  */
 int read_data_test(){
 	TEST_HEADER;
-	d_entry fish_dentry;
-	file_open((uint8_t*)"frame0.txt", &fish_dentry);
+	d_entry* dentry = get_cp2_dentry_address();
+	file_open((uint8_t*)"frame0.txt");
 
-	uint32_t file_length = get_file_length(fish_dentry.inode_num);
+	uint32_t file_length = get_file_length(dentry->inode_num);
 	uint8_t buf[file_length];
-	int32_t bytes_read = read_data(fish_dentry.inode_num, 16,buf, 4);
-	printf("read data call done, num_bytes_read: %d \n", bytes_read);
+	int32_t bytes_read = read_data(dentry->inode_num, 16,buf, 4);
+	//printf("read data call done, num_bytes_read: %d \n", bytes_read);
 
 	int i;
 	for(i = 0; i< bytes_read ; i++){

@@ -186,7 +186,7 @@ void entry(unsigned long magic, unsigned long addr) {
     //launch_tests(PAGE_FAULT_TEST);
     //launch_tests(DIVIDE_ZERO_TEST);
     //launch_tests(MULT_EXCEPTIONS_TEST);
-    launch_tests(TEXT_FILE_READ_TEST);
+    //launch_tests(TEXT_FILE_READ_TEST);
     //launch_tests(NON_TEXT_FILE_READ_TEST);
     //launch_tests(LENGTH_32_FILENAME_TEST);
     //launch_tests(LENGTH_33_FILENAME_TEST);
