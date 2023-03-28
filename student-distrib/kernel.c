@@ -12,6 +12,7 @@
 #include "idt_asm.h"
 #include "tests.h"
 #include "paging.h"
+#include "filesystem.h"
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 #include "rtc.h"
@@ -39,6 +40,8 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Set MBI to the address of the Multiboot information structure. */
     mbi = (multiboot_info_t *) addr;
+    module_t* file_sys_ptr = (module_t*)(mbi->mods_addr);  // get the address of filesys module struct and cast it to a module struct ptr
+    uint32_t* file_sys_start = (uint32_t*)(file_sys_ptr->mod_start);  // get the filesystem start address and cast it to uint32_t ptr
 
     /* Print out the flags. */
     printf("flags = 0x%#x\n", (unsigned)mbi->flags);
@@ -150,6 +153,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     init_paging();
 
+    //initialize file_system global variables
+    filesys_init(file_sys_start);
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     idt_init();
@@ -170,7 +176,12 @@ void entry(unsigned long magic, unsigned long addr) {
     
     printf("Enabling Interrupts\n");
     sti();
-
+    // if(file_sys_start == boot_block){
+    //     printf("sys_start same as bootblock");
+    // }
+    // if((file_sys_start + 4096) == inode_array){
+    //     printf("sys_start+4096 same as inode_array");
+    // }
 #ifdef RUN_TESTS
     clear_reset_cursor(); // clear screen and reset cursor
     /* Run tests */
@@ -178,7 +189,13 @@ void entry(unsigned long magic, unsigned long addr) {
     // launch_tests(PAGE_ACCESS_TEST);
     // launch_tests(PAGE_FAULT_TEST);
     //launch_tests(DIVIDE_ZERO_TEST);
-    // // launch_tests(MULT_EXCEPTIONS_TEST);
+    //// // launch_tests(MULT_EXCEPTIONS_TEST);
+    launch_tests(TEXT_FILE_READ_TEST);
+    //launch_tests(NON_TEXT_FILE_READ_TEST);
+    //launch_tests(LENGTH_32_FILENAME_TEST);
+    //launch_tests(LENGTH_33_FILENAME_TEST);
+    //launch_tests(DIR_READ_TEST);
+    //launch_tests(READ_DATA_TEST);
     //launch_tests(TERMINAL_TEST);
     launch_tests(RTC_NEW_HZ);
     //launch_tests(RTC_HZ_BUFF_OF);

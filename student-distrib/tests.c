@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "filesystem.h"
 #include "terminal_driver.h"
 #include "keyboard_driver.h"
 #include "rtc.h"
@@ -167,6 +168,145 @@ int invalid_opcode_test(){
 
 
 /* Checkpoint 2 tests */
+
+/* text_file_read()
+ * 
+ * test opening, reading and closing text file
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+int text_file_read(){
+	TEST_HEADER;
+	// frame0.txt  frame1.txt verylargetextwithverylongname.txt 
+	d_entry fish_dentry;
+	file_open((uint8_t*)"frame0.txt", &fish_dentry);
+	uint32_t file_length = get_file_length(fish_dentry.inode_num);
+	uint8_t buf[file_length+1];
+	int32_t bytes_read = file_read(fish_dentry.inode_num, buf, file_length);
+	//printf("file read call done, num_bytes_read: %d \n", bytes_read);
+	//printf("%s", buf);
+	int i;
+	for(i = 0; i< file_length ; i++){
+		printf("%c", buf[i]);
+	}
+	return PASS;
+}
+
+/* non_text_file_read()
+ * 
+ * test opening, reading and closing non text file
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+int non_text_file_read(){
+	TEST_HEADER;
+	// cat counter fish grep hello ls pingpong shell syserr sigtest testprint 
+	d_entry dentry;
+	file_open((uint8_t*)"grep", &dentry);
+	uint32_t file_length = get_file_length(dentry.inode_num);
+	uint8_t buf[file_length];
+	int32_t bytes_read = file_read(dentry.inode_num, buf, file_length);
+	//printf("file read call done, num_bytes_read: %d \n", bytes_read);
+	printf("the first few bytes: ");
+	int i;
+	for(i = 0; i< 5 ; i++){
+		printf("%c", buf[i]);
+		//use terminal write instead of printf();
+	}
+	printf("\nthe last few bytes: ");
+	for(i = file_length-37; i<file_length; i++){
+		printf("%c", buf[i]);
+	}
+	printf("\n ");
+	return PASS;
+}
+
+/* length_33_filename_test()
+ * 
+ * tests opening long name file (over 32 characters)
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
+int length_33_filename_test(){
+	TEST_HEADER;
+
+	d_entry dentry;
+	if(-1 == file_open((uint8_t*)"verylargetextwithverylongname.txt", &dentry)){
+		return PASS;
+	}
+	return FAIL;
+
+}
+
+/* text_file_read()
+ * 
+ * test opening files with less than 32 characters
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ */
+int length_32_filename_test(){
+	TEST_HEADER;
+
+	d_entry dentry;
+	if(0 == file_open((uint8_t*)"verylargetextwithverylongname.tx", &dentry)){
+		
+		return PASS;
+	}
+	return FAIL;
+	
+}
+
+/* dir_read_test()
+ * 
+ * test opening files with less than 32 characters
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ */
+int dir_read_test(){
+	TEST_HEADER;
+	
+	uint8_t buf[MAX_FILE_LENGTH_BYTES];
+	while(0 != dir_read(0, buf, MAX_FILE_LENGTH_BYTES)){
+		int i;
+		for(i = 0; i<MAX_FILE_LENGTH_BYTES; i++){
+			if(buf[i] != 0){
+				printf("%c", buf[i]);
+			}
+			// printf("%c", buf[i]);
+			buf[i] = 0; //reset the buffer after printing 
+		}
+		printf(" \n");
+	}
+
+	return PASS;
+}
+
+/* read_data_test()
+ * 
+ * test opening files with less than 32 characters
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ */
+int read_data_test(){
+	TEST_HEADER;
+	d_entry fish_dentry;
+	file_open((uint8_t*)"frame0.txt", &fish_dentry);
+
+	uint32_t file_length = get_file_length(fish_dentry.inode_num);
+	uint8_t buf[file_length];
+	int32_t bytes_read = read_data(fish_dentry.inode_num, 16,buf, 4);
+	printf("read data call done, num_bytes_read: %d \n", bytes_read);
+
+	int i;
+	for(i = 0; i< bytes_read ; i++){
+		printf("%c", buf[i]);
+	}
+	return PASS;
+}
+
 
 /* terminal_open_test
  * 
@@ -522,6 +662,31 @@ void launch_tests(test_t test_num){
 		// bound_error_test();
 		// invalid_opcode_test();
 		break;
+	case TEXT_FILE_READ_TEST:
+		TEST_OUTPUT("text_file_read_test", text_file_read());
+		break;
+	
+	case NON_TEXT_FILE_READ_TEST:
+		TEST_OUTPUT("non_text_file_read_test", non_text_file_read());
+		break;
+	
+	case LENGTH_33_FILENAME_TEST:
+		TEST_OUTPUT("length_33_filename_test", length_33_filename_test());
+		break;
+	
+	case LENGTH_32_FILENAME_TEST:
+		TEST_OUTPUT("length_32_filename_test", length_32_filename_test());
+		break;
+	
+	case DIR_READ_TEST:
+		TEST_OUTPUT("dir_read_test", dir_read_test());
+		break;
+	
+	case READ_DATA_TEST:
+		TEST_OUTPUT("read_data_test", read_data_test());
+		break;
+	
+
 	case TERMINAL_TEST:
 		//terminal_open_test();
 		terminal_read_test();
@@ -554,11 +719,4 @@ void launch_tests(test_t test_num){
 		break;
 	}
 
-	//TEST_OUTPUT("divide zero", divide_zero_test());
-	// int i;
-	// for(i = 0; ; i++) {
-	// 	printf("%d\n", i);
-	// }
-	// while(1);
-	// launch your tests here
 }
