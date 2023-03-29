@@ -431,8 +431,7 @@ int terminal_read_test() {
 int terminal_write_test() {
 	TEST_HEADER;
 	int result;
-	unsigned char allocated_buf[128] = "terminal write test \n"; 
-
+	unsigned char allocated_buf[128] = "this is the terminal write test \n"; 
 	/* Check invalid inputs */
 	result = terminal_write(1, NULL, 128);
 	if (result >= 0) {
@@ -452,15 +451,15 @@ int terminal_write_test() {
 	}
 
 	/* Should check If it actually writes to screen */
-	result = terminal_write(1, allocated_buf, 21); // just try to write the specific string
+	result = terminal_write(1, allocated_buf, 128); // 33 is length of non-null portion of allocated buf
 	if (result < 0) {
 		return FAIL;
 	}
 
-	// test cases from demo?
-	terminal_write(1, "aaa", 2);
-	terminal_write(1, "aaa", 4);
-	terminal_write(1, "aaa", -1);
+	// test cases from demo
+	// terminal_write(1, "aaa", 2);
+	// terminal_write(1, "aaa", 4);
+	// terminal_write(1, "aaa", -1);
 
 	return PASS;
 }

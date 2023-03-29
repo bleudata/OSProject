@@ -65,5 +65,8 @@ extern void decrement_enter_count();
 // Sets enter_flag to 0
 extern void clear_enter_flag();
 
+// sets read_flag 
+extern void set_read_flag(unsigned char flag);
+
 
 #endif /*KEYBOARD_DRIVER_H*/

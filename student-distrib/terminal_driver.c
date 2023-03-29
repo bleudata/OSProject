@@ -37,6 +37,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
   // now use newBuf instead of buf
     unsigned char * keyboard_buf;
     keyboard_buf = get_keyboard_buffer();
+    set_read_flag(1); // tell keyboard we're inside a terminal read
 
     // validate input, null pointer provided by user
     if(new_buf == 0) {
@@ -51,6 +52,11 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
         return -1;
     }
 
+    // Need to clear out the user buffer before we adjust for the keyboard_buffer size to make sure we clear out 
+    // any random stuff even if comes after we've filled as much as possible using the contents of the keyboard buffer
+    // NOTE: will cause a page fault if n > length of new_buf, so user needs to ensure n <= length(new_buf)
+    memset(new_buf, '\0', n); 
+
     // validate input
     if(n > KEYBOARD_BUF_SIZE) { 
         n = KEYBOARD_BUF_SIZE; 
@@ -58,10 +64,6 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     
     i = 0;
     ret = 0;
-
-    // NOTE: if n > size of new_buf, this will cause a page fault. 
-    // Cp2 demo: we need to clear the buffer passed in by the user?
-    memset(new_buf, '\0', n); 
     
     // Loop while we wait for an enter
     while(get_enter_count() < 1);
@@ -76,6 +78,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     ret++;
     purge_and_align_keyboard_buffer(ret);
     decrement_enter_count();
+    set_read_flag(0); // tell keyboard we're done with terminal read
     
     return ret;
 }
@@ -106,11 +109,11 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
         return -1;
     }
 
-    
     // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
-
     for(i = 0; i < n; i ++) {
-        putc_new(new_buf[i], 0);
+        if(new_buf[i] != '\0') {
+            putc_new(new_buf[i], 0);
+        }
     }
     update_cursor(get_x_position(), get_y_position());
 

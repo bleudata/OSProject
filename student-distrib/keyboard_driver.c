@@ -22,6 +22,7 @@ static unsigned char* buf_position = keyboard_buf; //points to next empty index 
 //static unsigned char* buf_end = keyboard_buf+128;
 static unsigned char screen_buf[SCREEN_BYTES];
 unsigned char enter_count = 0;
+unsigned char read_flag = 0; // 1 if inside a read, 0 else
 
 #define BUF_END_ADDR        keyboard_buf+127 // need minus one because the last index is the newline
 #define BUF_LINE_TWO_ADDR   keyboard_buf+80
@@ -70,8 +71,10 @@ void keyboard_irq_handler() {
         }
         if (ctrl_pressed && code == L_PRESS) { // 0x26 is the scan code for L/l
             clear_reset_cursor();
-            //purge_keyboard_buffer();
             update_cursor(0,0); // move cursor back to top left of the screen
+            if(read_flag == 0) { //only purge the keyboard buffer if not in a terminal read
+                purge_keyboard_buffer(); 
+            }
         }
         else {
             echo = scancodes[code][val]; // print char if key was valid
@@ -334,4 +337,8 @@ unsigned char get_enter_count() {
  */
 void decrement_enter_count() {
     enter_count--;
+}
+
+void set_read_flag(unsigned char flag) {
+    read_flag = flag;
 }
