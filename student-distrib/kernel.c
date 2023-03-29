@@ -195,7 +195,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 
     /* Checkpoint 2 Tests */
-    launch_tests(TEXT_FILE_READ_TEST);
+    // launch_tests(TEXT_FILE_READ_TEST);
     // launch_tests(NON_TEXT_FILE_READ_TEST);
     // launch_tests(LENGTH_32_FILENAME_TEST);
     // launch_tests(LENGTH_33_FILENAME_TEST);
@@ -204,7 +204,7 @@ void entry(unsigned long magic, unsigned long addr) {
     // launch_tests(TERMINAL_OPEN_TEST);
     // launch_tests(TERMINAL_CLOSE_TEST);
     // launch_tests(TERMINAL_READ_TEST);
-    // launch_tests(TERMINAL_WRITE_TEST);
+    launch_tests(TERMINAL_WRITE_TEST);
     // launch_tests(RTC_NEW_HZ);
     // launch_tests(RTC_HZ_BUFF_OF);
     // launch_tests(RTC_GET_SYSHZ_PER_UHZ);

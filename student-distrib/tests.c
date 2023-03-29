@@ -368,7 +368,7 @@ int terminal_read_test() {
 	TEST_HEADER;
 	int result;
 	int i;
-	unsigned char allocated_buf[128];
+	unsigned char allocated_buf[200];
 	
 	// /* Check invalid inputs */
 	printf("test 1\n");
@@ -393,9 +393,8 @@ int terminal_read_test() {
 
 	/* Check If Buf is filled correctly */
 	// all we did was check if the buffers are the same without the enters
-	for (i = 0; i < 128; i++) {
-		allocated_buf[i] = ' ';
-	}
+	// clear out the buffer passed in for the test case to prevent random stuff from getting printed to the screen
+	memset(allocated_buf, '\0', 200); 
 	
 	printf("finished tests\n");
 	// test to hold mutliple enters "ece\n391\n"
@@ -432,7 +431,7 @@ int terminal_read_test() {
 int terminal_write_test() {
 	TEST_HEADER;
 	int result;
-	unsigned char allocated_buf[128] = " terminal write test \n"; 
+	unsigned char allocated_buf[128] = "terminal write test \n"; 
 
 	/* Check invalid inputs */
 	result = terminal_write(1, NULL, 128);
@@ -453,10 +452,15 @@ int terminal_write_test() {
 	}
 
 	/* Should check If it actually writes to screen */
-	result = terminal_write(1, allocated_buf, 128); 
+	result = terminal_write(1, allocated_buf, 21); // just try to write the specific string
 	if (result < 0) {
 		return FAIL;
 	}
+
+	// test cases from demo?
+	terminal_write(1, "aaa", 2);
+	terminal_write(1, "aaa", 4);
+	terminal_write(1, "aaa", -1);
 
 	return PASS;
 }
