@@ -61,7 +61,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
 
     // NOTE: if n > size of new_buf, this will cause a page fault. 
     // Cp2 demo: we need to clear the buffer passed in by the user?
-    //memset(new_buf, '\0', n); 
+    memset(new_buf, '\0', n); 
     
     // Loop while we wait for an enter
     while(get_enter_count() < 1);

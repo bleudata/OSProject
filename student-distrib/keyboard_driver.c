@@ -70,7 +70,7 @@ void keyboard_irq_handler() {
         }
         if (ctrl_pressed && code == L_PRESS) { // 0x26 is the scan code for L/l
             clear_reset_cursor();
-            purge_keyboard_buffer();
+            //purge_keyboard_buffer();
             update_cursor(0,0); // move cursor back to top left of the screen
         }
         else {
@@ -295,17 +295,19 @@ unsigned char add_to_keyboard_buffer(unsigned char input) {
  *   SIDE EFFECTS: changes the keyboard buffer
  */
 unsigned char remove_from_keyboard_buffer() {
-    unsigned char retval;
     if(buf_position > keyboard_buf) { // if buffer is not empty 
+        if(*(buf_position-1) == '\n') {
+            return 0;
+        }
         buf_position--; 
         if(*buf_position == '\t') {
-            retval = 2;
+            *buf_position = '\0';
+            return 2;
         }
         else {
-            retval = 1;
+            *buf_position = '\0';
+            return 1;
         }
-        *buf_position = '\0';
-        return retval;
     }
     return 0;
 }
