@@ -201,10 +201,7 @@ void keyboard_init() {
  *   SIDE EFFECTS: chnages keyboard buffer
  */
 void purge_keyboard_buffer() {
-    int i;
-    for (i = 0; i < KEYBOARD_BUF_SIZE; i++) {
-        keyboard_buf[i] = '\0';
-    }
+    memset(keyboard_buf, '\0', KEYBOARD_BUF_SIZE);
     buf_position = keyboard_buf; // move position back to the start of the buffer
 }
 
@@ -217,7 +214,9 @@ void purge_keyboard_buffer() {
  *   SIDE EFFECTS: chnages keyboard buffer
  */
 void purge_and_align_keyboard_buffer(int n) {
-    partial_purge_keyboard_buffer(n);
+    if(n <= KEYBOARD_BUF_SIZE) {
+        memset(keyboard_buf, '\0', n);
+    }
     if(n < KEYBOARD_BUF_SIZE) {
         align_keyboard_buffer(n); // only need to align if didn't completely purge the buffer
     }
@@ -225,27 +224,6 @@ void purge_and_align_keyboard_buffer(int n) {
         buf_position = keyboard_buf;
     }
 }
-// ece
-// 391
-// 391\n
-/*
- * partial_purge_buffer
- *   DESCRIPTION: purges n characters in the buffer starting from index 0
- *   INPUTS: n -- number of characters/bytes to purge from the buffer
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: chnages keyboard buffer
- */
-void partial_purge_keyboard_buffer(int n) {
-    int i;
-    if(n > KEYBOARD_BUF_SIZE) {
-        return;
-    }
-    for(i = 0; i < n; i++) {
-        keyboard_buf[i] = '\0';
-    }
-}
-
 /*
  * align_buffer
  *   DESCRIPTION: moves the characters in the keyboard buffer to the left, starting from index new_start which will be moved to index 0, etc. Then adds null characters

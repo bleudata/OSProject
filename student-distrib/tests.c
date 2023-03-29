@@ -655,6 +655,7 @@ int rtc_test_buff_overflow(){
 
 
 /* Test suite entry point */
+
 void launch_tests(test_t test_num){
 	//int* result;
 	switch (test_num)
@@ -698,17 +699,20 @@ void launch_tests(test_t test_num){
 	case DIR_READ_TEST:
 		TEST_OUTPUT("dir_read_test", dir_read_test());
 		break;
-	
 	case READ_DATA_TEST:
 		TEST_OUTPUT("read_data_test", read_data_test());
 		break;
-	
-
-	case TERMINAL_TEST:
-		// TEST_OUTPUT("terminal_open_test", terminal_open_test());
+	case TERMINAL_OPEN_TEST:
+		TEST_OUTPUT("terminal_open_test", terminal_open_test());
+		break;
+	case TERMINAL_CLOSE_TEST:
+		TEST_OUTPUT("terminal_close_test", terminal_close_test());
+		break;
+	case TERMINAL_READ_TEST:
 		TEST_OUTPUT("terminal_read_test", terminal_read_test());
-		// TEST_OUTPUT("terminal_write_test", terminal_write_test());
-		// TEST_OUTPUT("terminal_close_test", terminal_close_test());
+		break;
+	case TERMINAL_WRITE_TEST:
+		TEST_OUTPUT("terminal_write_test", terminal_write_test());
 		break;
 	case RTC_OPEN:
 		TEST_OUTPUT("rtc_open works", rtc_open_no_errors());

@@ -185,21 +185,32 @@ void entry(unsigned long magic, unsigned long addr) {
 #ifdef RUN_TESTS
     clear_reset_cursor(); // clear screen and reset cursor
     /* Run tests */
+
+    /* Checkpoint 1 Tests */
     //launch_tests(IDT_TEST);
     // launch_tests(PAGE_ACCESS_TEST);
     // launch_tests(PAGE_FAULT_TEST);
     //launch_tests(DIVIDE_ZERO_TEST);
     //launch_tests(MULT_EXCEPTIONS_TEST);
-    launch_tests(TEXT_FILE_READ_TEST);
+
+
+    /* Checkpoint 2 Tests */
+    // launch_tests(TEXT_FILE_READ_TEST);
     // launch_tests(NON_TEXT_FILE_READ_TEST);
     // launch_tests(LENGTH_32_FILENAME_TEST);
     // launch_tests(LENGTH_33_FILENAME_TEST);
     // launch_tests(DIR_READ_TEST);
     // launch_tests(READ_DATA_TEST);
-    //launch_tests(TERMINAL_TEST);
+    // launch_tests(TERMINAL_OPEN_TEST);
+    // launch_tests(TERMINAL_CLOSE_TEST);
+    // launch_tests(TERMINAL_READ_TEST);
+    launch_tests(TERMINAL_WRITE_TEST);
     //launch_tests(RTC_NEW_HZ);
     //launch_tests(RTC_HZ_BUFF_OF);
     //launch_tests(RTC_GET_SYSHZ_PER_UHZ);
+
+
+    /* Checkpoint 3 Tests */
 #endif
     /* Execute the first program ("shell") ... */
 
