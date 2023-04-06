@@ -131,17 +131,25 @@ int32_t execute(const uint8_t* command){
     fname = strncpy(fname, command, cmd_ctr);
     
     d_entry dentry;
-    if (read_dentry_by_name(fname, dentry) < 0 )
+    if (read_dentry_by_name(fname, dentry) < 0 ){
         return -1;
-
+    }
     //setting the cmd ptr to point to the first char after the first space that is after the first word
     cmd_args += (cmd_ctr + 1);
 
     // rest is sent to new program 
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
-    if(dentry.filetype != 0x464C457F){ //reverse this if its the other way around, but I read it as byte 0 being the LSB, otherwise if its MSB then it should be: 0x7F454C46
-        return -1;
+    uint8_t exe_check[4];
+    uint8_t exe[4] = {0x7F, 0x45, 0x4C, 0x46};
+    file_read(dentry.inode_num, exe_check, 4);
+
+    uint32_t ctr = 0;
+    while(ctr < 4){
+        if(exe_check[ctr] != exe[ctr]){ //reverse this if its the other way around, but I read it as byte 0 being the LSB, otherwise if its MSB then it should be: 0x7F454C46
+            return -1;
+        }
     }
+    
     // Set up this programs paging
     // init_paging();
     return 0;
