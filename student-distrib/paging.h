@@ -82,7 +82,7 @@ extern void enable_paging();
 //enables mixed size pages (4kb and 4mb), set bit 4 of %cr4
 extern void enable_mixed_size();
 
-// Maps the Virtual address given to a Physical Address
+// returns physical address associated to the 
 extern uint32_t map_helper(uint32_t virtual_address);
 
 
