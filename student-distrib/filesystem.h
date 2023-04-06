@@ -91,6 +91,8 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 // returns length of file in bytes
 uint32_t get_file_length(int32_t inode_num);
 
+int32_t prog_loader()
+
 //return address of cp2_dentry
 d_entry * get_cp2_dentry_address();
 
