@@ -10,6 +10,7 @@
 pcb_t temp;
 
 static void (*rtc_fops[])(void) = {rtc_open, rtc_read, rtc_write, rtc_close};
+static void (*dir_fops[])(void) = {dir_open, dir_read, dir_write, dir_close};
 static void (*file_fops[])(void) = {file_open, file_read, file_write, file_close};
 
 /*
@@ -53,7 +54,7 @@ int32_t open(const uint8_t* filename){
             break;
         // Directory
         case 1 :
-            temp.fd_array[fd].fops_pointer = file_fops; 
+            temp.fd_array[fd].fops_pointer = dir_fops; 
             temp.fd_array[fd].inode_num = dentry.inode_num;
             break;
         // File 
