@@ -2,10 +2,10 @@
 #include "syscalls.h"
 
 /* Index into function operation pointers */
-#define OPEN 1
+#define OPEN 0
 #define READ 1
-#define WRITE 1
-#define CLOSE 1
+#define WRITE 2
+#define CLOSE 3
 
 pcb_t temp;
 
