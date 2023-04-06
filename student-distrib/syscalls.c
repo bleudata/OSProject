@@ -148,11 +148,16 @@ int32_t execute(const uint8_t* command){
         if(exe_check[ctr] != exe[ctr]){ //reverse this if its the other way around, but I read it as byte 0 being the LSB, otherwise if its MSB then it should be: 0x7F454C46
             return -1;
         }
+        ctr++;
     }
 
     /* Set up this programs paging */
     
     //get the current processes physical memory
+
+    // get the entry point into the progam (bytes 24 - 27 of the executable)
+    // copy entire file to memory ( 8 MB or 12MB + 0x00048000)
+    // jump to the entry point of the program and begin execution
     
     
 
