@@ -110,3 +110,7 @@ void process_loading(uint32_t pid, d_entry dentry){
     enable_paging();
 
 }
+
+uint32_t map_helper(uint32_t virtual_address) {
+    return 0;
+}

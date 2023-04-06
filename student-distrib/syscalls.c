@@ -154,11 +154,14 @@ int32_t execute(const uint8_t* command){
     /* Set up this programs paging */
     
     //get the current processes physical memory
-
     // get the entry point into the progam (bytes 24 - 27 of the executable)
+    uint8_t* entry_point;
+    if (read_data(dentry.inode_num, 24 , entry_point, 4) < 0 ) 
+        return -1;
+    
     // copy entire file to memory ( 8 MB or 12MB + 0x00048000)
     // jump to the entry point of the program and begin execution
-    
+
     
 
     return 0;
