@@ -121,6 +121,8 @@ int32_t execute(const uint8_t* command){
     // First word is filename 
     // rest is sent to new program 
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
+    // Set up this programs paging
+    // init_paging();
     return 0;
 }
 
@@ -153,7 +155,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
  */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     // fd is an index into PCB array
-    return temp.fd_array[fd].fops_pointer[WRITE](0, buf, nbytes);;
+    return temp.fd_array[fd].fops_pointer[WRITE](1, buf, nbytes);;
 }
 
 

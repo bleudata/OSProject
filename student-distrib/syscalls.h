@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "filesystem.h"
 #include "rtc.h"
+#include "paging.h"
 
 // MOVE TO CORRECT PLACE
 // PCB STRUCTURES
