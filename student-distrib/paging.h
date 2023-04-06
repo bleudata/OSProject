@@ -2,7 +2,7 @@
 #define PAGING_H
 
 #include "types.h"
-
+#include "syscalls.h"
 
 typedef struct __attribute__ ((packed)){
     uint32_t present : 1;
@@ -70,6 +70,9 @@ typedef union{
 /*function that calls other initalization functions*/
 extern void init_paging();
 
+//init paging for individual processes
+extern void process_loading(uint32_t pid, d_entry dentry);
+
 //assembly function that puts page_directory address into %cr3
 extern void load_page_dir(uint32_t * page_dir_ptr);
 
@@ -79,7 +82,7 @@ extern void enable_paging();
 //enables mixed size pages (4kb and 4mb), set bit 4 of %cr4
 extern void enable_mixed_size();
 
-
+extern void 
 
 
 

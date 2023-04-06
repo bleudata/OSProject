@@ -6,6 +6,9 @@
 #include "rtc.h"
 #include "paging.h"
 
+#define PHYS_MEM_BASE   0x800000
+#define PHYS_MEM_OFF    0x400000
+
 // MOVE TO CORRECT PLACE
 // PCB STRUCTURES
 typedef struct __attribute__ ((packed)){

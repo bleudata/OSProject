@@ -149,9 +149,13 @@ int32_t execute(const uint8_t* command){
             return -1;
         }
     }
+
+    /* Set up this programs paging */
     
-    // Set up this programs paging
-    // init_paging();
+    //get the current processes physical memory
+    
+    
+
     return 0;
 }
 
