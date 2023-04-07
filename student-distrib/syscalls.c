@@ -12,6 +12,11 @@ pcb_t temp;
 static void (*rtc_fops[])(void) = {rtc_open, rtc_read, rtc_write, rtc_close};
 static void (*dir_fops[])(void) = {dir_open, dir_read, dir_write, dir_close};
 static void (*file_fops[])(void) = {file_open, file_read, file_write, file_close};
+static void (*stdin[])(void) = {terminal_open, terminal_read, invalid_write, terminal_close};
+static void (*stdout[])(void) = {terminal_open, invalid_read, terminal_write, terminal_close};
+
+uint32_t process_count = 0;
+uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
 
 /*
  * open
@@ -67,7 +72,7 @@ int32_t open(const uint8_t* filename){
             return -1;
 
     }
-
+    temp.fd_array[fd].fops_pointer[0](); //???? call open
     temp.fd_array[fd].file_position = 0;
     temp.fd_array[fd].flags = 1;
 
@@ -119,6 +124,9 @@ int32_t halt(uint8_t status){
  */
 int32_t execute(const uint8_t* command){
     // File Checks (it exists, it is executable)
+    if(process_count >=6 ){
+        return -1;
+    }
     uint8_t* cmd_args = strcpy(cmd_args, command);
     
     uint8_t* fname;
@@ -159,21 +167,35 @@ int32_t execute(const uint8_t* command){
     if (read_data(dentry.inode_num, 24 , entry_point, 4) < 0 ) 
         return -1;
     
-    // copy entire file to memory ( 8 MB or 12MB + 0x00048000)
+    // set up memory map for new process
     map_helper(temp.pid);
     // write the executable file to the page 
     uint32_t file_length = get_file_length(dentry.inode_num);
     // uint8_t file_data_buf[file_length];
     file_read(dentry.inode_num, PROGRAM_START , file_length);
     
-    //fill in PCB
+    uint32_t new_pid = get_pid(...);
+    //fill in new process PCB
+    pcb_t * pcb_address = (pcb_t*)get_pcb_address(new_pid);
+    pcb_address->pid = new_pid;
+    if(process_count == 0){
+        pcb_address->parent_id = -1;
+    }else{
+        pcb_address->parent_id = get_current_pid();
+        register uint32_t parent_esp esp;
+        pcb_address->parent_esp = parent esp;
+        register uint32_t parent_ebp ebp;
+        pcb_address->parent_ebp = parent_ebp;
+    }
+    process_count += 1;
 
-    
+    pcb_address->fd_array[0].fops_pointer; //set stin fopstable to terminal read
+    pcb_address->fd_array[1].fops_pointer; //set stoud fopstable to terminal write
 
-
-    
+    tss->esp0 = EIGHT_MB- new_pid*EIGHT_KB -1;
     // jump to the entry point of the program and begin execution
-
+    
+    context_switch(entry_point);
 
     
 
@@ -212,4 +234,6 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     return temp.fd_array[fd].fops_pointer[WRITE](1, buf, nbytes);;
 }
 
-
+uint32_t * get_pcb_address(uint32_t pid){
+    return EIGHT_MB - EIGHT_KB*(pid + 1);
+}

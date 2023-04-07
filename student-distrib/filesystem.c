@@ -188,7 +188,7 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
         return -1;
     }
 
-    uint32_t * pcb_address = get_esp() & 0xFFFFE000; //new technology
+    uint32_t * pcb_address = get_esp() & 0xFFFFE000; 
 
     int32_t inode_num = ((pcb_t*)pcb_address)->fd_array[fd].inode_num;
 
