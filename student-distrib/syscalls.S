@@ -31,3 +31,8 @@ context_switch_1:
     movl 16(%esp), %eax
     pushl %eax  # push EIP
     iret
+
+# asm for halt
+system_halt:
+    
+    iret
