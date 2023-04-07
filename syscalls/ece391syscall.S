@@ -4,6 +4,9 @@
  * Rather than create a case for each number of arguments, we simplify
  * and use one macro for up to three arguments; the system calls should
  * ignore the other registers, and they're caller-saved anyway.
+
+
+ 
  */
 #define DO_CALL(name,number)   \
 .GLOBL name                   ;\

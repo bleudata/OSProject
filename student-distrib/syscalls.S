@@ -1,3 +1,5 @@
+#define ASM 1
+
 .align 4096
 
 

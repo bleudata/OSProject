@@ -7,6 +7,7 @@
 #include "paging.h"
 #include "x86_desc.h"
 #include "terminal_driver.h"
+#include "syscalls\ece391sysnum.h" 
 
 #define PHYS_MEM_BASE   0x800000 //8MB 
 #define PHYS_MEM_OFF    0x400000 //4MB
@@ -35,6 +36,9 @@ typedef struct __attribute__ ((packed)){
     uint32_t parent_ebp;
     uint8_t active;
 } pcb_t;
+
+uint32_t get_pid();
+uint32_t invalid_function();
 
 
 extern int32_t open(const uint8_t* filename);

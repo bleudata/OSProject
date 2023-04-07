@@ -53,15 +53,31 @@ HANDLER_LNK(rtc_handler_lnk, generic_handler, RTC_VECTOR)
 
 # system call 
 # also might need to push own unique error code, to be figured out later.
-HANDLER_LNK(generic_system_call_handler_lnk, generic_handler, SYSTEM_CALL_VECTOR)
+# HANDLER_LNK(generic_system_call_handler_lnk, generic_handler, SYSTEM_CALL_VECTOR)
+
+
+# system call
+# vector number is 0x80
+.global system_call_handler_lnk 
+system_call_handler_lnk:
+	pushal
+	pushfl
+	pushl $SYSTEM_CALL_VECTOR
+	call generic_handler
+	addl $4, %esp
+	popfl
+	popal
+	iret
+
+
 
 /* PAGE FAULT SAMPLE
- .globl page_fault_lnk
+ .globl page_fault_handler_lnk
   page_fault_lnk:
 	pushal
 	pushfl
 	pushl $14
-	call page_fault_handler
+	call generic_handler
 	addl $4,%esp
 	popfl
 	popal
