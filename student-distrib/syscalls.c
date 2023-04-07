@@ -28,7 +28,7 @@ int32_t open(const uint8_t* filename){
     // STEPS:
     // Find the file in the file system (need the inode and the file type)
     d_entry dentry;
-    if (read_dentry_by_name(filename, dentry) < 0 )
+    if (read_dentry_by_name(filename, &dentry) < 0 )
         return -1;
 
     // Allocate an unused file descriptor
@@ -119,7 +119,7 @@ int32_t halt(uint8_t status){
  */
 int32_t execute(const uint8_t* command){
     // File Checks (it exists, it is executable)
-    uint8_t* cmd_args = strcopy(cmd_args, command);
+    uint8_t* cmd_args = strcpy(cmd_args, command);
     
     uint8_t* fname;
     uint32_t cmd_ctr = 0;
@@ -131,7 +131,7 @@ int32_t execute(const uint8_t* command){
     fname = strncpy(fname, command, cmd_ctr);
     
     d_entry dentry;
-    if (read_dentry_by_name(fname, dentry) < 0 ){
+    if (read_dentry_by_name(fname, &dentry) == -1){
         return -1;
     }
     //setting the cmd ptr to point to the first char after the first space that is after the first word
@@ -160,7 +160,11 @@ int32_t execute(const uint8_t* command){
         return -1;
     
     // copy entire file to memory ( 8 MB or 12MB + 0x00048000)
+    map_helper(temp.pid);
+    // write the executable file to the page 
+    
     // jump to the entry point of the program and begin execution
+
 
     
 

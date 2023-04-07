@@ -111,7 +111,20 @@ void process_loading(uint32_t pid, d_entry dentry){
 
 }
 
-uint32_t map_helper(uint32_t virtual_address) {
+void map_helper(uint32_t pid) {
+    // get the offset into the page directory
+    // uint32_t dir_offset = virtual_address >> 22;
+    // uint32_t pde = page_directory[dir_offset];
+
+    // // After getting the PDE we have to zero out non address bits
+    // return pde & 0xffc00000;
+    int32_t virtual = 0x08000000;
+    virtual = virtual >> 22;
+    page_directory[virtual].page_address = 8 + 4*pid;  //= PHYS_MEM_BASE + PHYS_MEM_OFF*pid;
+    page_directory[virtual].present =1;
+    page_directory[virtual].read_write =1;
+    page_directory[virtual].user_supervidsor = 1; 
+    page_directory[virtual].fourmb.page_size = 1;
     
-    return 0;
+    // map the virtual
 }

@@ -83,7 +83,7 @@ extern void enable_paging();
 extern void enable_mixed_size();
 
 // returns physical address associated to the 
-extern uint32_t map_helper(uint32_t virtual_address);
+extern void map_helper(uint32_t pid);
 
 
 
