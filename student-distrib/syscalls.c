@@ -182,9 +182,9 @@ int32_t execute(const uint8_t* command){
         pcb_address->parent_id = -1;
     }else{
         pcb_address->parent_id = get_current_pid();
-        register uint32_t parent_esp esp;
-        pcb_address->parent_esp = parent esp;
-        register uint32_t parent_ebp ebp;
+        register uint32_t parent_esp asm("esp");
+        pcb_address->parent_esp = parent_esp;
+        register uint32_t parent_ebp asm("ebp");
         pcb_address->parent_ebp = parent_ebp;
     }
     process_count += 1;
@@ -196,9 +196,6 @@ int32_t execute(const uint8_t* command){
     // jump to the entry point of the program and begin execution
     
     context_switch(entry_point);
-
-    
-
     return 0;
 }
 
