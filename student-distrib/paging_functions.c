@@ -126,5 +126,7 @@ void map_helper(uint32_t pid) {
     page_directory[virtual].user_supervidsor = 1; 
     page_directory[virtual].fourmb.page_size = 1;
     
-    // map the virtual
+    //flush the TLB
+    flush_tlb();
+
 }

@@ -164,9 +164,9 @@ int32_t file_open(const uint8_t* filename){
  *   RETURN VALUE: 0:success -1:fail
  */
 int32_t file_close(int32_t fd){
-    // if(fd<0 || fd >7){
-    //     return -1;
-    // }
+    if(fd<0 || fd >7){
+        return -1;
+    }
     return 0;
 }
 
@@ -184,11 +184,15 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
     if(buf == NULL){
         return -1;
     }
-    // if(fd<0 || fd >7){
-    //     return -1;
-    // }
+    if(fd<0 || fd >7){
+        return -1;
+    }
 
-    return read_data(fd, ZERO_OFFSET , buf , nbytes); //fd -> inode num only for cp2
+    uint32_t * pcb_address = get_esp() & 0xFFFFE000; //new technology
+
+    int32_t inode_num = ((pcb_t*)pcb_address)->fd_array[fd].inode_num;
+
+    return read_data(inode_num, ZERO_OFFSET , buf , nbytes); //fd -> inode num only for cp2
 }
 
 /*
@@ -199,9 +203,9 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
-    // if(fd<0 || fd >7){
-    //     return -1;
-    // }
+    if(fd<0 || fd >7){
+        return -1;
+    }
     return -1;
 }
 
@@ -224,9 +228,9 @@ int32_t dir_open(const uint8_t* filename){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t dir_close(int32_t fd){
-    // if(fd<0 || fd >7){
-    //     return -1;
-    // }
+    if(fd<0 || fd >7){
+        return -1;
+    }
     return 0;
 }
 

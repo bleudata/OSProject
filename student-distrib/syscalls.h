@@ -6,15 +6,18 @@
 #include "rtc.h"
 #include "paging.h"
 
-#define PHYS_MEM_BASE   0x800000
-#define PHYS_MEM_OFF    0x400000
+#define PHYS_MEM_BASE   0x800000 //8MB 
+#define PHYS_MEM_OFF    0x400000 //4MB
+#define PROGRAM_START   0x8000000 
+#define EIGHT_MB        0x800000
+#define EIGHT_KB        0x2000
 
 // MOVE TO CORRECT PLACE
 // PCB STRUCTURES
 typedef struct __attribute__ ((packed)){
     // function operations table pointer
     uint32_t fops_pointer;
-    int32_t inode_num;
+    int32_t inode_num; //smart
     uint32_t file_position;
     uint32_t flags; // 0 is free, 1 is taken 
 } fd_entry;

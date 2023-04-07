@@ -143,9 +143,9 @@ int32_t execute(const uint8_t* command){
     uint8_t exe[4] = {0x7F, 0x45, 0x4C, 0x46};
     file_read(dentry.inode_num, exe_check, 4);
 
-    uint32_t ctr = 0;
-    while(ctr < 4){
-        if(exe_check[ctr] != exe[ctr]){ //reverse this if its the other way around, but I read it as byte 0 being the LSB, otherwise if its MSB then it should be: 0x7F454C46
+    uint32_t ctr = 0;//reverse this if its the other way around, but I read it as byte 0 being the LSB
+    while(ctr < 4){  //, otherwise if its MSB then it should be: 0x7F454C46
+        if(exe_check[ctr] != exe[ctr]){ 
             return -1;
         }
         ctr++;
@@ -162,6 +162,15 @@ int32_t execute(const uint8_t* command){
     // copy entire file to memory ( 8 MB or 12MB + 0x00048000)
     map_helper(temp.pid);
     // write the executable file to the page 
+    uint32_t file_length = get_file_length(dentry.inode_num);
+    // uint8_t file_data_buf[file_length];
+    file_read(dentry.inode_num, PROGRAM_START , file_length);
+    
+    //fill in PCB
+
+    
+
+
     
     // jump to the entry point of the program and begin execution
 

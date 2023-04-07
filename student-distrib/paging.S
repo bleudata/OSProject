@@ -43,6 +43,17 @@ enable_mixed_size:
     ret
 
 
+.globl flush_tlb
+
+# flushes the TLB
+flush_tlb:
+    push %ebp
+    movl %esp, %ebp
+    movl %cr3, %eax
+    movl %eax, %cr3
+    leave
+    ret
+
 
 
 
