@@ -11,7 +11,7 @@
 
 #define PHYS_MEM_BASE   0x800000 //8MB 
 #define PHYS_MEM_OFF    0x400000 //4MB
-#define PROGRAM_START   0x8048000  
+#define PROGRAM_START   0x08048000  
 #define EIGHT_MB        0x800000
 #define EIGHT_KB        0x2000
 #define FOUR_MB         0x400000 //4MB

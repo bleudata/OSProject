@@ -72,7 +72,7 @@ void map_helper(uint32_t pid) {
     // return pde & 0xffc00000;
     int32_t virtual = 0x08000000;
     virtual = virtual >> 22;
-    page_directory[virtual].fourmb.page_address = 8 + 4*pid;  //= PHYS_MEM_BASE + PHYS_MEM_OFF*pid;
+    page_directory[virtual].fourmb.page_address = 2 + 1*pid;  //= PHYS_MEM_BASE + PHYS_MEM_OFF*pid;
     page_directory[virtual].fourmb.present =1;
     page_directory[virtual].fourmb.read_write =1;
     page_directory[virtual].fourmb.user_supervisor = 1; 

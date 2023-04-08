@@ -195,7 +195,7 @@ int32_t execute(const uint8_t* command){
 
     uint8_t* cmd_args;
     //uint8_t* fname;
-    uint8_t fname[9];
+    uint8_t fname[6];
     uint8_t cmd_ctr = 0;
     
     // First word is filename 
@@ -221,14 +221,6 @@ int32_t execute(const uint8_t* command){
     if(strncmp((int8_t*)exe_check, (int8_t*)exe, 4) != 0){
         return -1;
     }
-    // uint32_t ctr = 0;//reverse this if its the other way around, but I read it as byte 0 being the LSB
-    // while(ctr < 4){  //, otherwise if its MSB then it should be: 0x7F454C46
-    //     if(exe_check[ctr] != exe[ctr]){ 
-    //         return -1;
-    //     }
-    //     ctr++;
-    // }
-    
 
     /* Set up this programs paging */
     
@@ -244,7 +236,7 @@ int32_t execute(const uint8_t* command){
     // set up memory map for new process
     map_helper(new_pid);
     // write the executable file to the page 
-    uint32_t file_length = get_file_length(dentry.inode_num);
+    int32_t file_length = get_file_length(dentry.inode_num);
     // uint8_t file_data_buf[file_length];
     if(read_data(dentry.inode_num, 0,  PROGRAM_START , file_length) == -1) {//(uint8_t*)or (uint32_t*)
         return -1;
@@ -280,7 +272,7 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[1].flag = 1;
    
 
-    tss.esp0 = EIGHT_MB- new_pid*EIGHT_KB - 4;
+    tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
     // jump to the entry point of the program and begin execution
     asm volatile (" \n\
@@ -298,7 +290,8 @@ int32_t execute(const uint8_t* command){
             : "memory"
         );
 
-
+            // movw  $0x2B, %%ax       \n\
+            // movw %%ax, %%ds         \n\
     // context_switch();
     // Inline assembly
 
@@ -309,6 +302,7 @@ uint32_t get_pid(){
     int i;
     for(i = 0; i< 5; i++){
         if(pid_array[i] == 0){
+            pid_array[i] = 1;
             return i;
         }
     }
@@ -328,7 +322,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     // fd is an index into PCB array 
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
-    return pcb_address->fd_array[fd].fops.read(0, buf, nbytes);
+    return pcb_address->fd_array[fd].fops.read(fd, buf, nbytes);
 }
 
 
@@ -346,7 +340,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     // fd is an index into PCB array
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
-    return pcb_address->fd_array[fd].fops.write(1, buf, nbytes);
+    return pcb_address->fd_array[fd].fops.write(fd, buf, nbytes);
 }
 
 pcb_t * get_pcb_address(uint32_t pid){
