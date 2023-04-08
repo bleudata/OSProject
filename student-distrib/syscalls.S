@@ -50,9 +50,7 @@ system_call_handler_lnk:
     jg INVALID_SYS_NUM
     addl $-1, %eax
 
-	cmpl $3, %eax
-	jne INVALID_SYS_NUM # for now chnage when we need other sys calls
-
+    # Always push all three arguments 
     pushl %edx
     pushl %ecx
 	pushl %ebx # where the parameter is

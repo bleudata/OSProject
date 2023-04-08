@@ -249,9 +249,9 @@ int32_t execute(const uint8_t* command){
     pcb_t * pcb_address = get_pcb_address(new_pid);
     pcb_address->pid = new_pid;
     if(process_count == 0){
-        pcb_address->parent_id = -1;
+        pcb_address->parent_pid = -1;
     }else{
-        pcb_address->parent_id = parent_pcb->pid;
+        pcb_address->parent_pid = parent_pcb->pid;
         register uint32_t parent_esp asm("esp");
         pcb_address->parent_esp = parent_esp; // technically not needed
         register uint32_t parent_ebp asm("ebp");

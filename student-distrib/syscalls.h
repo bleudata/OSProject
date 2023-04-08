@@ -38,7 +38,7 @@ typedef struct __attribute__ ((packed)){
 
 typedef struct __attribute__ ((packed)){
     uint32_t pid; // 0-5
-    int32_t parent_id;
+    int32_t parent_pid;
     // file descriptors: we need the actual array of file descriptors
     fd_entry fd_array[8];
     uint32_t parent_esp;
