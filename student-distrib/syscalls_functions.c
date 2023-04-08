@@ -233,7 +233,7 @@ int32_t execute(const uint8_t* command){
     uint32_t* ep;
     //get the current processes physical memory
     // get the entry point into the progam (bytes 24 - 27 of the executable)
-    if (read_data(dentry.inode_num, 24 , ep, 4) < 0 ){
+    if (read_data(dentry.inode_num, 24 , (uint8_t*)ep, 4) < 0 ){
         return -1;
     }
     entry_point = *ep;
@@ -252,7 +252,7 @@ int32_t execute(const uint8_t* command){
     // write the executable file to the page 
     uint32_t file_length = get_file_length(dentry.inode_num);
     // uint8_t file_data_buf[file_length];
-    if(read_data(dentry.inode_num, 0, (uint32_t*) PROGRAM_START , file_length) == -1) {
+    if(read_data(dentry.inode_num, 0, (uint8_t*) PROGRAM_START , file_length) == -1) {
         return -1;
     }
     
@@ -285,21 +285,7 @@ int32_t execute(const uint8_t* command){
     tss.ss0 = KERNEL_DS;
     // jump to the entry point of the program and begin execution
     
-    asm volatile ("\n\
-            pushl $0x002B           \n\
-            pushl esp_start         \n\
-            pushfl                  \n\
-            pushl $0x0023           \n\
-            pushl entry_point       \n\
-            iret                    \n\
-            "
-            :
-            :
-            : "memory"
-        );
-
-    //context_switch();
-    // Inline assembly
+    context_switch();
     return 0;
 }
 
