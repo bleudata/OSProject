@@ -18,15 +18,15 @@ context_switch_1:
     iret
 */
 
-
+/*
 context_switch:
-    pushl $0x002B # push user SS
+    pushl $0x002B # push user DS
     pushl esp_start # push new process esp
     pushfl # push flags
     pushl $0x0023 # push user cs
     pushl entry_point # push EIP
     iret
-
+*/
 # asm for halt
 system_halt:
     

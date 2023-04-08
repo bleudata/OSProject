@@ -20,6 +20,7 @@ uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
 uint32_t entry_point;
 uint32_t esp_start = ESP_VIRT_START;
+// uint32_t esp_start = PROGRAM_END;
 
 
 /*
@@ -194,7 +195,7 @@ int32_t execute(const uint8_t* command){
 
     uint8_t* cmd_args;
     //uint8_t* fname;
-    uint8_t fname[6];
+    uint8_t fname[9];
     uint8_t cmd_ctr = 0;
     
     // First word is filename 
@@ -270,31 +271,35 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[0].fops.close = stdin_fops.close;
     pcb_address->fd_array[0].fops.write = stdin_fops.write;
     pcb_address->fd_array[0].fops.read = stdin_fops.read;
+    pcb_address->fd_array[0].flag = 1;
     
     pcb_address->fd_array[1].fops.open = stdout_fops.open;  //set stoud fopstable to terminal write
     pcb_address->fd_array[1].fops.close = stdout_fops.close;
     pcb_address->fd_array[1].fops.write = stdout_fops.write;
     pcb_address->fd_array[1].fops.read = stdout_fops.read;
+    pcb_address->fd_array[1].flag = 1;
    
 
     tss.esp0 = EIGHT_MB- new_pid*EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
     // jump to the entry point of the program and begin execution
-    // asm volatile ("\n\
-    //         pushl $0x002B           \n\
-    //         pushl esp_start         \n\
-    //         pushfl                  \n\
-    //         pushl $0x0023           \n\
-    //         pushl entry_point       \n\
-    //         iret                    \n\
-    //         "
-    //         :
-    //         :
-    //         : "memory"
-    //     );
+    asm volatile (" \n\
+            pushl $0x002B           \n\
+            pushl %0                \n\
+            pushfl                  \n\
+            pushl $0x0023           \n\
+            pushl %1                \n\
+            movw  $0x2B, %%ax       \n\
+            movw %%ax, %%ds         \n\
+            iret                    \n\
+            "
+            :
+            : "r"(esp_start), "r"(entry_point)
+            : "memory"
+        );
 
 
-    context_switch();
+    // context_switch();
     // Inline assembly
 
     return 0;
