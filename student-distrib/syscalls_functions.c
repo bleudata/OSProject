@@ -197,14 +197,23 @@ int32_t execute(const uint8_t* command){
     //uint8_t* fname;
     uint8_t fname[33];
     memset(fname, '\0', 33);
-    uint8_t cmd_ctr = 0;
+    uint32_t cmd_ctr = 0;
+
+    printf(" cmd: %s \n ", command);
     
     // First word is filename 
-    while( command[cmd_ctr] != ' ' && command[cmd_ctr] != '\0'  && command[cmd_ctr] != '\n'){
+    while( command[cmd_ctr] != ' '  && command[cmd_ctr] != '\0'  && command[cmd_ctr] != '\n'){
         cmd_ctr++;
     }
+    printf(" cmd_ctr value: %d \n ", cmd_ctr);
     strncpy((int8_t*)fname, (int8_t*)command, cmd_ctr);
-    
+    // fname[cmd_ctr] = '\0';
+
+    terminal_write(1, " \n", 33);
+    terminal_write(1, fname, 33);
+    terminal_write(1, " \n", 33);
+
+    terminal_write(1, "line 212 \n",30);
     d_entry dentry;
     if (read_dentry_by_name(fname, &dentry) == -1){
         return -1;
@@ -219,26 +228,30 @@ int32_t execute(const uint8_t* command){
     //file_read(dentry.inode_num, exe_check, 4);
     read_data(dentry.inode_num, 0, exe_check, 4);
 
+    
     if(strncmp((int8_t*)exe_check, (int8_t*)exe, 4) != 0){
         return -1;
     }
-
+    
     /* Set up this programs paging */
     
     uint32_t* ep;
     //get the current processes physical memory
     // get the entry point into the progam (bytes 24 - 27 of the executable)
-    if (read_data(dentry.inode_num, 24 , ep, 4) < 0 ){
+    terminal_write(1, fname, 33);
+    terminal_write(1, " \n", 3);
+    if (read_data(dentry.inode_num, 24 , ep, 4) < 0 ){  // PAGE FAULT HERE
         return -1;
     }
     entry_point = *ep;
-
+    
     uint32_t new_pid = get_pid();
     // set up memory map for new process
     map_helper(new_pid);
     // write the executable file to the page 
     int32_t file_length = get_file_length(dentry.inode_num);
     // uint8_t file_data_buf[file_length];
+    
     if(read_data(dentry.inode_num, 0,  PROGRAM_START , file_length) == -1) {//(uint8_t*)or (uint32_t*)
         return -1;
     }
@@ -275,6 +288,7 @@ int32_t execute(const uint8_t* command){
 
     tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
+    
     // jump to the entry point of the program and begin execution
     asm volatile (" \n\
             pushl $0x002B           \n\

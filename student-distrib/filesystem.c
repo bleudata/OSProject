@@ -49,10 +49,10 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     }
 
     int num_dir_entries = boot_block->dir_count;
-    uint32_t str_length = strlen((int8_t*)fname);
+    // uint32_t str_length = strlen((int8_t*)fname);
     int i; //loop over dir_entries array and find dentry with matching filename's index, call read_dentry_by_index
     for(i = 0; i<num_dir_entries ; i++){
-        if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, str_length) == 0){ 
+        if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen(boot_block->dir_entries[i].filename)) == 0){ 
             //filename matches
 
             // printf("found matching file: ");

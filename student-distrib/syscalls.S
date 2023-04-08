@@ -36,13 +36,15 @@ system_halt:
 # vector number is 0x80
 .global system_call_handler_lnk 
 system_call_handler_lnk:
+/*
 	pushl %ebx
 	pushl %ecx
 	pushl %edx
     pushl %esi
     pushl %edi
 	pushl %ebp
-
+*/
+    pushal
 	pushfl
 	cmpl $1, %eax
     jl INVALID_SYS_NUM
@@ -63,14 +65,15 @@ INVALID_SYS_NUM:
     movl $-1, %eax
 VALID_SYS_NUM:
 	popfl
-
+/*
 	popl %ebp
     popl %edi
 	popl %esi
     popl %edx
     popl %ecx
     popl %ebx
-
+*/
+    popal
 
 	iret
 
