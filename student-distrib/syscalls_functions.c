@@ -21,7 +21,7 @@ uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
 uint32_t entry_point;
 uint32_t esp_start = ESP_VIRT_START;
 
-int context_switch();
+
 /*
  * fops_init
  *   DESCRIPTION: Find the file in the file system and assign an unused file descriptor
@@ -106,7 +106,7 @@ int32_t open(const uint8_t* filename){
     if (i == 8) 
         return -1;
 
-    fops_init();
+    
     // Set up any data needed to handle the file type
     int type = dentry.filetype;
     switch (type) {
@@ -133,11 +133,11 @@ int32_t open(const uint8_t* filename){
             return -1;
 
     }
-    (pcb_address->fd_array[fd]).fops.open(filename); //???? call open
+
     (pcb_address->fd_array[fd]).file_position = 0;
     (pcb_address->fd_array[fd]).flag = 1;
 
-    return 0;
+    return (pcb_address->fd_array[fd]).fops.open(filename); //???? call open
 }
 
 
@@ -155,11 +155,12 @@ int32_t close(int32_t fd){
         return -1;
     }
 
-    // Close -> make entry available
-    pcb_t * pcb_address = get_pcb_address(get_pid());
-    pcb_address->fd_array[fd].flag = 0;
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
 
-    return 0;
+    // Close -> make entry available
+    pcb_address->fd_array[fd].flag = 0;
+    return pcb_address->fd_array[fd].fops.close(fd);
 }
 
 
@@ -244,17 +245,20 @@ int32_t execute(const uint8_t* command){
     // write the executable file to the page 
     uint32_t file_length = get_file_length(dentry.inode_num);
     // uint8_t file_data_buf[file_length];
-    if(read_data(dentry.inode_num, 0, (uint32_t*) PROGRAM_START , file_length) == -1) {
+    if(read_data(dentry.inode_num, 0,  PROGRAM_START , file_length) == -1) {//(uint8_t*)or (uint32_t*)
         return -1;
     }
     
+    register uint32_t cur_esp asm("esp");
+    pcb_t * parent_pcb = (pcb_t*)(cur_esp & 0xFFFFE000);
+
     //fill in new process PCB
     pcb_t * pcb_address = get_pcb_address(new_pid);
     pcb_address->pid = new_pid;
     if(process_count == 0){
         pcb_address->parent_id = -1;
     }else{
-        pcb_address->parent_id = get_pid();
+        pcb_address->parent_id = parent_pcb->pid;
         register uint32_t parent_esp asm("esp");
         pcb_address->parent_esp = parent_esp; // technically not needed
         register uint32_t parent_ebp asm("ebp");
@@ -276,20 +280,21 @@ int32_t execute(const uint8_t* command){
     tss.esp0 = EIGHT_MB- new_pid*EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
     // jump to the entry point of the program and begin execution
-    asm volatile ("\n\
-            pushl $0x002B           \n\
-            pushl esp_start         \n\
-            pushfl                  \n\
-            pushl $0x0023           \n\
-            pushl entry_point       \n\
-            iret                    \n\
-            "
-            :
-            :
-            : "memory"
-        );
+    // asm volatile ("\n\
+    //         pushl $0x002B           \n\
+    //         pushl esp_start         \n\
+    //         pushfl                  \n\
+    //         pushl $0x0023           \n\
+    //         pushl entry_point       \n\
+    //         iret                    \n\
+    //         "
+    //         :
+    //         :
+    //         : "memory"
+    //     );
 
-    //context_switch();
+
+    context_switch();
     // Inline assembly
 
     return 0;

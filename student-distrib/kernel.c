@@ -167,7 +167,8 @@ void entry(unsigned long magic, unsigned long addr) {
     rtc_init();
     enable_cursor(MAX_SCANLINE, MAX_SCANLINE); 
     update_cursor(0,0);
-    
+    //init fops tables
+    fops_init();
     printf("unmasked keyboard and rtc irqs");
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
