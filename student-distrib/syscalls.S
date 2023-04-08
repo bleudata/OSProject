@@ -50,19 +50,20 @@ system_call_handler_lnk:
     jg INVALID_SYS_NUM
     addl $-1, %eax
 
-	cmpl $2, %eax
+	cmpl $3, %eax
 	jne INVALID_SYS_NUM # for now chnage when we need other sys calls
 
+    pushl %edx
+    pushl %ecx
 	pushl %ebx # where the parameter is
     call *syscall_jumptable(,%eax, 4) 
-    addl $4, %esp
+    addl $12, %esp
 
     jmp VALID_SYS_NUM
 
 INVALID_SYS_NUM:
     movl $-1, %eax
 VALID_SYS_NUM:
-    ret
 	popfl
 
 	popl %ebp
