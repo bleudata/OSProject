@@ -58,8 +58,6 @@ extern void smid_float_exception_handler_lnk();
 extern void keyboard_handler_lnk();
 extern void rtc_handler_lnk();
 
-// system calls
-extern void generic_system_call_handler_lnk();
 
 
 #endif /* ASM */

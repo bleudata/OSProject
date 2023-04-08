@@ -188,7 +188,8 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
         return -1;
     }
 
-    uint32_t * pcb_address = get_esp() & 0xFFFFE000; 
+    register uint32_t cur_esp asm("esp");
+    uint32_t * pcb_address = (uint32_t*)(cur_esp & 0xFFFFE000); 
 
     int32_t inode_num = ((pcb_t*)pcb_address)->fd_array[fd].inode_num;
 
@@ -309,12 +310,14 @@ d_entry * get_cp2_dentry_address(){
     return &cp2_dentry;
 }
 
+
 //fish frame 0
 // read non text 
 // read largefilename.txt should not work
 // read largefilename.tx should work
 // dir test  . file1 file2 ..
 // offset test
+
 
 /*
     inode_block_struct cur_inode = inode_array[inode];
@@ -341,4 +344,5 @@ d_entry * get_cp2_dentry_address(){
 
     }
     */
+
 

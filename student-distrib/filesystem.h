@@ -2,6 +2,7 @@
 #define FILESYS
 
 #include "lib.h"
+#include "syscalls.h"
 
 #define FILENAME_LENGTH 32
 #define DENTRY_RESERVED_BYTE_NUM 24
@@ -91,8 +92,6 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 // returns length of file in bytes
 uint32_t get_file_length(int32_t inode_num);
 
-//
-extern void get_esp();
 
 int32_t prog_loader();
 
@@ -100,3 +99,4 @@ int32_t prog_loader();
 d_entry * get_cp2_dentry_address();
 
 #endif
+

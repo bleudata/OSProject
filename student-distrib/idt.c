@@ -8,6 +8,7 @@
 #include "tests.h"
 #include "rtc.h"
 #include "keyboard_driver.h"
+#include "syscalls.h"
 
 // array of strings to print for each vector 0-19 exception
 static unsigned char * intel_handler_strings[] = {
@@ -128,7 +129,7 @@ void setup_idt() {
     // pic and system call
     SET_IDT_ENTRY(idt[KEYBOARD_VECTOR], keyboard_handler_lnk);
     SET_IDT_ENTRY(idt[RTC_VECTOR], rtc_handler_lnk);
-    SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], generic_system_call_handler_lnk);
+    SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], system_call_handler_lnk);
 
 }
 
@@ -154,9 +155,9 @@ void setup_idt() {
         //printf("entered rtc if statement");
         rtc_irq_handler(); // this is from rtc file
     }
-    else if(vector == SYSTEM_CALL_VECTOR) {
-        generic_system_call_handler();
-    }
+    // else if(vector == SYSTEM_CALL_VECTOR) {
+    //     generic_system_call_handler();
+    // }
  }
 
 /*
@@ -180,17 +181,7 @@ void generic_intel_handler(int vector) {
     while(1); // infinite loop here for now, supposed to have this according to slides???
 }
 
-/*
- * generic_system_call_handler
- *   DESCRIPTION: handler for system calls, prints to the screen to indicate system call has occured
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: prints message to the screen saying system call occured
- */
-void generic_system_call_handler() {
-    printf("System call");
-}
+
 
 
 

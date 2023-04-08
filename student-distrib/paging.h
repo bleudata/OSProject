@@ -70,9 +70,6 @@ typedef union{
 /*function that calls other initalization functions*/
 extern void init_paging();
 
-//init paging for individual processes
-extern void process_loading(uint32_t pid, d_entry dentry);
-
 //assembly function that puts page_directory address into %cr3
 extern void load_page_dir(uint32_t * page_dir_ptr);
 
@@ -85,6 +82,7 @@ extern void enable_mixed_size();
 // returns physical address associated to the 
 extern void map_helper(uint32_t pid);
 
+extern void flush_tlb();
 
 
 
@@ -98,3 +96,4 @@ extern void map_helper(uint32_t pid);
 
 
 #endif
+

@@ -7,18 +7,69 @@
 #define WRITE 2
 #define CLOSE 3
 
+#define ESP_VIRT_START 0x083FFFFC
+#define BYTE_SHIFT     8
 
-
-static void (*rtc_fops[])(void) = {rtc_open, rtc_read, rtc_write, rtc_close};
-static void (*dir_fops[])(void) = {dir_open, dir_read, dir_write, dir_close};
-static void (*file_fops[])(void) = {file_open, file_read, file_write, file_close};
-
-static void (*stdin[])(void) = {terminal_open, terminal_read, invalid_function, terminal_close};
-static void (*stdout[])(void) = {terminal_open, invalid_function, terminal_write, terminal_close};
+static fops_table rtc_fops;
+static fops_table dir_fops;
+static fops_table file_fops;
+static fops_table stdin_fops;
+static fops_table stdout_fops;
 
 uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
+uint32_t entry_point;
+uint32_t esp_start = ESP_VIRT_START;
 
+int context_switch();
+/*
+ * fops_init
+ *   DESCRIPTION: Find the file in the file system and assign an unused file descriptor
+ *   INPUTS: filename -- name of file to open
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 if successful, -1 if file not found or if fd array is full
+ *   SIDE EFFECTS:  Edits PCB
+ */
+void fops_init(){
+    rtc_fops.open = &rtc_open;
+    rtc_fops.read = &rtc_read;
+    rtc_fops.write = &rtc_write;
+    rtc_fops.close = &rtc_close;
+
+    dir_fops.open = &dir_open;
+    dir_fops.read = &dir_read;
+    dir_fops.write = &dir_write;
+    dir_fops.close = &dir_close;
+
+    file_fops.open = &file_open;
+    file_fops.read = &file_read;
+    file_fops.write = &file_write;
+    file_fops.close = &file_close;
+
+    stdin_fops.open = &terminal_open;
+    stdin_fops.read = &terminal_read;
+    stdin_fops.write = NULL;
+    stdin_fops.close = &terminal_close;
+
+    stdout_fops.open = &terminal_open;
+    stdout_fops.read = NULL;
+    stdout_fops.write = &terminal_write;
+    stdout_fops.close = &terminal_close;
+
+}
+
+
+/*
+ * invalid_function
+ *   DESCRIPTION: Find the file in the file system and assign an unused file descriptor
+ *   INPUTS: filename -- name of file to open
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 if successful, -1 if file not found or if fd array is full
+ *   SIDE EFFECTS:  Edits PCB
+ */
+uint32_t invalid_function() {
+    return 0;
+}
 
 /*
  * open
@@ -34,6 +85,10 @@ int32_t open(const uint8_t* filename){
     int i, fd;
     // STEPS:
     // Find the file in the file system (need the inode and the file type)
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+    
+
     d_entry dentry;
     if (read_dentry_by_name(filename, &dentry) < 0 )
         return -1;
@@ -41,7 +96,7 @@ int32_t open(const uint8_t* filename){
     // Allocate an unused file descriptor
     for (i = 2; i < 8; i ++) {
         // check if we have an open spot in array 
-        if (temp.fd_array[i].flag == 0) {
+        if (pcb_address->fd_array[i].flag == 0) {
             fd = i;
             break;
         }
@@ -51,32 +106,36 @@ int32_t open(const uint8_t* filename){
     if (i == 8) 
         return -1;
 
+    fops_init();
     // Set up any data needed to handle the file type
     int type = dentry.filetype;
     switch (type) {
         // RTC
         case 0 :
-            temp.fd_array[fd].fops_pointer = rtc_fops;
-            temp.fd_array[fd].inode_num = -1;
+            (pcb_address->fd_array[fd]).fops.open = rtc_fops.open;
+            (pcb_address->fd_array[fd]).fops.read = rtc_fops.read;
+            (pcb_address->fd_array[fd]).fops.write = rtc_fops.write;
+            (pcb_address->fd_array[fd]).fops.close = rtc_fops.close;
+            (pcb_address->fd_array[fd]).inode_num = -1;
             break;
         // Directory
         case 1 :
-            temp.fd_array[fd].fops_pointer = dir_fops; 
-            temp.fd_array[fd].inode_num = dentry.inode_num;
+            // (pcb_address->fd_array[fd]).fops = dir_fops; 
+            (pcb_address->fd_array[fd]).inode_num = dentry.inode_num;
             break;
         // File 
         case 2 :
-            temp.fd_array[fd].fops_pointer = file_fops; 
-            temp.fd_array[fd].inode_num = dentry.inode_num;
+            // (pcb_address->fd_array[fd]).fops = file_fops; 
+            (pcb_address->fd_array[fd]).inode_num = dentry.inode_num;
             break;
 
         default :
             return -1;
 
     }
-    temp.fd_array[fd].fops_pointer[0](); //???? call open
-    temp.fd_array[fd].file_position = 0;
-    temp.fd_array[fd].flags = 1;
+    (pcb_address->fd_array[fd]).fops.open(filename); //???? call open
+    (pcb_address->fd_array[fd]).file_position = 0;
+    (pcb_address->fd_array[fd]).flag = 1;
 
     return 0;
 }
@@ -92,12 +151,13 @@ int32_t open(const uint8_t* filename){
  */
 int32_t close(int32_t fd){
     //Check for Valid fd
-    if (fd < 2 || fd > 7) // Shouldnt be able to close read and write 
+    if (fd < 2 || fd > 7){ // Shouldnt be able to close read and write 
         return -1;
+    }
 
     // Close -> make entry available
-    pcb_t * pcb_address = get_pcb_address();
-    pcb_address->fd_array[fd].flags = 0;
+    pcb_t * pcb_address = get_pcb_address(get_pid());
+    pcb_address->fd_array[fd].flag = 0;
 
     return 0;
 }
@@ -130,54 +190,71 @@ int32_t execute(const uint8_t* command){
     if(process_count >=6 ){
         return -1;
     }
-    uint8_t* cmd_args = strcpy(cmd_args, command);
-    
-    uint8_t* fname;
-    uint32_t cmd_ctr = 0;
+
+    uint8_t* cmd_args;
+    //uint8_t* fname;
+    uint8_t fname[6];
+    uint8_t cmd_ctr = 0;
     
     // First word is filename 
-    while(command[cmd_ctr] != " "){
+    while( command[cmd_ctr] != ' '){
         cmd_ctr++;
     }
-    fname = strncpy(fname, command, cmd_ctr);
+    strncpy((int8_t*)fname, (int8_t*)command, cmd_ctr);
     
     d_entry dentry;
     if (read_dentry_by_name(fname, &dentry) == -1){
         return -1;
     }
     //setting the cmd ptr to point to the first char after the first space that is after the first word
-    cmd_args += (cmd_ctr + 1);
+    cmd_args = (uint8_t*)(command + cmd_ctr + 1);
 
     // rest is sent to new program 
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
     uint8_t exe_check[4];
     uint8_t exe[4] = {0x7F, 0x45, 0x4C, 0x46};
-    file_read(dentry.inode_num, exe_check, 4);
+    //file_read(dentry.inode_num, exe_check, 4);
+    read_data(dentry.inode_num, 0, exe_check, 4);
 
-    uint32_t ctr = 0;//reverse this if its the other way around, but I read it as byte 0 being the LSB
-    while(ctr < 4){  //, otherwise if its MSB then it should be: 0x7F454C46
-        if(exe_check[ctr] != exe[ctr]){ 
-            return -1;
-        }
-        ctr++;
+    if(strncmp((int8_t*)exe_check, (int8_t*)exe, 4) != 0){
+        return -1;
     }
+    // uint32_t ctr = 0;//reverse this if its the other way around, but I read it as byte 0 being the LSB
+    // while(ctr < 4){  //, otherwise if its MSB then it should be: 0x7F454C46
+    //     if(exe_check[ctr] != exe[ctr]){ 
+    //         return -1;
+    //     }
+    //     ctr++;
+    // }
     
 
     /* Set up this programs paging */
     
+    uint32_t* ep;
     //get the current processes physical memory
     // get the entry point into the progam (bytes 24 - 27 of the executable)
-    uint8_t* entry_point;
-    if (read_data(dentry.inode_num, 24 , entry_point, 4) < 0 ) 
+    if (read_data(dentry.inode_num, 24 , (uint8_t*)ep, 4) < 0 ){
         return -1;
-    
+    }
+    entry_point = *ep;
+    // uint8_t c = 0;
+    // while(c < 4){
+    //     entry_point = entry_point + ep[c];
+    //     if(c != 3){
+    //         entry_point = entry_point << BYTE_SHIFT;
+    //     }
+    //     c++;
+    // }
+
     uint32_t new_pid = get_pid();
     // set up memory map for new process
     map_helper(new_pid);
     // write the executable file to the page 
     uint32_t file_length = get_file_length(dentry.inode_num);
     // uint8_t file_data_buf[file_length];
-    file_read(dentry.inode_num, PROGRAM_START , file_length);
+    if(read_data(dentry.inode_num, 0, (uint8_t*) PROGRAM_START , file_length) == -1) {
+        return -1;
+    }
     
     //fill in new process PCB
     pcb_t * pcb_address = get_pcb_address(new_pid);
@@ -185,7 +262,7 @@ int32_t execute(const uint8_t* command){
     if(process_count == 0){
         pcb_address->parent_id = -1;
     }else{
-        pcb_address->parent_id = get_current_pid();
+        pcb_address->parent_id = get_pid();
         register uint32_t parent_esp asm("esp");
         pcb_address->parent_esp = parent_esp; // technically not needed
         register uint32_t parent_ebp asm("ebp");
@@ -193,13 +270,22 @@ int32_t execute(const uint8_t* command){
     }
     process_count += 1;
 
-    pcb_address->fd_array[0].fops_pointer; //set stin fopstable to terminal read
-    pcb_address->fd_array[1].fops_pointer; //set stoud fopstable to terminal write
+    pcb_address->fd_array[0].fops.open = stdin_fops.open; //set stin fopstable to terminal read
+    pcb_address->fd_array[0].fops.close = stdin_fops.close;
+    pcb_address->fd_array[0].fops.write = stdin_fops.write;
+    pcb_address->fd_array[0].fops.read = stdin_fops.read;
+    
+    pcb_address->fd_array[1].fops.open = stdout_fops.open;  //set stoud fopstable to terminal write
+    pcb_address->fd_array[1].fops.close = stdout_fops.close;
+    pcb_address->fd_array[1].fops.write = stdout_fops.write;
+    pcb_address->fd_array[1].fops.read = stdout_fops.read;
+   
 
-    tss->esp0 = EIGHT_MB- new_pid*EIGHT_KB -1;
+    tss.esp0 = EIGHT_MB- new_pid*EIGHT_KB - 4;
+    tss.ss0 = KERNEL_DS;
     // jump to the entry point of the program and begin execution
     
-    context_switch(entry_point);
+    context_switch();
     return 0;
 }
 
@@ -224,7 +310,9 @@ uint32_t get_pid(){
  */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     // fd is an index into PCB array 
-    return temp.fd_array[fd].fops_pointer[READ](0, buf, nbytes);
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+    return pcb_address->fd_array[fd].fops.read(0, buf, nbytes);
 }
 
 
@@ -240,9 +328,25 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
  */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     // fd is an index into PCB array
-    return temp.fd_array[fd].fops_pointer[WRITE](1, buf, nbytes);
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+    return pcb_address->fd_array[fd].fops.write(1, buf, nbytes);
 }
 
-uint32_t * get_pcb_address(uint32_t pid){
+pcb_t * get_pcb_address(uint32_t pid){
     return (pcb_t*)(EIGHT_MB - EIGHT_KB*(pid + 1));
+}
+
+
+extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
+    return 0;
+}
+extern int32_t vidmap(uint8_t** screen_start) {
+    return 0;
+}
+extern int32_t set_handler(int32_t signum, void* handler_address) {
+    return 0;
+}
+extern int32_t sigreturn(void) {
+    return 0;
 }

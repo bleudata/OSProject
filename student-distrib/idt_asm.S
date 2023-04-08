@@ -3,6 +3,7 @@
 #include "idt_asm.h"
 
 
+
 /*
  * HANDLER_LINK
  *   DESCRIPTION: Macro to create exception / interrupt assmebly linkage using handler functions
@@ -53,21 +54,8 @@ HANDLER_LNK(rtc_handler_lnk, generic_handler, RTC_VECTOR)
 
 # system call 
 # also might need to push own unique error code, to be figured out later.
-# HANDLER_LNK(generic_system_call_handler_lnk, generic_handler, SYSTEM_CALL_VECTOR)
+# HANDLER_LNK(idt_syscall_linkage, syscall_linkage, SYSTEM_CALL_VECTOR)
 
-
-# system call
-# vector number is 0x80
-.global system_call_handler_lnk 
-system_call_handler_lnk:
-	pushal
-	pushfl
-	pushl $SYSTEM_CALL_VECTOR
-	call generic_handler
-	addl $4, %esp
-	popfl
-	popal
-	iret
 
 
 

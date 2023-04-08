@@ -9,8 +9,7 @@ extern void setup_idt();
 extern void generic_handler(int vector);
 // handler for vectors 0-19
 extern void generic_intel_handler(int vector);
-// handler for system calls
-extern void generic_system_call_handler();
+
 
 
 #endif /* _IDT_H */

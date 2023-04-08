@@ -203,12 +203,13 @@ void entry(unsigned long magic, unsigned long addr) {
     // launch_tests(READ_DATA_TEST);
     // launch_tests(TERMINAL_OPEN_TEST);
     // launch_tests(TERMINAL_CLOSE_TEST);
-    launch_tests(TERMINAL_READ_TEST);
+    // launch_tests(TERMINAL_READ_TEST);
     // launch_tests(TERMINAL_WRITE_TEST);
     // launch_tests(RTC_NEW_HZ);
     // launch_tests(RTC_HZ_BUFF_OF);
     // launch_tests(RTC_GET_SYSHZ_PER_UHZ);
-
+    uint8_t cmd[7] = "shell ";
+    execute(cmd);
 
     /* Checkpoint 3 Tests */
 #endif
