@@ -195,11 +195,12 @@ int32_t execute(const uint8_t* command){
 
     uint8_t* cmd_args;
     //uint8_t* fname;
-    uint8_t fname[6];
+    uint8_t fname[33];
+    memset(fname, '\0', 33);
     uint8_t cmd_ctr = 0;
     
     // First word is filename 
-    while( command[cmd_ctr] != ' '){
+    while( command[cmd_ctr] != ' ' && command[cmd_ctr] != '\0'  && command[cmd_ctr] != '\n'){
         cmd_ctr++;
     }
     strncpy((int8_t*)fname, (int8_t*)command, cmd_ctr);
@@ -289,7 +290,6 @@ int32_t execute(const uint8_t* command){
             : "r"(esp_start), "r"(entry_point)
             : "memory"
         );
-
             // movw  $0x2B, %%ax       \n\
             // movw %%ax, %%ds         \n\
     // context_switch();
