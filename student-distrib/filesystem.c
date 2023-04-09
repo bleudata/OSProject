@@ -51,7 +51,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     // uint32_t str_length = strlen((int8_t*)fname);
     int i; //loop over dir_entries array and find dentry with matching filename's index, call read_dentry_by_index
     for(i = 0; i<num_dir_entries ; i++){
-        if(strlen(boot_block->dir_entries[i].filename) == strlen(fname)){
+        if(strlen(boot_block->dir_entries[i].filename) == strlen((int8_t*)fname)){
             if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen(boot_block->dir_entries[i].filename)) == 0){
                 return read_dentry_by_index(i, dentry); 
             }
@@ -281,6 +281,7 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
     int num_dir_entries = boot_block->dir_count;
 
     if(file_counter >= num_dir_entries){ //dont read non_existing file
+        file_counter = 0;
         return 0;
     }
     int num_bytes_read;
@@ -291,6 +292,7 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
     }
     //copy filename to buffer (min of nbytes and 32)
     memcpy(buf, boot_block->dir_entries[file_counter].filename, num_bytes_read);
+    
     file_counter +=1;
     
     return num_bytes_read;
