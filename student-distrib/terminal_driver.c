@@ -44,7 +44,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
         return -1; 
     }
     // validate fd 
-    if (fd < 0 || fd > FD_MAX_SIZE) {
+    if (fd != 0) {
         return -1;
     }
     // validate n
@@ -95,7 +95,7 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
     const unsigned char * new_buf = (unsigned char*) buf;
 
     // validate fd 
-    if (fd < 0 || fd > FD_MAX_SIZE) {
+    if (fd != 1) {
         return -1;
     }
     // check for null pointer
