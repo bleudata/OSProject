@@ -50,11 +50,13 @@ void rtc_irq_handler() {
  *   DESCRIPTION: opens the RTC on the user end and sets it to the default of 1024 Hz
  *   INPUTS: none
  *   OUTPUTS: none
- *   RETURN VALUE: 0 on success
+ *   RETURN VALUE: fd on success, -1 if fail
  *   SIDE EFFECTS: accesses RTC registers and sets frequency to 1024 Hz
  */
 
 int32_t rtc_open(const uint8_t* filename){
+    //printf("hi I am in rtc :)\n");
+
     uint16_t rate = RTC_RATE;
     outb(RTC_REG_A_DISABLE, RTC_REG_PORT); // set index to register A, disable NMI
     char prev = inb(RTC_RW_PORT);	// get initial value of register A, should be 32kHz
@@ -62,7 +64,24 @@ int32_t rtc_open(const uint8_t* filename){
     outb((prev & RTC_DATA_UPPER_BYTE) | rate, RTC_RW_PORT); //write only our rate to A. Note, rate is the bottom 4 bits.
     rtc_ctr = 1;
     rtc_syshz_per_uhz = RTC_GLOB_RES_RATE; //since its init, the system frequency of interrupts will always be 1 of itself
-    return RTC_PASS;
+    
+    d_entry dentry;
+    int32_t dentry_success = read_dentry_by_name(filename, &dentry);
+
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+
+    int32_t inode_num = dentry.inode_num;
+    int32_t fd = 2;
+    
+    while(fd < 8){
+        if(inode_num == ((pcb_t*)pcb_address)->fd_array[fd].inode_num){
+            return fd;
+        }
+        fd++;
+    }
+    //if it reaches here it failed
+    return -1;
 }
 
 /*

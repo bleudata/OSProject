@@ -4,6 +4,7 @@
 #include "types.h"
 #include "i8259.h"
 #include "lib.h"
+#include "syscalls.h"
 
 #define RTC_REG_PORT        0x70
 #define RTC_RW_PORT         0x71
