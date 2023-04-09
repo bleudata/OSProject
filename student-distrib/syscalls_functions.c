@@ -18,6 +18,15 @@ uint32_t entry_point;
 uint32_t esp_start = ESP_VIRT_START;
 // uint32_t esp_start = PROGRAM_END;
 
+
+/*
+ * set_exception_flag
+ *   DESCRIPTION: Find the file in the file system and assign an unused file descriptor
+ *   INPUTS: filename -- name of file to open
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 if successful, -1 if file not found or if fd array is full
+ *   SIDE EFFECTS:  Edits PCB
+ */
 void set_exception_flag(){
     exception_flag = 1;
 }
@@ -148,34 +157,27 @@ int32_t close(int32_t fd){
  */
 int32_t halt(uint8_t status){
     uint32_t ret_status = status;
-    //terminal_write(1, " \n halt(143) \n", 33);
-    //printf(" halt(144)\n");
+
     //close all files
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
 
     int32_t parent_pid = pcb_address->parent_pid;
-    //terminal_write(1, " halt(149) \n", 33);
-    //printf(" halt(149)\n");
     int fd;
     for(fd=0; fd <8; fd++){
         
-        if(pcb_address->fd_array[fd].flag = 1){
+        if(pcb_address->fd_array[fd].flag == 1){
             close(fd);
         }
         
         pcb_address->fd_array[fd].flag = 0;
     }
-    //terminal_write(1, " halt(162) \n", 33);
-    //printf(" halt(162)\n");
     //mark child pcb as non-active
     pcb_address->active = 0;
     pid_array[pcb_address->pid] = 0;
     process_count-=1;
     //check if main shell
     if(parent_pid == -1){
-        //terminal_write(1, " halt(168) \n", 33);
-        //printf(" halt(169)\n");
         tss.esp0 = EIGHT_MB- 0*EIGHT_KB - 4; //confirm this
         tss.ss0 = KERNEL_DS;
         //maybe have to close all pcbs
@@ -184,8 +186,6 @@ int32_t halt(uint8_t status){
         execute("shell");
 
     }else{
-        //terminal_write(1, " halt(176) \n", 33);
-        //printf(" halt(177)\n");
         tss.esp0 = EIGHT_MB- (parent_pid)*EIGHT_KB - 4;
         tss.ss0 = KERNEL_DS;
         map_helper(parent_pid);
@@ -195,13 +195,11 @@ int32_t halt(uint8_t status){
 
     uint32_t parent_esp = pcb_address->parent_esp;
     uint32_t parent_ebp = pcb_address->parent_ebp;
-     //terminal_write(1, " halt(182) \n", 33);
-     //printf(" halt(188)\n");
-    if(exception_flag = 1){
+    
+    if(exception_flag == 1){
         ret_status = 256;
         exception_flag =0; // or we could use the exception handlers
         //clear exception flag
-        terminal_write(1, " arya mad \n ", 13);
     }
     
     //jump to execute return
@@ -241,16 +239,8 @@ int32_t execute(const uint8_t* command){
     if(process_count >= 5){ // maybe should be 6 but check again bro
         return 0;
     }
-    //terminal_write(1, " exe(220) \n", 33);
-    //printf("\nexe(220)\n");
-    
-    // File Checks (it exists, it is executable)
-    // if(process_count >=6 ){
-    //     return -1;
-    // }
 
     uint8_t* cmd_args;
-    //uint8_t* fname;
     uint8_t fname[33];
     memset(fname, '\0', 33);
     uint32_t cmd_ctr = 0;
@@ -262,13 +252,8 @@ int32_t execute(const uint8_t* command){
         cmd_ctr++;
     }
 
-    // printf(" cmd_ctr value: %d \n ", cmd_ctr);
     strncpy((int8_t*)fname, (int8_t*)command, cmd_ctr);
-    // fname[cmd_ctr] = '\0';
 
-    // terminal_write(1, " \n", 33);
-    // terminal_write(1, fname, 33);
-    // terminal_write(1, " \n", 33);
 
     d_entry dentry;
     if (read_dentry_by_name(fname, &dentry) == -1){
@@ -294,8 +279,6 @@ int32_t execute(const uint8_t* command){
     uint32_t* ep = &ep_storage;
     //get the current processes physical memory
     // get the entry point into the progam (bytes 24 - 27 of the executable)
-    // terminal_write(1, fname, 33);
-    // terminal_write(1, " \n", 3);
     if (read_data(dentry.inode_num, 24 , ep, 4) < 0 ){  
         return -1;
     }
@@ -318,12 +301,8 @@ int32_t execute(const uint8_t* command){
     pcb_t * pcb_address = get_pcb_address(new_pid);
     pcb_address->pid = new_pid;
     if(process_count == 0){
-        //terminal_write(1, " exe(295) \n", 33);
-        //printf("exe(295)\n");
         pcb_address->parent_pid = -1;
     }else{
-        //terminal_write(1, " exe(298) \n", 33);
-        //printf("exe(298)\n");
         pcb_address->parent_pid = parent_pcb->pid;
         register uint32_t parent_esp asm("esp");
         pcb_address->parent_esp = parent_esp; // technically not needed
@@ -344,7 +323,6 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[1].fops.read = NULL;
     pcb_address->fd_array[1].flag = 1;
    
-    //terminal_write(1, "exe(332)\n ", 8);
     tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
     //do i set the active field of parent to 0 here?

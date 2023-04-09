@@ -29,7 +29,6 @@ int32_t terminal_open(const uint8_t* filename) {
     
     while(fd < 2){
         if(inode_num == ((pcb_t*)pcb_address)->fd_array[fd].inode_num){
-            //printf("%d\n", fd);
             return fd;
         }
         fd++;
@@ -96,10 +95,6 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     purge_and_align_keyboard_buffer(ret);
     decrement_enter_count();
     set_read_flag(0); // tell keyboard we're done with terminal read
-    
-    // terminal_write(1, " end of terminal read ", 22);
-    terminal_write(1, buf, 30);
-    // return ret;
 
     return ret;
 }
@@ -133,11 +128,15 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
     // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
     for(i = 0; i < n; i ++) {
         if(new_buf[i] != '\0') {
+            // if(new_buf[i] == '\n') {
+            //     printf("this is a newline lalalalallallalalalalalalalalalalalalal");
+            // }
             putc_new(new_buf[i], 0);
         }
     }
-    update_cursor(get_x_position(), get_y_position());
 
+    // printf("buffer: %s", new_buf);
+    update_cursor(get_x_position(), get_y_position());
     return n;
 }
 

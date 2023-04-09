@@ -55,8 +55,6 @@ void rtc_irq_handler() {
  */
 
 int32_t rtc_open(const uint8_t* filename){
-    //printf("hi I am in rtc :)\n");
-
     uint16_t rate = RTC_RATE;
     outb(RTC_REG_A_DISABLE, RTC_REG_PORT); // set index to register A, disable NMI
     char prev = inb(RTC_RW_PORT);	// get initial value of register A, should be 32kHz

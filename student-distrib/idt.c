@@ -146,9 +146,7 @@ void setup_idt() {
     //printf("printing vector %d \n", vector);
     if(vector >= 0 && vector <= 19) {
         set_exception_flag();
-        terminal_write(1, " arya sad \n ", 13);
         halt(0);
-        terminal_write(1, " arya cry \n ", 13);
         generic_intel_handler(vector);
     }
     else if(vector == KEYBOARD_VECTOR) {
@@ -177,9 +175,8 @@ void generic_intel_handler(int vector) {
     if(vector < 0 || vector > 19) {
        return; // invalid vector number for this function
     }
-    // printf("hihihihihihihihihi\n");
 
-    printf("%s \n", intel_handler_strings[vector]);
+    terminal_write(1, intel_handler_strings[vector], 30);
     color_screen(BSOD);
     while(1); // infinite loop here for now, supposed to have this according to slides???
 }
