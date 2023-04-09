@@ -81,6 +81,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     set_read_flag(0); // tell keyboard we're done with terminal read
     
     // terminal_write(1, " end of terminal read ", 22);
+    terminal_write(1, buf, 30);
     // return ret;
 
     return ret;
@@ -132,6 +133,9 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
  *   SIDE EFFECTS: 
  */
 int32_t terminal_close(int32_t fd) {
+    if(fd<0 || fd >7){
+        return -1;
+    }
     return 0;
 }
 

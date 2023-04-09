@@ -82,3 +82,8 @@ void map_helper(uint32_t pid) {
     flush_tlb();
 
 }
+
+void destroy_mapping(){
+    int32_t virtual = 0x08000000;
+    page_directory[virtual].entry = 0x0;
+}

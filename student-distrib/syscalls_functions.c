@@ -174,9 +174,70 @@ int32_t close(int32_t fd){
  *   SIDE EFFECTS:  none
  */
 int32_t halt(uint8_t status){
+    uint32_t ret_status = status;
+    
+    //close all files
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
 
+    int32_t parent_pid = pcb_address->parent_pid;
+    
+    int fd;
+    for(fd=2; fd <8; fd++){
+        //if flag ==1, we close
+        if(pcb_address->fd_array[fd].flag = 1){
+            pcb_address->fd_array[fd].fops.close(fd);
+        }
+        
+        pcb_address->fd_array[fd].flag = 0;
+    }
+
+    //mark child pcb as non-active
+    pcb_address->active = 0;
+    
+    //check if main shell
+    if(parent_pid == -1){
+        tss.esp0 = EIGHT_MB- 0*EIGHT_KB - 4; //confirm this
+        tss.ss0 = KERNEL_DS;
+        //maybe have to close all pcbs
+        destroy_mapping();
+        //call have to call execute from kernel
+    }else{
+        tss.esp0 = EIGHT_MB- (parent_pid)*EIGHT_KB - 4;
+        tss.ss0 = KERNEL_DS;
+        map_helper(parent_pid);
+        get_pcb_address(parent_pid)->active = 1;// ???
+        
+    }
+
+    uint32_t parent_esp = pcb_address->parent_esp;
+    uint32_t parent_ebp = pcb_address->parent_ebp;
+
+    // if(exception_flag = 1){
+    //     ret_status = 256;
+    //     exception_flag =0; // or we could use the exception handlers
+    //     //clear exception flag
+    // }
+    
+    //jump to execute return
+    process_count-=1;
+    asm volatile ("             \n\
+        movl %0, %%esp          \n\
+        movl %1, %%ebp          \n\
+        movl %2, %%eax          \n\
+        leave                   \n\
+        ret                     \n\
+        "
+        :
+        : "r"(parent_esp), "r"(parent_ebp), "r"(ret_status)
+        : "memory"
+    );
+
+    // //we dont reach here right
     return 0;
 }
+
+
 
 
 /*
@@ -188,6 +249,8 @@ int32_t halt(uint8_t status){
  *   SIDE EFFECTS:  Hands off the processor 
  */
 int32_t execute(const uint8_t* command){
+    int i;
+    
     // File Checks (it exists, it is executable)
     if(process_count >=6 ){
         return -1;
@@ -205,15 +268,15 @@ int32_t execute(const uint8_t* command){
     while( command[cmd_ctr] != ' '  && command[cmd_ctr] != '\0'  && command[cmd_ctr] != '\n'){
         cmd_ctr++;
     }
+
     printf(" cmd_ctr value: %d \n ", cmd_ctr);
     strncpy((int8_t*)fname, (int8_t*)command, cmd_ctr);
     // fname[cmd_ctr] = '\0';
 
-    terminal_write(1, " \n", 33);
-    terminal_write(1, fname, 33);
-    terminal_write(1, " \n", 33);
+    // terminal_write(1, " \n", 33);
+    // terminal_write(1, fname, 33);
+    // terminal_write(1, " \n", 33);
 
-    terminal_write(1, "line 212 \n",30);
     d_entry dentry;
     if (read_dentry_by_name(fname, &dentry) == -1){
         return -1;
@@ -226,6 +289,7 @@ int32_t execute(const uint8_t* command){
     uint8_t exe_check[4];
     uint8_t exe[4] = {0x7F, 0x45, 0x4C, 0x46};
     //file_read(dentry.inode_num, exe_check, 4);
+    
     read_data(dentry.inode_num, 0, exe_check, 4);
 
     
@@ -234,13 +298,13 @@ int32_t execute(const uint8_t* command){
     }
     
     /* Set up this programs paging */
-    
-    uint32_t* ep;
+    int32_t ep_storage;
+    uint32_t* ep = &ep_storage;
     //get the current processes physical memory
     // get the entry point into the progam (bytes 24 - 27 of the executable)
     terminal_write(1, fname, 33);
     terminal_write(1, " \n", 3);
-    if (read_data(dentry.inode_num, 24 , ep, 4) < 0 ){  // PAGE FAULT HERE
+    if (read_data(dentry.inode_num, 24 , ep, 4) < 0 ){  
         return -1;
     }
     entry_point = *ep;
@@ -251,11 +315,11 @@ int32_t execute(const uint8_t* command){
     // write the executable file to the page 
     int32_t file_length = get_file_length(dentry.inode_num);
     // uint8_t file_data_buf[file_length];
-    
-    if(read_data(dentry.inode_num, 0,  PROGRAM_START , file_length) == -1) {//(uint8_t*)or (uint32_t*)
+  
+    if(read_data(dentry.inode_num, 0,  PROGRAM_START , file_length) == -1) {//(uint8_t*)or (uint32_t*) // PAGE FAULT HERE
         return -1;
     }
-    
+   
     register uint32_t cur_esp asm("esp");
     pcb_t * parent_pcb = (pcb_t*)(cur_esp & 0xFFFFE000);
 
@@ -288,7 +352,8 @@ int32_t execute(const uint8_t* command){
 
     tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
-    
+    //do i set the active field of parent to 0 here?
+
     // jump to the entry point of the program and begin execution
     asm volatile (" \n\
             pushl $0x002B           \n\
@@ -296,8 +361,6 @@ int32_t execute(const uint8_t* command){
             pushfl                  \n\
             pushl $0x0023           \n\
             pushl %1                \n\
-            movw  $0x2B, %%ax       \n\
-            movw %%ax, %%ds         \n\
             iret                    \n\
             "
             :
@@ -308,7 +371,7 @@ int32_t execute(const uint8_t* command){
             // movw %%ax, %%ds         \n\
     // context_switch();
     // Inline assembly
-
+    // we never reach here right
     return 0;
 }
 
