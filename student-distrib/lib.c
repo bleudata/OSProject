@@ -495,17 +495,12 @@ void test_interrupts(void) {
  *   RETURN VALUE: none
  *   SIDE EFFECTS: edits the screen, might shift everything up one line for vertical scrolling
  */
-void putc_new(uint8_t c, unsigned char * buf) {
+void putc_new(uint8_t c) {
     if(c == '\n' || c == '\r') {
-        // printf("found new line");
         if((screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
-            // printf("need to shift the screen up");
-            copy_screen(buf);
-            //printf(" done copy               cpy");
-            shift_screen_up(buf);
+            shift_screen_up();
         }
         else {
-            // printf("don't need to scrolllllllllllll");
             screen_y = (screen_y + 1); // next row
         }
         screen_x = 0;
@@ -515,8 +510,7 @@ void putc_new(uint8_t c, unsigned char * buf) {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         if((screen_x+1) > NUM_COLS-1) {
             if((screen_y + 1) > NUM_ROWS-1) { // might need to shift the screen
-                copy_screen(buf);
-                shift_screen_up(buf);
+                shift_screen_up();
             }
             else {
                 screen_y = (screen_y + 1);
@@ -531,30 +525,6 @@ void putc_new(uint8_t c, unsigned char * buf) {
     }
 }
 
-/*
- * copy_screen
- *   DESCRIPTION: copies from video memory into a buffer
- *   INPUTS: buf -- contains all the data from the screen
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: writes to thes screen
- */
-void copy_screen(unsigned char * buf) {
-    // // check for null pointer
-    // printf(" in copy ");
-    unsigned char * screen = (unsigned char *) VIDEO;
-    if(buf == 0) { 
-        // printf(" null ");
-        return;
-    }
-   // printf(" start mem copy ");
-    //cli();
-    memcpy(buf, screen, SCREEN_SIZE*2);
-    //sti();
-    // printf(" enddddddddddddddddddddddddddddddddd  mem copy");
-    return;
-
-}
 
 /*
  * shift_screen_up
@@ -564,22 +534,18 @@ void copy_screen(unsigned char * buf) {
  *   RETURN VALUE: none
  *   SIDE EFFECTS: colors the background of the screen and the character color
  */
-void shift_screen_up(unsigned char * buf) {
+void shift_screen_up() {
     //printf(" inside shift screen up");
     int i;
     int offset = NUM_COLS*2; // text memory is 2 bytes, first byte is ascii, second is attribute
-    if(buf == 0) { // null pointer
-        return;
-    }
     for(i = 0; i < (SCREEN_BYTES   - offset ); i = i+2) { // new row of screen will be what was previously the row after
-        buf[i] = buf[i+offset]; //  ascii character
-        buf[i+1] = GRAY_ON_BLACK; // attribute
+        video_mem[i] = video_mem[i+offset]; //  ascii character
+        video_mem[i+1] = GRAY_ON_BLACK; // attribute
     }
     for(i = SCREEN_BYTES - offset; i < SCREEN_BYTES; i = i+2) {
-        buf[i] = ' ';
-        buf[i+1] = GRAY_ON_BLACK;
+        video_mem[i] = ' ';
+        video_mem[i+1] = GRAY_ON_BLACK;
     }
-    memmove(video_mem, buf, SCREEN_SIZE*2);
 }
 
 

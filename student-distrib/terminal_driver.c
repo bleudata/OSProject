@@ -135,7 +135,7 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
             // if(new_buf[i] == '\n') {
             //     printf("this is a newline lalalalallallalalalalalalalalalalalalal");
             // }
-            putc_new(new_buf[i], 0);
+            putc_new(new_buf[i]);
         }
     }
 
