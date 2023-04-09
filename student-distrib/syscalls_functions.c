@@ -180,6 +180,7 @@ int32_t halt(uint8_t status){
         exception_flag = 0; 
     }
     
+
     //jump to execute return
     //does iret mess with eax
     asm volatile ("             \n\
@@ -292,10 +293,18 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[STDOUT_FD].flag = 1;
     pcb_address->active = 1;
 
+    //setting the new TSS ESP0 and SS0
     tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - UINT_BYTES;
     tss.ss0 = KERNEL_DS;
     
     // jump to the entry point of the program and begin execution
+
+    //line 1: This value is USER DS
+    //line 2: This pushes the ESP
+    //line 3: This pushes the flags
+    //line 4: This value is USER CS
+    //line 5: This pushes the EIP
+
     asm volatile (" \n\
             pushl $0x002B           \n\
             pushl %0                \n\
