@@ -6,27 +6,7 @@
 .text
 .globl context_switch
 
-/*
-context_switch_1:
-    movl 4(%esp), %eax
-    pushl USER_DS # push user SS
-    pushl PROGRAM_END
-    pushfl # push flags
-    pushl USER_CS # push user cs
-    pushl %eax  # push EIP
 
-    iret
-*/
-
-/*
-context_switch:
-    pushl $0x002B # push user DS
-    pushl esp_start # push new process esp
-    pushfl # push flags
-    pushl $0x0023 # push user cs
-    pushl entry_point # push EIP
-    iret
-*/
 # asm for halt
 system_halt:
     
@@ -36,7 +16,7 @@ system_halt:
 # vector number is 0x80
 .global system_call_handler_lnk 
 system_call_handler_lnk:
-
+    # Save the registers
 	pushl %ebx
 	pushl %ecx
 	pushl %edx
@@ -44,8 +24,8 @@ system_call_handler_lnk:
     pushl %edi
 	pushl %ebp
 
-    # pushal
 	pushfl
+
 	cmpl $1, %eax
     jl INVALID_SYS_NUM
     cmpl $10, %eax
@@ -57,6 +37,7 @@ system_call_handler_lnk:
     pushl %ecx
 	pushl %ebx # where the parameter is
     call *syscall_jumptable(,%eax, 4) 
+    # Pop arguments off stack
     addl $12, %esp
 
     jmp VALID_SYS_NUM
@@ -66,6 +47,7 @@ INVALID_SYS_NUM:
 VALID_SYS_NUM:
 	popfl
 
+    # Pop registers 
 	popl %ebp
     popl %edi
 	popl %esi
@@ -73,11 +55,10 @@ VALID_SYS_NUM:
     popl %ecx
     popl %ebx
 
-    # popal
 
 	iret
 
-
+# jump table for system calls
 syscall_jumptable:
     .long   halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
 

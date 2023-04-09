@@ -18,27 +18,7 @@
  *   SIDE EFFECTS:  none
  */
 int32_t terminal_open(const uint8_t* filename) {
-    d_entry dentry;
-    int32_t dentry_success = read_dentry_by_name(filename, &dentry);
-
-    if(dentry_success == -1){
-        return -1;
-    }
-
-    register uint32_t cur_esp asm("esp");
-    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
-
-    int32_t inode_num = dentry.inode_num;
-    int32_t fd = 0;
-    
-    while(fd < 2){
-        if(inode_num == ((pcb_t*)pcb_address)->fd_array[fd].inode_num){
-            return fd;
-        }
-        fd++;
-    }
-    //if it reaches here it failed
-    return -1;
+    return 0;
 }
 /*
  * terminal_read
@@ -72,9 +52,6 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
         return -1;
     }
 
-    // Need to clear out the user buffer before we adjust for the keyboard_buffer size to make sure we clear out 
-    // any random stuff even if comes after we've filled as much as possible using the contents of the keyboard buffer
-    // NOTE: will cause a page fault if n > length of new_buf, so user needs to ensure n <= length(new_buf)
     memset(new_buf, '\0', n); 
 
     // validate input
@@ -132,14 +109,10 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
     // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
     for(i = 0; i < n; i ++) {
         if(new_buf[i] != '\0') {
-            // if(new_buf[i] == '\n') {
-            //     printf("this is a newline lalalalallallalalalalalalalalalalalalal");
-            // }
             putc_new(new_buf[i]);
         }
     }
 
-    // printf("buffer: %s", new_buf);
     update_cursor(get_x_position(), get_y_position());
     return n;
 }

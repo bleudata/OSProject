@@ -161,21 +161,8 @@ int32_t file_open(const uint8_t* filename){
     if(dentry_success == -1){
         return -1;
     }
-    register uint32_t cur_esp asm("esp");
-    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
-
-    int32_t inode_num = dentry.inode_num;
-    int32_t fd = 2;
     
-    while(fd < 8){
-        if(inode_num == ((pcb_t*)pcb_address)->fd_array[fd].inode_num){
-            //printf("%d\n", fd);
-            return fd;
-        }
-        fd++;
-    }
-    //if it reaches here it failed
-    return -1;
+    return 0;
 }
 
 /*

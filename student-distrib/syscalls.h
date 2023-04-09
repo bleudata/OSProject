@@ -39,8 +39,7 @@ typedef struct __attribute__ ((packed)){
 typedef struct __attribute__ ((packed)){
     uint32_t pid; // 0-5
     int32_t parent_pid;
-    // file descriptors: we need the actual array of file descriptors
-    fd_entry fd_array[8];
+    fd_entry fd_array[8]; // file descriptors: we need the actual array of file descriptors
     uint32_t parent_esp;
     uint32_t parent_ebp;
     uint8_t active;
@@ -49,7 +48,6 @@ typedef struct __attribute__ ((packed)){
 
 
 uint32_t get_pid();
-uint32_t invalid_function();
 
 extern void set_exception_flag();
 
@@ -63,7 +61,6 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes);
 extern int32_t vidmap(uint8_t** screen_start);
 extern int32_t set_handler(int32_t signum, void* handler_address);
 extern int32_t sigreturn(void);
-
 
 pcb_t * get_pcb_address(uint32_t pid);
 
