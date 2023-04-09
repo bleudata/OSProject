@@ -168,7 +168,7 @@ void entry(unsigned long magic, unsigned long addr) {
     enable_cursor(MAX_SCANLINE, MAX_SCANLINE); 
     update_cursor(0,0);
     //init fops tables
-    fops_init();
+
     printf("unmasked keyboard and rtc irqs");
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
@@ -209,11 +209,12 @@ void entry(unsigned long magic, unsigned long addr) {
     // launch_tests(RTC_NEW_HZ);
     // launch_tests(RTC_HZ_BUFF_OF);
     // launch_tests(RTC_GET_SYSHZ_PER_UHZ);
-    while(1){
-        uint8_t cmd[6] = "shell";
-        execute(cmd);
-    }
-    
+    // while(1){
+    //     uint8_t cmd[6] = "shell";
+    //     execute(cmd);
+    // }
+    uint8_t cmd[6] = "ls";
+    execute(cmd);
 
     /* Checkpoint 3 Tests */
 #endif

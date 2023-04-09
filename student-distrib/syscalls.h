@@ -51,7 +51,6 @@ typedef struct __attribute__ ((packed)){
 uint32_t get_pid();
 uint32_t invalid_function();
 
-extern void fops_init();
 
 extern int32_t halt(uint8_t status);
 extern int32_t execute(const uint8_t* command);

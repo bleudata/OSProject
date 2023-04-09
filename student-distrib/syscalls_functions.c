@@ -10,11 +10,7 @@
 #define ESP_VIRT_START 0x083FFFFC
 #define BYTE_SHIFT     8
 
-static fops_table rtc_fops;
-static fops_table dir_fops;
-static fops_table file_fops;
-static fops_table stdin_fops;
-static fops_table stdout_fops;
+
 
 uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
@@ -23,41 +19,6 @@ uint32_t esp_start = ESP_VIRT_START;
 // uint32_t esp_start = PROGRAM_END;
 
 
-/*
- * fops_init
- *   DESCRIPTION: Find the file in the file system and assign an unused file descriptor
- *   INPUTS: filename -- name of file to open
- *   OUTPUTS: none
- *   RETURN VALUE: 0 if successful, -1 if file not found or if fd array is full
- *   SIDE EFFECTS:  Edits PCB
- */
-void fops_init(){
-    rtc_fops.open = rtc_open;
-    rtc_fops.read = rtc_read;
-    rtc_fops.write = rtc_write;
-    rtc_fops.close = rtc_close;
-
-    dir_fops.open = dir_open;
-    dir_fops.read = dir_read;
-    dir_fops.write = dir_write;
-    dir_fops.close = dir_close;
-
-    file_fops.open = file_open;
-    file_fops.read = file_read;
-    file_fops.write = file_write;
-    file_fops.close = file_close;
-
-    stdin_fops.open = terminal_open;
-    stdin_fops.read = terminal_read;
-    stdin_fops.write = NULL;
-    stdin_fops.close = terminal_close;
-
-    stdout_fops.open = terminal_open;
-    stdout_fops.read = NULL;
-    stdout_fops.write = terminal_write;
-    stdout_fops.close = terminal_close;
-
-}
 
 
 /*
@@ -113,27 +74,27 @@ int32_t open(const uint8_t* filename){
     switch (type) {
         // RTC
         case 0 :
-            (pcb_address->fd_array[fd]).fops.open = rtc_fops.open; //set stin fopstable to terminal read
-            (pcb_address->fd_array[fd]).fops.close = rtc_fops.close;
-            (pcb_address->fd_array[fd]).fops.write = rtc_fops.write;
-            (pcb_address->fd_array[fd]).fops.read = rtc_fops.read;
+            (pcb_address->fd_array[fd]).fops.open = rtc_open; //set stin fopstable to terminal read
+            (pcb_address->fd_array[fd]).fops.close = rtc_close;
+            (pcb_address->fd_array[fd]).fops.write = rtc_write;
+            (pcb_address->fd_array[fd]).fops.read = rtc_read;
             (pcb_address->fd_array[fd]).inode_num = dentry.inode_num;
             break;
         // Directory
         case 1 :
             printf("%d\n", fd);
-            (pcb_address->fd_array[fd]).fops.open = dir_fops.open; //set stin fopstable to terminal read
-            (pcb_address->fd_array[fd]).fops.close = dir_fops.close;
-            (pcb_address->fd_array[fd]).fops.write = dir_fops.write;
-            (pcb_address->fd_array[fd]).fops.read = dir_fops.read;
+            (pcb_address->fd_array[fd]).fops.open = dir_open; //set stin fopstable to terminal read
+            (pcb_address->fd_array[fd]).fops.close = dir_close;
+            (pcb_address->fd_array[fd]).fops.write = dir_write;
+            (pcb_address->fd_array[fd]).fops.read = dir_read;
             (pcb_address->fd_array[fd]).inode_num = dentry.inode_num;
             break;
         // File 
         case 2 :
-            (pcb_address->fd_array[fd]).fops.open = file_fops.open; //set stin fopstable to terminal read
-            (pcb_address->fd_array[fd]).fops.close = file_fops.close;
-            (pcb_address->fd_array[fd]).fops.write = file_fops.write;
-            (pcb_address->fd_array[fd]).fops.read = file_fops.read;
+            (pcb_address->fd_array[fd]).fops.open = file_open; //set stin fopstable to terminal read
+            (pcb_address->fd_array[fd]).fops.close = file_close;
+            (pcb_address->fd_array[fd]).fops.write = file_write;
+            (pcb_address->fd_array[fd]).fops.read = file_read;
             (pcb_address->fd_array[fd]).inode_num = dentry.inode_num;
             break;
 
@@ -341,16 +302,16 @@ int32_t execute(const uint8_t* command){
     }
     process_count += 1;
 
-    pcb_address->fd_array[0].fops.open = stdin_fops.open; //set stin fopstable to terminal read
-    pcb_address->fd_array[0].fops.close = stdin_fops.close;
-    pcb_address->fd_array[0].fops.write = stdin_fops.write;
-    pcb_address->fd_array[0].fops.read = stdin_fops.read;
+    pcb_address->fd_array[0].fops.open = terminal_open; //set stin fopstable to terminal read
+    pcb_address->fd_array[0].fops.close = terminal_close;
+    pcb_address->fd_array[0].fops.write = NULL;
+    pcb_address->fd_array[0].fops.read = terminal_read;
     pcb_address->fd_array[0].flag = 1;
     
-    pcb_address->fd_array[1].fops.open = stdout_fops.open;  //set stoud fopstable to terminal write
-    pcb_address->fd_array[1].fops.close = stdout_fops.close;
-    pcb_address->fd_array[1].fops.write = stdout_fops.write;
-    pcb_address->fd_array[1].fops.read = stdout_fops.read;
+    pcb_address->fd_array[1].fops.open = terminal_open;  //set stoud fopstable to terminal write
+    pcb_address->fd_array[1].fops.close = terminal_close;
+    pcb_address->fd_array[1].fops.write = terminal_write;
+    pcb_address->fd_array[1].fops.read = NULL;
     pcb_address->fd_array[1].flag = 1;
    
     //terminal_write(1, "357 \n ", 8);
