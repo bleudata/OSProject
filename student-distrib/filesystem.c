@@ -217,11 +217,29 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
  *   DESCRIPTION: initializes caller's dentry struct with "." dir info
  *   INPUTS: filename, dentry struct ptr
  *   OUTPUTS: none
- *   RETURN VALUE: 0:success, -1:fail
+ *   RETURN VALUE: fd of dentry/file on sucess, -1:fail
  */
 int32_t dir_open(const uint8_t* filename){
-    printf("in dir open\n");
-    return read_dentry_by_index(0, &cp2_dentry);
+    //printf("in dir open\n");
+    d_entry dentry;
+    int32_t dentry_success = read_dentry_by_name(filename, &dentry);
+
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+
+    int32_t inode_num = dentry.inode_num;
+    int32_t fd = 2;
+    
+    while(fd < 8){
+        if(inode_num == ((pcb_t*)pcb_address)->fd_array[fd].inode_num){
+            //printf("%d\n", fd);
+            return fd;
+        }
+        fd++;
+    }
+    //if it reaches here it failed
+    return -1;
+    
 }
 
 /*
@@ -248,7 +266,7 @@ int32_t dir_close(int32_t fd){
  *   RETURN VALUE: number of bytes read
  */
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
-    printf("in dir read\n");
+    //printf("in dir read\n");
     //fd -> inode num only for cp2, not used in cp2
     if(buf == NULL){ //sanity check
         return -1;

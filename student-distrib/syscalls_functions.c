@@ -70,7 +70,6 @@ int32_t open(const uint8_t* filename){
     
     // Set up any data needed to handle the file type
     int type = dentry.filetype;
-    printf("%d\n", type);
     switch (type) {
         // RTC
         case 0 :
@@ -82,7 +81,6 @@ int32_t open(const uint8_t* filename){
             break;
         // Directory
         case 1 :
-            printf("%d\n", fd);
             (pcb_address->fd_array[fd]).fops.open = dir_open; //set stin fopstable to terminal read
             (pcb_address->fd_array[fd]).fops.close = dir_close;
             (pcb_address->fd_array[fd]).fops.write = dir_write;
