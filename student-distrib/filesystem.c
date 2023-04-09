@@ -74,12 +74,14 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
-    
+    //printf("%d\n", index);
     //index out of bounds check, dentry null check
     int num_dir_entries = boot_block->dir_count;
+    //printf("%d\n", num_dir_entries);
     if(index < 0 || index > num_dir_entries-1){ 
         return -1;
     }
+    //printf("%d\n", dentry);
     if(dentry == NULL){
         return -1;
     }
@@ -218,6 +220,7 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t dir_open(const uint8_t* filename){
+    printf("in dir open\n");
     return read_dentry_by_index(0, &cp2_dentry);
 }
 
@@ -245,6 +248,7 @@ int32_t dir_close(int32_t fd){
  *   RETURN VALUE: number of bytes read
  */
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
+    printf("in dir read\n");
     //fd -> inode num only for cp2, not used in cp2
     if(buf == NULL){ //sanity check
         return -1;

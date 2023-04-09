@@ -32,30 +32,30 @@ uint32_t esp_start = ESP_VIRT_START;
  *   SIDE EFFECTS:  Edits PCB
  */
 void fops_init(){
-    rtc_fops.open = &rtc_open;
-    rtc_fops.read = &rtc_read;
-    rtc_fops.write = &rtc_write;
-    rtc_fops.close = &rtc_close;
+    rtc_fops.open = rtc_open;
+    rtc_fops.read = rtc_read;
+    rtc_fops.write = rtc_write;
+    rtc_fops.close = rtc_close;
 
-    dir_fops.open = &dir_open;
-    dir_fops.read = &dir_read;
-    dir_fops.write = &dir_write;
-    dir_fops.close = &dir_close;
+    dir_fops.open = dir_open;
+    dir_fops.read = dir_read;
+    dir_fops.write = dir_write;
+    dir_fops.close = dir_close;
 
-    file_fops.open = &file_open;
-    file_fops.read = &file_read;
-    file_fops.write = &file_write;
-    file_fops.close = &file_close;
+    file_fops.open = file_open;
+    file_fops.read = file_read;
+    file_fops.write = file_write;
+    file_fops.close = file_close;
 
-    stdin_fops.open = &terminal_open;
-    stdin_fops.read = &terminal_read;
+    stdin_fops.open = terminal_open;
+    stdin_fops.read = terminal_read;
     stdin_fops.write = NULL;
-    stdin_fops.close = &terminal_close;
+    stdin_fops.close = terminal_close;
 
-    stdout_fops.open = &terminal_open;
+    stdout_fops.open = terminal_open;
     stdout_fops.read = NULL;
-    stdout_fops.write = &terminal_write;
-    stdout_fops.close = &terminal_close;
+    stdout_fops.write = terminal_write;
+    stdout_fops.close = terminal_close;
 
 }
 
@@ -109,29 +109,31 @@ int32_t open(const uint8_t* filename){
     
     // Set up any data needed to handle the file type
     int type = dentry.filetype;
+    printf("%d\n", type);
     switch (type) {
         // RTC
         case 0 :
-            pcb_address->fd_array[fd].fops.open = rtc_fops.open; //set stin fopstable to terminal read
-            pcb_address->fd_array[fd].fops.close = rtc_fops.close;
-            pcb_address->fd_array[fd].fops.write = rtc_fops.write;
-            pcb_address->fd_array[fd].fops.read = rtc_fops.read;
-            (pcb_address->fd_array[fd]).inode_num = -1;
+            (pcb_address->fd_array[fd]).fops.open = rtc_fops.open; //set stin fopstable to terminal read
+            (pcb_address->fd_array[fd]).fops.close = rtc_fops.close;
+            (pcb_address->fd_array[fd]).fops.write = rtc_fops.write;
+            (pcb_address->fd_array[fd]).fops.read = rtc_fops.read;
+            (pcb_address->fd_array[fd]).inode_num = dentry.inode_num;
             break;
         // Directory
         case 1 :
-            pcb_address->fd_array[fd].fops.open = dir_fops.open; //set stin fopstable to terminal read
-            pcb_address->fd_array[fd].fops.close = dir_fops.close;
-            pcb_address->fd_array[fd].fops.write = dir_fops.write;
-            pcb_address->fd_array[fd].fops.read = dir_fops.read;
+            printf("%d\n", fd);
+            (pcb_address->fd_array[fd]).fops.open = dir_fops.open; //set stin fopstable to terminal read
+            (pcb_address->fd_array[fd]).fops.close = dir_fops.close;
+            (pcb_address->fd_array[fd]).fops.write = dir_fops.write;
+            (pcb_address->fd_array[fd]).fops.read = dir_fops.read;
             (pcb_address->fd_array[fd]).inode_num = dentry.inode_num;
             break;
         // File 
         case 2 :
-            pcb_address->fd_array[fd].fops.open = file_fops.open; //set stin fopstable to terminal read
-            pcb_address->fd_array[fd].fops.close = file_fops.close;
-            pcb_address->fd_array[fd].fops.write = file_fops.write;
-            pcb_address->fd_array[fd].fops.read = file_fops.read;
+            (pcb_address->fd_array[fd]).fops.open = file_fops.open; //set stin fopstable to terminal read
+            (pcb_address->fd_array[fd]).fops.close = file_fops.close;
+            (pcb_address->fd_array[fd]).fops.write = file_fops.write;
+            (pcb_address->fd_array[fd]).fops.read = file_fops.read;
             (pcb_address->fd_array[fd]).inode_num = dentry.inode_num;
             break;
 
@@ -351,7 +353,7 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[1].fops.read = stdout_fops.read;
     pcb_address->fd_array[1].flag = 1;
    
-    terminal_write(1, "357 \n ", 8);
+    //terminal_write(1, "357 \n ", 8);
     tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
     //do i set the active field of parent to 0 here?
@@ -401,7 +403,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     // fd is an index into PCB array 
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
-    return pcb_address->fd_array[fd].fops.read(fd, buf, nbytes);
+    return (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
 }
 
 
@@ -419,7 +421,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     // fd is an index into PCB array
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
-    return pcb_address->fd_array[fd].fops.write(fd, buf, nbytes);
+    return (pcb_address->fd_array[fd]).fops.write(fd, buf, nbytes);
 }
 
 pcb_t * get_pcb_address(uint32_t pid){
