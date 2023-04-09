@@ -44,11 +44,11 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
         return -1; 
     }
     // validate fd 
-    if (fd != 0) { // for testing just use 1 for fd
+    if (fd < 0 || fd > FD_MAX_SIZE) {
         return -1;
     }
     // validate n
-    if (n < 0) { // for testing just use 1 for fd
+    if (n < 0) {
         return -1;
     }
 
@@ -95,7 +95,7 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
     const unsigned char * new_buf = (unsigned char*) buf;
 
     // validate fd 
-    if (fd != 1) {
+    if (fd < 0 || fd > FD_MAX_SIZE) {
         return -1;
     }
     // check for null pointer
@@ -126,7 +126,7 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
  *   SIDE EFFECTS: 
  */
 int32_t terminal_close(int32_t fd) {
-    if(fd<0 || fd >7){
+    if(fd<0 || fd > FD_MAX_SIZE){
         return -1;
     }
     return 0;
@@ -144,9 +144,9 @@ int32_t terminal_close(int32_t fd) {
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
 {
     outb(0x0A, VGA_ADDR_REG); // select cursor start register 
-    outb((inb(VGA_DATA_REG) & 0xC0) | cursor_start, VGA_DATA_REG);// bit 5 = 0 to enable cursor, bits 0-4 cursor scanline start, probably 15
+    outb((inb(VGA_DATA_REG) & CURSOR_ENABLE) | cursor_start, VGA_DATA_REG);// bit 5 = 0 to enable cursor, bits 0-4 cursor scanline start, probably 15
     outb(0x0B, VGA_ADDR_REG);
-    outb((inb(VGA_DATA_REG) & 0xE0) | cursor_end, VGA_DATA_REG); // bits 6-7 cursor skew, bits 0-4 cursor end line, probably 15
+    outb((inb(VGA_DATA_REG) & CURSOR_SKEW) | cursor_end, VGA_DATA_REG); // bits 6-7 cursor skew, bits 0-4 cursor end line, probably 15
 }
 
 
@@ -163,8 +163,8 @@ void update_cursor(int x, int y)
 {
     uint16_t pos = y * NUM_COLS + x;
     outb(0x0F, VGA_ADDR_REG); // cursor location low
-    outb((uint8_t) (pos & 0xFF),VGA_DATA_REG);
+    outb((uint8_t) (pos & LOWER_16),VGA_DATA_REG);
     outb(0x0E, VGA_ADDR_REG); // cursor location high
-    outb((uint8_t) ((pos >> 8) & 0xFF), VGA_DATA_REG);
+    outb((uint8_t) ((pos >> BYTE_SHIFT) & LOWER_16), VGA_DATA_REG);
 }
 

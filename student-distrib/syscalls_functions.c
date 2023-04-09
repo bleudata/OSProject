@@ -282,6 +282,7 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[STDIN_FD].fops.write = NULL;
     pcb_address->fd_array[STDIN_FD].fops.read = terminal_read;
     pcb_address->fd_array[STDIN_FD].flag = 1;
+    pcb_address->active = 1;
     
     //Set stdout fops to correct terminal
     pcb_address->fd_array[STDOUT_FD].fops.open = terminal_open;  
@@ -289,7 +290,8 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[STDOUT_FD].fops.write = terminal_write;
     pcb_address->fd_array[STDOUT_FD].fops.read = NULL;
     pcb_address->fd_array[STDOUT_FD].flag = 1;
-   
+    pcb_address->active = 1;
+
     tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - UINT_BYTES;
     tss.ss0 = KERNEL_DS;
     
@@ -353,6 +355,11 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
 
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
+
+    if((pcb_address->fd_array[fd]).flag == 0){
+        return -1;
+    }
+
     return (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
 }
 
@@ -405,7 +412,7 @@ pcb_t * get_pcb_address(uint32_t pid){
  *   SIDE EFFECTS:  none
  */
 extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
-    return 0;
+    return -1;
 }
 
 /*
@@ -418,7 +425,7 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
  *   SIDE EFFECTS:  none
  */
 extern int32_t vidmap(uint8_t** screen_start) {
-    return 0;
+    return -1;
 }
 
 /*
@@ -431,7 +438,7 @@ extern int32_t vidmap(uint8_t** screen_start) {
  *   SIDE EFFECTS:  none
  */
 extern int32_t set_handler(int32_t signum, void* handler_address) {
-    return 0;
+    return -1;
 }
 
 /*
@@ -443,5 +450,5 @@ extern int32_t set_handler(int32_t signum, void* handler_address) {
  *   SIDE EFFECTS:  none
  */
 extern int32_t sigreturn(void) {
-    return 0;
+    return -1;
 }

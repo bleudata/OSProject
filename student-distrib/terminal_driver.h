@@ -1,6 +1,11 @@
 #ifndef TERMINAL_DRIVER_H
 #define TERMINAL_DRIVER_H
 
+#define CURSOR_ENABLE   0xC0
+#define CURSOR_SKEW     0xE0
+
+#define LOWER_16        0xFF
+#define BYTE_SHIFT      8
 
 // for now int assuming want to return 0 or -1 for success fail according to discussion slides
 extern int terminal_open(const uint8_t * filename);
