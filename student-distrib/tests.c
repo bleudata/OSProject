@@ -653,6 +653,71 @@ int rtc_test_buff_overflow(){
 }
 
 /* Checkpoint 3 tests */
+
+
+int syscall_open_input(){
+    uint8_t* filename = NULL;
+    int ret_val = open(filename);
+    if(ret_val == -1){
+        return PASS;
+    }
+    else{
+        return FAIL;
+    }
+}
+
+
+int syscall_close_input(){
+    int fd = 1;
+    int ret_val = close(fd);
+    if(ret_val == -1){
+        return PASS;
+    }
+    return FAIL;
+}
+
+
+int syscall_read_input(){
+    int fd = 8;
+    uint8_t* filename = NULL;
+    int ret_val = read(fd, filename, 0);
+    if(ret_val == -1){
+        return PASS;
+    }
+    return FAIL;
+}
+
+
+int syscall_write_input(){
+    int fd = 8;
+    uint8_t data[10];
+    int ret_val = write(fd, data, 10);
+    if(ret_val == -1){
+        return PASS;
+    }
+    return FAIL;
+}
+
+
+int syscall_execute_input(){
+    uint8_t* command = NULL;
+    int ret_val = execute(command);
+    if(ret_val == -1){
+        return PASS;
+    }
+    return FAIL;
+}
+
+
+int syscall_halt_input(){
+    int status = 0;
+    int ret_val = halt(status);
+    if(ret_val == -1){
+        return PASS;
+    }
+    return FAIL;
+}
+
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
@@ -735,6 +800,24 @@ void launch_tests(test_t test_num){
 	case RTC_HZ_BUFF_OF:
 		TEST_OUTPUT("rtc_test_buff_overflow, FAIL if overflow", rtc_test_buff_overflow());
 		break;
+	case SYSCALL_OPEN_INP:
+        TEST_OUTPUT("bad open input, PASS if handled correctly", syscall_open_input());
+        break;
+    case SYSCALL_CLOSE_INP:
+        TEST_OUTPUT("bad close input, PASS if handled correctly", syscall_close_input());
+        break;
+    case SYSCALL_READ_INP:
+        TEST_OUTPUT("bad read input, PASS if handled correctly", syscall_read_input());
+        break;
+    case SYSCALL_WRITE_INP:
+        TEST_OUTPUT("bad write input, PASS if handled correctly", syscall_write_input());
+        break;
+    case SYSCALL_EXECUTE_INP:
+        TEST_OUTPUT("bad execute input, PASS if handled correctly", syscall_execute_input());
+        break;
+    case SYSCALL_HALT_INP:
+        TEST_OUTPUT("bad halt input, PASS if handled correctly", syscall_halt_input());
+        break;
 	default:
 		printf("bad test number\n");
 		break;

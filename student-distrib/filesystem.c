@@ -151,13 +151,16 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 int32_t file_open(const uint8_t* filename){
     //d_entry * dentry;
     // filename length check
-    if(strlen((int8_t*)filename) > MAX_FILE_LENGTH){
+    if(strlen((int8_t*)filename) > MAX_FILE_LENGTH || filename == NULL){
         //printf("string over 32 chars \n");
         return -1;
     }
     d_entry dentry;
     int32_t dentry_success = read_dentry_by_name(filename, &dentry);
 
+    if(dentry_success == -1){
+        return -1;
+    }
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
 
@@ -227,6 +230,9 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
     if(fd<0 || fd >7){
         return -1;
     }
+    if(buf == NULL){
+        return -1;
+    }
     return -1;
 }
 
@@ -239,8 +245,15 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
  */
 int32_t dir_open(const uint8_t* filename){
     //printf("in dir open\n");
+    if(filename == NULL){
+        return -1;
+    }
+
     d_entry dentry;
     int32_t dentry_success = read_dentry_by_name(filename, &dentry);
+    if(dentry_success == -1){
+        return -1;
+    }
 
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
@@ -290,9 +303,9 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
     if(buf == NULL){ //sanity check
         return -1;
     }
-    // if(fd<0 || fd >7){
-    //     return -1;
-    // }
+    if(fd<0 || fd >7){
+        return -1;
+    }
     int num_dir_entries = boot_block->dir_count;
 
     if(file_counter >= num_dir_entries){ //dont read non_existing file
@@ -322,9 +335,12 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
-    // if(fd<0 || fd >7){
-    //     return -1;
-    // }
+    if(fd<0 || fd >7){
+        return -1;
+    }
+    if(buf == NULL){
+        return -1;
+    }
     return -1;
 }
 

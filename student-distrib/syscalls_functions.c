@@ -55,6 +55,10 @@ uint32_t invalid_function() {
 int32_t open(const uint8_t* filename){
     // Based on the file type we set the file descriptor
     // Parameter Validity check is done IN read_dentry_by_name
+    if(filename == NULL){
+        return -1;
+    }
+
     int i, fd;
     // STEPS:
     // Find the file in the file system (need the inode and the file type)
@@ -157,7 +161,7 @@ int32_t close(int32_t fd){
  */
 int32_t halt(uint8_t status){
     uint32_t ret_status = status;
-
+    
     //close all files
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
@@ -236,16 +240,18 @@ int32_t halt(uint8_t status){
  */
 int32_t execute(const uint8_t* command){
     int i;
-    if(process_count >= 5){ // maybe should be 6 but check again bro
-        return 0;
+    if(process_count >= 6){
+        return -1;
+    }
+
+    if(command == NULL){
+        return -1;
     }
 
     uint8_t* cmd_args;
     uint8_t fname[33];
     memset(fname, '\0', 33);
     uint32_t cmd_ctr = 0;
-
-    // printf(" cmd: %s \n ", command);
     
     // First word is filename 
     while( command[cmd_ctr] != ' '  && command[cmd_ctr] != '\0'  && command[cmd_ctr] != '\n'){
@@ -266,7 +272,6 @@ int32_t execute(const uint8_t* command){
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
     uint8_t exe_check[4];
     uint8_t exe[4] = {0x7F, 0x45, 0x4C, 0x46};
-    //file_read(dentry.inode_num, exe_check, 4);
     
     read_data(dentry.inode_num, 0, exe_check, 4);
     
@@ -288,7 +293,6 @@ int32_t execute(const uint8_t* command){
     map_helper(new_pid);
     // write the executable file to the page 
     int32_t file_length = get_file_length(dentry.inode_num);
-    // uint8_t file_data_buf[file_length];
   
     if(read_data(dentry.inode_num, 0,  PROGRAM_START , file_length) == -1) {//(uint8_t*)or (uint32_t*) // PAGE FAULT HERE
         return -1;
@@ -371,6 +375,16 @@ uint32_t get_pid(){
  */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     // fd is an index into PCB array 
+    if(fd < 0 || fd > 7){
+        return -1;
+    }
+    if(buf == NULL){
+        return -1;
+    }
+    if(nbytes < 0){
+        return -1;
+    }
+
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
     return (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
@@ -389,6 +403,15 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
  */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     // fd is an index into PCB array
+    if(fd < 0 || fd > 7){
+        return -1;
+    }
+    if(buf == NULL){
+        return -1;
+    }
+    if(nbytes < 0){
+        return -1;
+    }
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
     return (pcb_address->fd_array[fd]).fops.write(fd, buf, nbytes);

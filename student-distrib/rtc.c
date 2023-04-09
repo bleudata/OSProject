@@ -55,6 +55,11 @@ void rtc_irq_handler() {
  */
 
 int32_t rtc_open(const uint8_t* filename){
+
+    if(filename == NULL){
+        return -1;
+    }
+
     uint16_t rate = RTC_RATE;
     outb(RTC_REG_A_DISABLE, RTC_REG_PORT); // set index to register A, disable NMI
     char prev = inb(RTC_RW_PORT);	// get initial value of register A, should be 32kHz
@@ -65,6 +70,10 @@ int32_t rtc_open(const uint8_t* filename){
     
     d_entry dentry;
     int32_t dentry_success = read_dentry_by_name(filename, &dentry);
+
+    if(dentry_success == -1){
+        return -1;
+    }
 
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
@@ -92,6 +101,11 @@ int32_t rtc_open(const uint8_t* filename){
  */
 
 int32_t rtc_close(int32_t fd){
+
+    if(fd < 2 || fd > 7){
+        return -1;
+    }
+
     terminal_write(1, "in rtc \n", 9);
     rtc_ctr = 1;
     rtc_syshz_per_uhz = RTC_GLOB_RES_RATE; //reset the # of interrupts per system freq to be just 1, so its itself
@@ -108,6 +122,17 @@ int32_t rtc_close(int32_t fd){
  */
 
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
+
+    if(fd < 2 || fd > 7){
+        return -1;
+    }
+    if(buf == NULL){
+        return -1;
+    }
+    if(nbytes < 0){
+        return -1;
+    }
+
     while(rtc_irq_flag != RTC_FLAG_SET);
     rtc_irq_flag = RTC_GLOB_RES_VAR;
     return RTC_PASS;
@@ -129,6 +154,12 @@ int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes){
 
     if(nbytes != RTC_BUFF_SIZE){
         return RTC_FAIL;
+    }
+    if(buf == NULL){
+        return -1;
+    }
+    if(fd < 2 || fd > 7){
+        return -1;
     }
 
     /*if buffer is a valid size, calculate the requested frequency from the buffer*/ 
