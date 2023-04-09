@@ -16,6 +16,33 @@
 #define EIGHT_KB        0x2000
 #define FOUR_MB         0x400000 //4MB
 #define PROGRAM_END     PROGRAM_START + FOUR_MB - 1
+#define ESP_VIRT_START  0x083FFFFC
+#define BYTE_SHIFT      8
+#define PCB_STACK       0xFFFFE000
+#define VIRT_MEM_PAGE   0x08000000
+#define VIRT_MEM_SHIFT  22
+
+#define FD_OVERFLOW     8
+#define FD_INIT_SIZE    2
+#define FD_MAX_SIZE     7
+
+#define UINT_BYTES      4
+#define SHELL_SIZE      6
+#define EXE_BUF         4
+#define FNAME_MAX_SIZE  33
+
+#define EXCEPT_STATUS   256
+
+#define MAX_PROC_CNT    6
+#define PROC_CNT        5
+
+#define EXE_BYTE0       0x7F
+#define EXE_BYTE1       0x45
+#define EXE_BYTE2       0x4C
+#define EXE_BYTE3       0x46
+
+#define STDIN_FD        0
+#define STDOUT_FD       1
 
 // Function pointer struct 
 typedef struct __attribute__ ((packed)){

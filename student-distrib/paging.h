@@ -4,6 +4,16 @@
 #include "types.h"
 #include "syscalls.h"
 
+#define BLANK_ENTRY     0x00000000
+
+#define VMEM_OFFSET     184
+#define VMEM_ENTRY_SET  3
+
+#define DIR_SIZE        1024
+#define TABLE_SIZE      1024
+
+#define FOUR_KB         4096
+
 typedef struct __attribute__ ((packed)){
     uint32_t present : 1;
     uint32_t read_write : 1;
@@ -85,16 +95,6 @@ extern void map_helper(uint32_t pid);
 extern void destroy_mapping();
 
 extern void flush_tlb();
-
-
-
-//populate_page_table
-//allocate_page_table
-//free_page_table
-//edit_page_table_entry
-//add_entry
-//free_entry
-//create_page_directory
 
 
 #endif

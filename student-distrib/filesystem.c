@@ -44,7 +44,6 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     }
     // invalid filename, over 32 chars
     if(strlen((int8_t*)fname) > MAX_FILE_LENGTH){
-        //printf("string over 32 chars \n");
         return -1;
     }
 
@@ -52,14 +51,10 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     // uint32_t str_length = strlen((int8_t*)fname);
     int i; //loop over dir_entries array and find dentry with matching filename's index, call read_dentry_by_index
     for(i = 0; i<num_dir_entries ; i++){
-        if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen(boot_block->dir_entries[i].filename)) == 0){ 
-            //filename matches
-
-            // printf("found matching file: ");
-            // printf("%s \n", boot_block->dir_entries[i].filename);
-            // printf("index is: ");
-            // printf("%d \n", i);
-            return read_dentry_by_index(i, dentry); 
+        if(strlen(boot_block->dir_entries[i].filename) == strlen(fname)){
+            if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen(boot_block->dir_entries[i].filename)) == 0){
+                return read_dentry_by_index(i, dentry); 
+            }
         }
     }
     return -1;
@@ -74,14 +69,11 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
-    //printf("%d\n", index);
     //index out of bounds check, dentry null check
     int num_dir_entries = boot_block->dir_count;
-    //printf("%d\n", num_dir_entries);
     if(index < 0 || index > num_dir_entries-1){ 
         return -1;
     }
-    //printf("%d\n", dentry);
     if(dentry == NULL){
         return -1;
     }
@@ -152,7 +144,6 @@ int32_t file_open(const uint8_t* filename){
     //d_entry * dentry;
     // filename length check
     if(strlen((int8_t*)filename) > MAX_FILE_LENGTH || filename == NULL){
-        //printf("string over 32 chars \n");
         return -1;
     }
     d_entry dentry;
@@ -173,8 +164,7 @@ int32_t file_open(const uint8_t* filename){
  *   RETURN VALUE: 0:success -1:fail
  */
 int32_t file_close(int32_t fd){
-    terminal_write(1, "in fil \n", 9);
-    if(fd<2 || fd >7){
+    if(fd< FD_INIT_SIZE || fd > FD_MAX_SIZE){
         return -1;
     }
     return 0;
@@ -194,12 +184,12 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
     if(buf == NULL){
         return -1;
     }
-    if(fd<0 || fd >7){
+    if(fd<0 || fd > FD_MAX_SIZE){
         return -1;
     }
 
     register uint32_t cur_esp asm("esp");
-    uint32_t * pcb_address = (uint32_t*)(cur_esp & 0xFFFFE000); 
+    uint32_t * pcb_address = (uint32_t*)(cur_esp & PCB_STACK); 
 
     int32_t inode_num = ((pcb_t*)pcb_address)->fd_array[fd].inode_num;
 
@@ -214,7 +204,7 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
-    if(fd<0 || fd >7){
+    if(fd<0 || fd > FD_MAX_SIZE){
         return -1;
     }
     if(buf == NULL){
@@ -231,7 +221,6 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
  *   RETURN VALUE: fd of dentry/file on sucess, -1:fail
  */
 int32_t dir_open(const uint8_t* filename){
-    //printf("in dir open\n");
     if(filename == NULL){
         return -1;
     }
@@ -243,14 +232,13 @@ int32_t dir_open(const uint8_t* filename){
     }
 
     register uint32_t cur_esp asm("esp");
-    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
 
     int32_t inode_num = dentry.inode_num;
-    int32_t fd = 2;
+    int32_t fd = FD_INIT_SIZE;
     
-    while(fd < 8){
+    while(fd < FD_OVERFLOW){
         if(inode_num == ((pcb_t*)pcb_address)->fd_array[fd].inode_num){
-            //printf("%d\n", fd);
             return fd;
         }
         fd++;
@@ -268,8 +256,7 @@ int32_t dir_open(const uint8_t* filename){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t dir_close(int32_t fd){
-    terminal_write(1, "in dir \n", 9);
-    if(fd<0 || fd >7){
+    if(fd<0 || fd > FD_MAX_SIZE){
         return -1;
     }
     return 0;
@@ -285,12 +272,10 @@ int32_t dir_close(int32_t fd){
  *   RETURN VALUE: number of bytes read
  */
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
-    //printf("in dir read\n");
-    //fd -> inode num only for cp2, not used in cp2
     if(buf == NULL){ //sanity check
         return -1;
     }
-    if(fd<0 || fd >7){
+    if(fd<0 || fd > FD_MAX_SIZE){
         return -1;
     }
     int num_dir_entries = boot_block->dir_count;
@@ -308,9 +293,6 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
     memcpy(buf, boot_block->dir_entries[file_counter].filename, num_bytes_read);
     file_counter +=1;
     
-    // if(file_counter == num_dir_entries){
-    //     file_counter = 0;
-    // } resetting shouldnt an automatic thing, why??
     return num_bytes_read;
 }
 
@@ -322,7 +304,7 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
-    if(fd<0 || fd >7){
+    if(fd<0 || fd > FD_MAX_SIZE){
         return -1;
     }
     if(buf == NULL){
@@ -353,40 +335,3 @@ uint32_t get_file_length(int32_t inode_num){
 d_entry * get_cp2_dentry_address(){
     return &cp2_dentry;
 }
-
-
-//fish frame 0
-// read non text 
-// read largefilename.txt should not work
-// read largefilename.tx should work
-// dir test  . file1 file2 ..
-// offset test
-
-
-/*
-    inode_block_struct cur_inode = inode_array[inode];
-    unsigned int num_blocks_skip = offset / BLOCK_SIZE;
-    unsigned int start_block_offset = offset % BLOCK_SIZE; //- num_blocks_skip*BLOCK_SIZE
-    unsigned int start_block_remainder = BLOCK_SIZE - start_block_offset;
-
-    int file_remainder = cur_inode.length - offset;
-    int bytes_left;
-    if(file_remainder < length){
-        bytes_left = file_remainder;
-    }else{
-        bytes_left = length;
-    }
-    
-    //first block, including first and last edge case
-
-    //middle blocks
-
-    //last block 
-    int num_blocks = (cur_inode.length/BLOCK_SIZE) + ;
-    for(i = num_blocks_skip; i < num_blocks; i++ ){
-        //read from each block
-
-    }
-    */
-
-

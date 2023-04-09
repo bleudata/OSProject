@@ -89,7 +89,7 @@ int32_t rtc_open(const uint8_t* filename){
 
 int32_t rtc_close(int32_t fd){
 
-    if(fd < 2 || fd > 7){
+    if(fd < FD_INIT_SIZE || fd > FD_MAX_SIZE){
         return -1;
     }
 
@@ -110,7 +110,7 @@ int32_t rtc_close(int32_t fd){
 
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
 
-    if(fd < 2 || fd > 7){
+    if(fd < FD_INIT_SIZE || fd > FD_MAX_SIZE){
         return -1;
     }
     if(buf == NULL){
@@ -119,7 +119,7 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
     if(nbytes < 0){
         return -1;
     }
-
+    rtc_irq_flag = RTC_GLOB_RES_VAR;
     while(rtc_irq_flag != RTC_FLAG_SET);
     rtc_irq_flag = RTC_GLOB_RES_VAR;
     return RTC_PASS;
@@ -137,7 +137,7 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
 
 int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes){
     /*checking to make sure buffer is exactly 4 bytes, otherwise return -1*/
-    uint8_t *buffer = (uint8_t*)buf;
+    uint32_t *buffer = (uint32_t*)buf;
 
     if(nbytes != RTC_BUFF_SIZE){
         return RTC_FAIL;
@@ -145,19 +145,12 @@ int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes){
     if(buf == NULL){
         return -1;
     }
-    if(fd < 2 || fd > 7){
+    if(fd < FD_INIT_SIZE || fd > FD_MAX_SIZE){
         return -1;
     }
 
     /*if buffer is a valid size, calculate the requested frequency from the buffer*/ 
-    uint32_t req_freq = 0;
-    int i;
-    for(i = 0; i < RTC_BUFF_SIZE; i++){
-        req_freq = req_freq | buffer[i];
-        if(i != RTC_BUFF_LAST_BYTE){
-            req_freq = req_freq << RTC_BYTE_SHIFT;
-        }
-    }
+    uint32_t req_freq = *buffer;
 
     /*checking that the requested user frequency is between 2 Hz and 1024 Hz inclusive and is a power of 2, otherwise return -1*/
     if(req_freq < RTC_HZ_MIN || req_freq > RTC_HZ || (req_freq & (req_freq - RTC_POW_2_DECR)) != 0){

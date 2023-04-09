@@ -1,9 +1,6 @@
 
 #include "syscalls.h"
 
-#define ESP_VIRT_START  0x083FFFFC
-#define BYTE_SHIFT      8
-
 
 uint32_t exception_flag = 0; //0 = no exception
 uint32_t process_count = 0;
@@ -41,21 +38,21 @@ int32_t open(const uint8_t* filename){
     }
 
     register uint32_t cur_esp asm("esp");
-    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
     
     d_entry dentry;
     if (read_dentry_by_name(filename, &dentry) < 0 )
         return -1;
 
     // Find an unused file descriptor
-    for (i = 2; i < 8; i ++) {
+    for (i = FD_INIT_SIZE; i < FD_OVERFLOW; i ++) {
         if (pcb_address->fd_array[i].flag == 0) {
             fd = i;
             break;
         }
     }
     // No open spots in array
-    if (i == 8) 
+    if (i == FD_OVERFLOW) 
         return -1;
 
     
@@ -112,12 +109,12 @@ int32_t open(const uint8_t* filename){
  */
 int32_t close(int32_t fd){
     //Check for Valid fd (not 0 or 1 or out of range)
-    if (fd < 2 || fd > 7){  
+    if (fd < FD_INIT_SIZE || fd > FD_MAX_SIZE){  
         return -1;
     }
 
     register uint32_t cur_esp asm("esp");
-    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
 
     // Close -> make entry available
     if(pcb_address->fd_array[fd].flag == 0)
@@ -142,11 +139,11 @@ int32_t halt(uint8_t status){
 
     //close all files
     register uint32_t cur_esp asm("esp");
-    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
 
     int32_t parent_pid = pcb_address->parent_pid;
     int fd;
-    for(fd=0; fd <8; fd++){
+    for(fd=0; fd < FD_OVERFLOW; fd++){
         
         if(pcb_address->fd_array[fd].flag == 1){
             close(fd);
@@ -160,15 +157,15 @@ int32_t halt(uint8_t status){
     process_count-=1;
     //check if main shell
     if(parent_pid == -1){
-        tss.esp0 = EIGHT_MB- 0*EIGHT_KB - 4; 
+        tss.esp0 = EIGHT_MB - EIGHT_KB - UINT_BYTES; 
         tss.ss0 = KERNEL_DS;
         // Unmap and call shell again
         destroy_mapping();
-        uint8_t cmd[6] = "shell";
+        uint8_t cmd[SHELL_SIZE] = "shell";
         execute(cmd);
 
     }else{
-        tss.esp0 = EIGHT_MB- (parent_pid)*EIGHT_KB - 4;
+        tss.esp0 = EIGHT_MB- (parent_pid)*EIGHT_KB - UINT_BYTES;
         tss.ss0 = KERNEL_DS;
         map_helper(parent_pid);
         get_pcb_address(parent_pid)->active = 1;
@@ -179,8 +176,8 @@ int32_t halt(uint8_t status){
     uint32_t parent_ebp = pcb_address->parent_ebp;
     
     if(exception_flag == 1){
-        ret_status = 256;
-        exception_flag =0; 
+        ret_status = EXCEPT_STATUS;
+        exception_flag = 0; 
     }
     
     //jump to execute return
@@ -212,7 +209,7 @@ int32_t halt(uint8_t status){
  */
 int32_t execute(const uint8_t* command){
     // Parameter check
-    if(process_count >= 6){
+    if(process_count >= MAX_PROC_CNT){
         return -1;
     }
 
@@ -221,8 +218,8 @@ int32_t execute(const uint8_t* command){
     }
 
     uint8_t* cmd_args;
-    uint8_t fname[33];
-    memset(fname, '\0', 33);
+    uint8_t fname[FNAME_MAX_SIZE];
+    memset(fname, '\0', FNAME_MAX_SIZE);
     uint32_t cmd_ctr = 0;
     
     // Get first word which is the fname
@@ -239,18 +236,18 @@ int32_t execute(const uint8_t* command){
     cmd_args = (uint8_t*)(command + cmd_ctr + 1);
 
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
-    uint8_t exe_check[4];
-    uint8_t exe[4] = {0x7F, 0x45, 0x4C, 0x46};
+    uint8_t exe_check[EXE_BUF];
+    uint8_t exe[EXE_BUF] = {EXE_BYTE0, EXE_BYTE1, EXE_BYTE2, EXE_BYTE3};
     
-    read_data(dentry.inode_num, 0, exe_check, 4);
+    read_data(dentry.inode_num, 0, exe_check, EXE_BUF);
     
-    if(strncmp((int8_t*)exe_check, (int8_t*)exe, 4) != 0){
+    if(strncmp((int8_t*)exe_check, (int8_t*)exe, EXE_BUF) != 0){
         return -1;
     }
     
     /* Set up this programs paging */
     // Entry point into the progam (bytes 24 - 27 of the executable)
-    if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, 4) < 0 ){  
+    if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, UINT_BYTES) < 0 ){  
         return -1;
     }
     uint32_t new_pid = get_pid();
@@ -263,7 +260,7 @@ int32_t execute(const uint8_t* command){
         return -1;
    
     register uint32_t cur_esp asm("esp");
-    pcb_t * parent_pcb = (pcb_t*)(cur_esp & 0xFFFFE000);
+    pcb_t * parent_pcb = (pcb_t*)(cur_esp & PCB_STACK);
 
     //fill in new process PCB
     pcb_t * pcb_address = get_pcb_address(new_pid);
@@ -280,20 +277,20 @@ int32_t execute(const uint8_t* command){
     process_count += 1;
 
     //Set stdin fops to correct terminal
-    pcb_address->fd_array[0].fops.open = terminal_open; 
-    pcb_address->fd_array[0].fops.close = terminal_close;
-    pcb_address->fd_array[0].fops.write = NULL;
-    pcb_address->fd_array[0].fops.read = terminal_read;
-    pcb_address->fd_array[0].flag = 1;
+    pcb_address->fd_array[STDIN_FD].fops.open = terminal_open; 
+    pcb_address->fd_array[STDIN_FD].fops.close = terminal_close;
+    pcb_address->fd_array[STDIN_FD].fops.write = NULL;
+    pcb_address->fd_array[STDIN_FD].fops.read = terminal_read;
+    pcb_address->fd_array[STDIN_FD].flag = 1;
     
     //Set stdout fops to correct terminal
-    pcb_address->fd_array[1].fops.open = terminal_open;  
-    pcb_address->fd_array[1].fops.close = terminal_close;
-    pcb_address->fd_array[1].fops.write = terminal_write;
-    pcb_address->fd_array[1].fops.read = NULL;
-    pcb_address->fd_array[1].flag = 1;
+    pcb_address->fd_array[STDOUT_FD].fops.open = terminal_open;  
+    pcb_address->fd_array[STDOUT_FD].fops.close = terminal_close;
+    pcb_address->fd_array[STDOUT_FD].fops.write = terminal_write;
+    pcb_address->fd_array[STDOUT_FD].fops.read = NULL;
+    pcb_address->fd_array[STDOUT_FD].flag = 1;
    
-    tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - 4;
+    tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - UINT_BYTES;
     tss.ss0 = KERNEL_DS;
     
     // jump to the entry point of the program and begin execution
@@ -323,7 +320,7 @@ int32_t execute(const uint8_t* command){
  */
 uint32_t get_pid(){
     int i;
-    for(i = 0; i< 5; i++){
+    for(i = 0; i< PROC_CNT; i++){
         if(pid_array[i] == 0){
             pid_array[i] = 1;
             return i;
@@ -344,7 +341,7 @@ uint32_t get_pid(){
  */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     // Invalid parameter
-    if(fd < 0 || fd > 7){
+    if(fd < 0 || fd > FD_MAX_SIZE){
         return -1;
     }
     if(buf == NULL){
@@ -355,7 +352,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     }
 
     register uint32_t cur_esp asm("esp");
-    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
     return (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
 }
 
@@ -372,7 +369,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
  */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     // Invalid Parameter check
-    if(fd < 0 || fd > 7){
+    if(fd < 0 || fd > FD_MAX_SIZE){
         return -1;
     }
     if(buf == NULL){
@@ -382,7 +379,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
         return -1;
     }
     register uint32_t cur_esp asm("esp");
-    pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
     return (pcb_address->fd_array[fd]).fops.write(fd, buf, nbytes);
 }
 
