@@ -82,6 +82,8 @@ extern void enable_mixed_size();
 // returns physical address associated to the 
 extern void map_helper(uint32_t pid);
 
+extern void destroy_mapping();
+
 extern void flush_tlb();
 
 

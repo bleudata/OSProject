@@ -213,10 +213,10 @@ void entry(unsigned long magic, unsigned long addr) {
     
     
     
-    // while(1){
-    //     uint8_t cmd[6] = "shell";
-    //     execute(cmd);
-    // }
+    while(1){
+        uint8_t cmd[6] = "shell";
+        execute(cmd);
+    }
 
     /* Checkpoint 3 Tests */
     //launch_tests(SYSCALL_OPEN_INP);

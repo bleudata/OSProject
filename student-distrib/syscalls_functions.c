@@ -161,7 +161,7 @@ int32_t close(int32_t fd){
  */
 int32_t halt(uint8_t status){
     uint32_t ret_status = status;
-    
+
     //close all files
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
@@ -187,7 +187,8 @@ int32_t halt(uint8_t status){
         //maybe have to close all pcbs
         destroy_mapping();
         //call have to call execute from kernel
-        execute("shell");
+        uint8_t cmd[6] = "shell";
+        execute(cmd);
 
     }else{
         tss.esp0 = EIGHT_MB- (parent_pid)*EIGHT_KB - 4;
@@ -219,11 +220,6 @@ int32_t halt(uint8_t status){
         : "r"(parent_esp), "r"(parent_ebp), "r"(ret_status)
         : "memory"
     );
-
-    // leave                   \n\
-    //     ret                     \n\
-
-    // //we dont reach here right
     return 0;
 }
 
@@ -239,7 +235,6 @@ int32_t halt(uint8_t status){
  *   SIDE EFFECTS:  Hands off the processor 
  */
 int32_t execute(const uint8_t* command){
-    int i;
     if(process_count >= 6){
         return -1;
     }
@@ -280,21 +275,20 @@ int32_t execute(const uint8_t* command){
     }
     
     /* Set up this programs paging */
-    int32_t ep_storage;
-    uint32_t* ep = &ep_storage;
     //get the current processes physical memory
     // get the entry point into the progam (bytes 24 - 27 of the executable)
-    if (read_data(dentry.inode_num, 24 , ep, 4) < 0 ){  
+    if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, 4) < 0 ){  
         return -1;
     }
-    entry_point = *ep;
+    //entry_point = *ep;
     uint32_t new_pid = get_pid();
     // set up memory map for new process
     map_helper(new_pid);
     // write the executable file to the page 
     int32_t file_length = get_file_length(dentry.inode_num);
-  
-    if(read_data(dentry.inode_num, 0,  PROGRAM_START , file_length) == -1) {//(uint8_t*)or (uint32_t*) // PAGE FAULT HERE
+    uint32_t * program_start = (uint32_t*)PROGRAM_START;
+
+    if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1) {//(uint8_t*)or (uint32_t*) // PAGE FAULT HERE
         return -1;
     }
    
@@ -344,12 +338,8 @@ int32_t execute(const uint8_t* command){
             : "r"(esp_start), "r"(entry_point)
             : "memory"
     );
-
-            // movw  $0x2B, %%ax       \n\
-            // movw %%ax, %%ds         \n\
     // context_switch();
     // Inline assembly
-    // we never reach here right
     return 0;
 }
 

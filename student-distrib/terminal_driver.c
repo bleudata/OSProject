@@ -21,6 +21,10 @@ int32_t terminal_open(const uint8_t* filename) {
     d_entry dentry;
     int32_t dentry_success = read_dentry_by_name(filename, &dentry);
 
+    if(dentry_success == -1){
+        return -1;
+    }
+
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
 
