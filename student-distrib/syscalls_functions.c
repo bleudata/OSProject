@@ -102,7 +102,6 @@ int32_t open(const uint8_t* filename){
             break;
         }
     }
-
     // No open spots in array
     if (i == 8) 
         return -1;
@@ -113,20 +112,26 @@ int32_t open(const uint8_t* filename){
     switch (type) {
         // RTC
         case 0 :
-            (pcb_address->fd_array[fd]).fops.open = rtc_fops.open;
-            (pcb_address->fd_array[fd]).fops.read = rtc_fops.read;
-            (pcb_address->fd_array[fd]).fops.write = rtc_fops.write;
-            (pcb_address->fd_array[fd]).fops.close = rtc_fops.close;
+            pcb_address->fd_array[fd].fops.open = rtc_fops.open; //set stin fopstable to terminal read
+            pcb_address->fd_array[fd].fops.close = rtc_fops.close;
+            pcb_address->fd_array[fd].fops.write = rtc_fops.write;
+            pcb_address->fd_array[fd].fops.read = rtc_fops.read;
             (pcb_address->fd_array[fd]).inode_num = -1;
             break;
         // Directory
         case 1 :
-            // (pcb_address->fd_array[fd]).fops = dir_fops; 
+            pcb_address->fd_array[fd].fops.open = dir_fops.open; //set stin fopstable to terminal read
+            pcb_address->fd_array[fd].fops.close = dir_fops.close;
+            pcb_address->fd_array[fd].fops.write = dir_fops.write;
+            pcb_address->fd_array[fd].fops.read = dir_fops.read;
             (pcb_address->fd_array[fd]).inode_num = dentry.inode_num;
             break;
         // File 
         case 2 :
-            // (pcb_address->fd_array[fd]).fops = file_fops; 
+            pcb_address->fd_array[fd].fops.open = file_fops.open; //set stin fopstable to terminal read
+            pcb_address->fd_array[fd].fops.close = file_fops.close;
+            pcb_address->fd_array[fd].fops.write = file_fops.write;
+            pcb_address->fd_array[fd].fops.read = file_fops.read;
             (pcb_address->fd_array[fd]).inode_num = dentry.inode_num;
             break;
 
@@ -134,7 +139,6 @@ int32_t open(const uint8_t* filename){
             return -1;
 
     }
-
     (pcb_address->fd_array[fd]).file_position = 0;
     (pcb_address->fd_array[fd]).flag = 1;
 
@@ -262,14 +266,14 @@ int32_t execute(const uint8_t* command){
     memset(fname, '\0', 33);
     uint32_t cmd_ctr = 0;
 
-    printf(" cmd: %s \n ", command);
+    // printf(" cmd: %s \n ", command);
     
     // First word is filename 
     while( command[cmd_ctr] != ' '  && command[cmd_ctr] != '\0'  && command[cmd_ctr] != '\n'){
         cmd_ctr++;
     }
 
-    printf(" cmd_ctr value: %d \n ", cmd_ctr);
+    // printf(" cmd_ctr value: %d \n ", cmd_ctr);
     strncpy((int8_t*)fname, (int8_t*)command, cmd_ctr);
     // fname[cmd_ctr] = '\0';
 
@@ -291,7 +295,6 @@ int32_t execute(const uint8_t* command){
     //file_read(dentry.inode_num, exe_check, 4);
     
     read_data(dentry.inode_num, 0, exe_check, 4);
-
     
     if(strncmp((int8_t*)exe_check, (int8_t*)exe, 4) != 0){
         return -1;
@@ -302,13 +305,12 @@ int32_t execute(const uint8_t* command){
     uint32_t* ep = &ep_storage;
     //get the current processes physical memory
     // get the entry point into the progam (bytes 24 - 27 of the executable)
-    terminal_write(1, fname, 33);
-    terminal_write(1, " \n", 3);
+    // terminal_write(1, fname, 33);
+    // terminal_write(1, " \n", 3);
     if (read_data(dentry.inode_num, 24 , ep, 4) < 0 ){  
         return -1;
     }
     entry_point = *ep;
-    
     uint32_t new_pid = get_pid();
     // set up memory map for new process
     map_helper(new_pid);
@@ -349,7 +351,7 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[1].fops.read = stdout_fops.read;
     pcb_address->fd_array[1].flag = 1;
    
-
+    terminal_write(1, "357 \n ", 8);
     tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
     //do i set the active field of parent to 0 here?
