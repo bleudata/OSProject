@@ -145,6 +145,10 @@ void setup_idt() {
     //clear();
     //printf("printing vector %d \n", vector);
     if(vector >= 0 && vector <= 19) {
+        set_exception_flag();
+        terminal_write(1, " arya sad \n ", 13);
+        halt(0);
+        terminal_write(1, " arya cry \n ", 13);
         generic_intel_handler(vector);
     }
     else if(vector == KEYBOARD_VECTOR) {

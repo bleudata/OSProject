@@ -11,14 +11,16 @@
 #define BYTE_SHIFT     8
 
 
-
+uint32_t exception_flag = 0; //0 = no exception
 uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
 uint32_t entry_point;
 uint32_t esp_start = ESP_VIRT_START;
 // uint32_t esp_start = PROGRAM_END;
 
-
+void set_exception_flag(){
+    exception_flag = 1;
+}
 
 
 /*
@@ -103,7 +105,7 @@ int32_t open(const uint8_t* filename){
     (pcb_address->fd_array[fd]).file_position = 0;
     (pcb_address->fd_array[fd]).flag = 1;
 
-    return (pcb_address->fd_array[fd]).fops.open(filename); //???? call open
+    return fd; //basically find fd, return fd..(pcb_address->fd_array[fd]).fops.open(filename)
 }
 
 
@@ -125,8 +127,14 @@ int32_t close(int32_t fd){
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
 
     // Close -> make entry available
+    if(pcb_address->fd_array[fd].flag == 0){
+        
+        return -1;
+    }
+    
     pcb_address->fd_array[fd].flag = 0;
-    return pcb_address->fd_array[fd].fops.close(fd);
+    
+    return 0; //(pcb_address->fd_array)[fd].fops.close(fd)
 }
 
 
@@ -140,34 +148,44 @@ int32_t close(int32_t fd){
  */
 int32_t halt(uint8_t status){
     uint32_t ret_status = status;
-    
+    //terminal_write(1, " \n halt(143) \n", 33);
+    //printf(" halt(144)\n");
     //close all files
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & 0xFFFFE000);
 
     int32_t parent_pid = pcb_address->parent_pid;
-    
+    //terminal_write(1, " halt(149) \n", 33);
+    //printf(" halt(149)\n");
     int fd;
-    for(fd=2; fd <8; fd++){
-        //if flag ==1, we close
+    for(fd=0; fd <8; fd++){
+        
         if(pcb_address->fd_array[fd].flag = 1){
-            pcb_address->fd_array[fd].fops.close(fd);
+            close(fd);
         }
         
         pcb_address->fd_array[fd].flag = 0;
     }
-
+    //terminal_write(1, " halt(162) \n", 33);
+    //printf(" halt(162)\n");
     //mark child pcb as non-active
     pcb_address->active = 0;
-    
+    pid_array[pcb_address->pid] = 0;
+    process_count-=1;
     //check if main shell
     if(parent_pid == -1){
+        //terminal_write(1, " halt(168) \n", 33);
+        //printf(" halt(169)\n");
         tss.esp0 = EIGHT_MB- 0*EIGHT_KB - 4; //confirm this
         tss.ss0 = KERNEL_DS;
         //maybe have to close all pcbs
         destroy_mapping();
         //call have to call execute from kernel
+        execute("shell");
+
     }else{
+        //terminal_write(1, " halt(176) \n", 33);
+        //printf(" halt(177)\n");
         tss.esp0 = EIGHT_MB- (parent_pid)*EIGHT_KB - 4;
         tss.ss0 = KERNEL_DS;
         map_helper(parent_pid);
@@ -177,15 +195,17 @@ int32_t halt(uint8_t status){
 
     uint32_t parent_esp = pcb_address->parent_esp;
     uint32_t parent_ebp = pcb_address->parent_ebp;
-
-    // if(exception_flag = 1){
-    //     ret_status = 256;
-    //     exception_flag =0; // or we could use the exception handlers
-    //     //clear exception flag
-    // }
+     //terminal_write(1, " halt(182) \n", 33);
+     //printf(" halt(188)\n");
+    if(exception_flag = 1){
+        ret_status = 256;
+        exception_flag =0; // or we could use the exception handlers
+        //clear exception flag
+        terminal_write(1, " arya mad \n ", 13);
+    }
     
     //jump to execute return
-    process_count-=1;
+    //does iret mess with eax
     asm volatile ("             \n\
         movl %0, %%esp          \n\
         movl %1, %%ebp          \n\
@@ -197,6 +217,9 @@ int32_t halt(uint8_t status){
         : "r"(parent_esp), "r"(parent_ebp), "r"(ret_status)
         : "memory"
     );
+
+    // leave                   \n\
+    //     ret                     \n\
 
     // //we dont reach here right
     return 0;
@@ -215,11 +238,16 @@ int32_t halt(uint8_t status){
  */
 int32_t execute(const uint8_t* command){
     int i;
+    if(process_count >= 5){ // maybe should be 6 but check again bro
+        return 0;
+    }
+    //terminal_write(1, " exe(220) \n", 33);
+    //printf("\nexe(220)\n");
     
     // File Checks (it exists, it is executable)
-    if(process_count >=6 ){
-        return -1;
-    }
+    // if(process_count >=6 ){
+    //     return -1;
+    // }
 
     uint8_t* cmd_args;
     //uint8_t* fname;
@@ -290,8 +318,12 @@ int32_t execute(const uint8_t* command){
     pcb_t * pcb_address = get_pcb_address(new_pid);
     pcb_address->pid = new_pid;
     if(process_count == 0){
+        //terminal_write(1, " exe(295) \n", 33);
+        //printf("exe(295)\n");
         pcb_address->parent_pid = -1;
     }else{
+        //terminal_write(1, " exe(298) \n", 33);
+        //printf("exe(298)\n");
         pcb_address->parent_pid = parent_pcb->pid;
         register uint32_t parent_esp asm("esp");
         pcb_address->parent_esp = parent_esp; // technically not needed
@@ -312,7 +344,7 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[1].fops.read = NULL;
     pcb_address->fd_array[1].flag = 1;
    
-    //terminal_write(1, "357 \n ", 8);
+    //terminal_write(1, "exe(332)\n ", 8);
     tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
     //do i set the active field of parent to 0 here?
@@ -329,7 +361,8 @@ int32_t execute(const uint8_t* command){
             :
             : "r"(esp_start), "r"(entry_point)
             : "memory"
-        );
+    );
+
             // movw  $0x2B, %%ax       \n\
             // movw %%ax, %%ds         \n\
     // context_switch();

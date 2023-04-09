@@ -94,6 +94,7 @@ int32_t rtc_open(const uint8_t* filename){
  */
 
 int32_t rtc_close(int32_t fd){
+    terminal_write(1, "in rtc \n", 9);
     rtc_ctr = 1;
     rtc_syshz_per_uhz = RTC_GLOB_RES_RATE; //reset the # of interrupts per system freq to be just 1, so its itself
     return RTC_PASS;

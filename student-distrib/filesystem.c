@@ -183,7 +183,8 @@ int32_t file_open(const uint8_t* filename){
  *   RETURN VALUE: 0:success -1:fail
  */
 int32_t file_close(int32_t fd){
-    if(fd<0 || fd >7){
+    terminal_write(1, "in fil \n", 9);
+    if(fd<2 || fd >7){
         return -1;
     }
     return 0;
@@ -267,6 +268,7 @@ int32_t dir_open(const uint8_t* filename){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t dir_close(int32_t fd){
+    terminal_write(1, "in dir \n", 9);
     if(fd<0 || fd >7){
         return -1;
     }

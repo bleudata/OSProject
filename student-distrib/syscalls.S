@@ -44,7 +44,7 @@ system_call_handler_lnk:
     pushl %edi
 	pushl %ebp
 
-    //pushal
+    # pushal
 	pushfl
 	cmpl $1, %eax
     jl INVALID_SYS_NUM
@@ -73,7 +73,7 @@ VALID_SYS_NUM:
     popl %ecx
     popl %ebx
 
-    //popal
+    # popal
 
 	iret
 
