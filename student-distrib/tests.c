@@ -654,6 +654,13 @@ int rtc_test_buff_overflow(){
 
 /* Checkpoint 3 tests */
 
+/* syscall_open_input
+ * 
+ * Description: Tests bad input into the open system call
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 
 int syscall_open_input(){
     uint8_t* filename = NULL;
@@ -666,6 +673,13 @@ int syscall_open_input(){
     }
 }
 
+/* syscall_close_input
+ * 
+ * Description: Tests bad input into the close system call (cannot close stdin/stdout)
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 
 int syscall_close_input(){
     int fd = 1;
@@ -676,6 +690,13 @@ int syscall_close_input(){
     return FAIL;
 }
 
+/* syscall_read_input
+ * 
+ * Description: Tests bad input into the read system call
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 
 int syscall_read_input(){
     int fd = 8;
@@ -687,6 +708,13 @@ int syscall_read_input(){
     return FAIL;
 }
 
+/* syscall_write_input
+ * 
+ * Description: Tests bad input into the write system call
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 
 int syscall_write_input(){
     int fd = 8;
@@ -698,6 +726,13 @@ int syscall_write_input(){
     return FAIL;
 }
 
+/* syscall_execute_input
+ * 
+ * Description: Tests bad input into the execute system call
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 
 int syscall_execute_input(){
     uint8_t* command = NULL;
@@ -708,6 +743,13 @@ int syscall_execute_input(){
     return FAIL;
 }
 
+/* syscall_halt_input
+ * 
+ * Description: Tests bad input into the halt system call
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ */
 
 int syscall_halt_input(){
     int status = 0;

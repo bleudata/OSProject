@@ -360,7 +360,13 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
         return -1;
     }
 
-    return (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
+    //check if its terminal read for stdin aka if its NULL, and if it is return -1, otherwise do a normal file's read
+    if((pcb_address->fd_array[fd]).fops.read != NULL){
+        return (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
+    }
+    else{
+        return -1;
+    }
 }
 
 
@@ -385,9 +391,17 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     if(nbytes < 0){
         return -1;
     }
+
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
-    return (pcb_address->fd_array[fd]).fops.write(fd, buf, nbytes);
+
+    //check if its terminal write for stdout aka if its NULL, and if it is return -1, otherwise do a normal file's write
+    if((pcb_address->fd_array[fd]).fops.write != NULL){
+        return (pcb_address->fd_array[fd]).fops.write(fd, buf, nbytes);
+    }
+    else{
+        return -1;
+    }
 }
 
 /*
