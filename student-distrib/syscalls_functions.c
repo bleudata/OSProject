@@ -1,7 +1,9 @@
 
 #include "syscalls.h"
 
-
+static uint8_t* cmd_args;
+uint8_t args_buffer[33];
+uint8_t args_length;
 uint32_t exception_flag = 0; //0 = no exception
 uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
@@ -218,7 +220,6 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
 
-    uint8_t* cmd_args;
     uint8_t fname[FNAME_MAX_SIZE];
     memset(fname, '\0', FNAME_MAX_SIZE);
     uint32_t cmd_ctr = 0;
@@ -234,8 +235,20 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
     //setting the cmd ptr to point to the first char after the first space that is after the first word
-    cmd_args = (uint8_t*)(command + cmd_ctr + 1);
-
+    int k = 0;
+    if (command[cmd_ctr] == ' ' ) {
+        terminal_write(1, " in setting cmd args \n command: ", 22);
+        cmd_args = (uint8_t*)(command + cmd_ctr + 1);
+        memset(args_buffer, '\0', 33);
+        while(cmd_args[k] != '\0') {
+            args_buffer[k] = cmd_args[k];
+            k++;
+        }
+        args_length = k;
+        // puts(cmd_args);
+    }
+    // printf(" argument: %s", cmd_args);
+    
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
     uint8_t exe_check[EXE_BUF];
     uint8_t exe[EXE_BUF] = {EXE_BYTE0, EXE_BYTE1, EXE_BYTE2, EXE_BYTE3};
@@ -253,8 +266,17 @@ int32_t execute(const uint8_t* command){
     }
     uint32_t new_pid = get_pid();
     map_helper(new_pid); // set up memory map for new process
-     
+    if (command != "shell") {
+        puts(" \n before the file lentgh \n ");
+        // puts(cmd_args);
+    }
+    // puts(cmd_args);
+    // puts("\n");
     int32_t file_length = get_file_length(dentry.inode_num);
+    // puts(cmd_args);
+    if (command[cmd_ctr] == ' ' ) {
+        puts(cmd_args);
+    }
     uint32_t * program_start = (uint32_t*)PROGRAM_START;
 
     if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1)  // write the executable file to the page
@@ -435,7 +457,36 @@ pcb_t * get_pcb_address(uint32_t pid){
  *   SIDE EFFECTS:  none
  */
 extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
-    return -1;
+    // if no args OR args and terminal null dont fit into BUF then return -1
+    puts("cmd value : ");
+    puts(cmd_args);
+    int32_t num_bytes = args_length;
+    int i;
+
+    if ( num_bytes == 0) {
+        terminal_write(1, " first -1 ", 11);
+        buf = NULL;
+        return -1;
+    }
+    if( nbytes < 0){
+        terminal_write(1, " sec -1 ", 9);
+        return -1;
+    }
+
+    int32_t bytes_to_read = 0;
+    if(nbytes >= num_bytes){
+        bytes_to_read = num_bytes;
+    }
+    else{
+        bytes_to_read = nbytes;
+    }
+
+    for(i = 0; i < bytes_to_read; i++){
+        buf[i] = args_buffer[i];
+    }
+    
+    // args_flag = 0;
+    return 0;
 }
 
 /*
