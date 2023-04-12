@@ -5,6 +5,7 @@
 #include "syscalls.h"
 
 #define BLANK_ENTRY     0x00000000
+#define PT_INDEX_MAP    0x003FF000
 
 #define VMEM_OFFSET     184
 #define VMEM_ENTRY_SET  3

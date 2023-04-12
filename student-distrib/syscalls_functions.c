@@ -449,14 +449,14 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
  */
 extern int32_t vidmap(uint8_t** screen_start) {
     
-    // virtual memory = 
-    // make a page table
-    // set pde to point to page table
-    vidmem_helper(virtual_address);
-    // set page table to point to b8000
+    //choosing this vmem, also making sure its 4kb aligned
+    uint32_t * virtual_memory = 0xDBBA0000;
 
-    // flush tlb
-    // *screen_start = virtual memory
+    //sets up page table and modifies directory to have this pte mapped to kernel vidmem
+    vidmap_helper(virtual_memory);
+
+    //sets the screen start to vmem
+    *screen_start = virtual_memory;
 
     
 }

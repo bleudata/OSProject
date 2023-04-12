@@ -86,13 +86,14 @@ void destroy_mapping(){
     flush_tlb();
 }
 
-void vidmap_helper(uint32_t virutal_address){
+void vidmap_helper(uint32_t virtual_address){
     uint32_t virtual = virtual_address; //can be anything like 132
     uint32_t pd_offset = virtual >> VIRT_MEM_SHIFT;
-    pt_offset = virtual & pt_map; //need to make the map
-    page_directory[virtual].entry = (uint32_t)(user_vid_mem) | VMEM_ENTRY_SET; //might need to mess with permissions stuff check again
-    user_vid_mem[pt_offset] = 184
-    first_page_table[pt_offset].pt_fields.present = 1;
-    first_page_table[pt_offset].pt_fields.read_write = 1;
-    first_page_table[pt_offset].pt_fields.page_address = VMEM_OFFSET;
+    uint32_t pt_offset = virtual & PT_INDEX_MAP; //need to make the map
+    page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | VMEM_ENTRY_SET; //might need to mess with permissions stuff check again
+    user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
+    user_vid_mem[pt_offset].pt_fields.present = 1;
+    user_vid_mem[pt_offset].pt_fields.read_write = 1;
+    user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET;
+    flush_tlb();
 }
