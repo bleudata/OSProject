@@ -182,6 +182,12 @@ int32_t halt(uint8_t status){
         ret_status = EXCEPT_STATUS;
         exception_flag = 0; 
     }
+
+    // int i;
+	// uint32_t * ptr = (char*) 0x0B8000; 
+	// for(i = 0; i < 1024; i++){  //access video memory test
+	// 	*(ptr + i) = 0;
+	// }
     
 
     //jump to execute return
@@ -483,10 +489,10 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
     if(arg_bytes > nbytes) {
         return -1;
     }
-    if (arg_bytes == 1) {
-        (pcb_address->args_data)[0] = ' '; 
-    }
-    if ( arg_bytes < 1) { // If arg bytes is 1 then its just a null character
+    // if (arg_bytes == 1) {
+    //     (pcb_address->args_data)[0] = ' '; 
+    // }
+    if ( arg_bytes <= 0) { // If arg bytes is 1 then its just a null character
         buf = NULL;
         return -1;
     }
@@ -522,7 +528,18 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
  *   SIDE EFFECTS:  none
  */
 extern int32_t vidmap(uint8_t** screen_start) {
-    return -1;
+    if(screen_start == NULL){
+        return -1;
+    }
+    //choosing this vmem, also making sure its 4kb aligned
+    uint32_t virtual_memory = 0xDBBA0000;
+
+    //sets up page table and modifies directory to have this pte mapped to kernel vidmem
+    vidmap_helper(virtual_memory);
+
+    //sets the screen start to vmem
+    *screen_start = virtual_memory;
+    return 0;
 }
 
 /*

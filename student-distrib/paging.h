@@ -5,6 +5,8 @@
 #include "syscalls.h"
 
 #define BLANK_ENTRY     0x00000000
+#define PT_INDEX_MAP    0x003FF000
+
 
 #define VMEM_OFFSET     184
 #define VMEM_ENTRY_SET  3
@@ -93,6 +95,8 @@ extern void enable_mixed_size();
 extern void map_helper(uint32_t pid);
 
 extern void destroy_mapping();
+
+void vidmap_helper(uint32_t virtual_address);
 
 extern void flush_tlb();
 
