@@ -109,7 +109,7 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
     // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
     for(i = 0; i < n; i ++) {
         if(new_buf[i] != '\0') {
-            putc_new(new_buf[i]);
+            putc(new_buf[i]);
         }
     }
 

@@ -237,7 +237,7 @@ int32_t execute(const uint8_t* command){
     //setting the cmd ptr to point to the first char after the first space that is after the first word
     int k = 0;
     if (command[cmd_ctr] == ' ' ) {
-        terminal_write(1, " in setting cmd args \n command: ", 22);
+        // terminal_write(1, " in setting cmd args \n command: ", 22);
         cmd_args = (uint8_t*)(command + cmd_ctr + 1);
         memset(args_buffer, '\0', 33);
         while(cmd_args[k] != '\0') {
@@ -267,7 +267,7 @@ int32_t execute(const uint8_t* command){
     uint32_t new_pid = get_pid();
     map_helper(new_pid); // set up memory map for new process
     if (command != "shell") {
-        puts(" \n before the file lentgh \n ");
+        // puts(" \n before the file lentgh \n ");
         // puts(cmd_args);
     }
     // puts(cmd_args);
@@ -464,12 +464,12 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
     int i;
 
     if ( num_bytes == 0) {
-        terminal_write(1, " first -1 ", 11);
+        // terminal_write(1, " first -1 ", 11);
         buf = NULL;
         return -1;
     }
     if( nbytes < 0){
-        terminal_write(1, " sec -1 ", 9);
+        // terminal_write(1, " sec -1 ", 9);
         return -1;
     }
 

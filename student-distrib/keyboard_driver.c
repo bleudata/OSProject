@@ -83,13 +83,13 @@ void keyboard_irq_handler() {
             if((echo != '\0')) { // if not function key
                 if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
                     if(echo == '\t') { // special case for tab
-                        putc_new(' '); // need to print multiple spaces
-                        putc_new(' ');
-                        putc_new(' ');
-                        putc_new(' ');
+                        putc(' '); // need to print multiple spaces
+                        putc(' ');
+                        putc(' ');
+                        putc(' ');
                     }
                     else {
-                        putc_new(echo);
+                        putc(echo);
                     }
                     update_cursor(get_x_position(), get_y_position()); 
                 }

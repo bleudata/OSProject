@@ -37,7 +37,6 @@ int32_t strncmp(const int8_t* s1, const int8_t* s2, uint32_t n);
 int8_t* strcpy(int8_t* dest, const int8_t*src);
 int8_t* strncpy(int8_t* dest, const int8_t*src, uint32_t n);
 void test_interrupts(void);
-void putc_new(uint8_t c);
 void shift_screen_up();
 void color_screen(unsigned char color);
 void unput_c(unsigned char input);
