@@ -2,8 +2,7 @@
 #include "syscalls.h"
 
 static uint8_t* cmd_args;
-uint8_t args_buffer[33];
-uint8_t args_length;
+uint8_t args_buffer[FNAME_MAX_SIZE];
 uint32_t exception_flag = 0; //0 = no exception
 uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
@@ -239,7 +238,6 @@ int32_t execute(const uint8_t* command){
     //setting the cmd ptr to point to the first char after the first space that is after the first word
     int k = 0;
     if (command[cmd_ctr] == ' ' ) {
-        // terminal_write(1, " in setting cmd args \n command: ", 22);
         cmd_args = (uint8_t*)(command + cmd_ctr + 1);
         memset(args_buffer, '\0', 33);
         // fill the actual characters
@@ -248,10 +246,9 @@ int32_t execute(const uint8_t* command){
             k++;
         }
 
-        args_length = k+1; // add +1 because need to include a null terminator 
-        // puts(cmd_args);
+        k++; // add +1 because need to include a null terminator 
     }
-    // printf(" argument: %s", cmd_args);
+  
     
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
     uint8_t exe_check[EXE_BUF];
@@ -270,17 +267,9 @@ int32_t execute(const uint8_t* command){
     }
     uint32_t new_pid = get_pid();
     map_helper(new_pid); // set up memory map for new process
-    // if (command != "shell") {
-    //     // puts(" \n before the file lentgh \n ");
-    //     // puts(cmd_args);
-    // }
-    // puts(cmd_args);
-    // puts("\n");
+
     int32_t file_length = get_file_length(dentry.inode_num);
-    // puts(cmd_args);
-    // if (command[cmd_ctr] == ' ' ) {
-    //     puts(cmd_args);
-    // }
+
     uint32_t * program_start = (uint32_t*)PROGRAM_START;
 
     if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1)  // write the executable file to the page
@@ -300,6 +289,11 @@ int32_t execute(const uint8_t* command){
         pcb_address->parent_esp = parent_esp; // technically not needed
         register uint32_t parent_ebp asm("ebp");
         pcb_address->parent_ebp = parent_ebp;
+    }
+    pcb_address->args_length = k;
+    // put the args into the pcb
+    for(k = 0; k < (pcb_address->args_length); k++) {
+        (pcb_address->args_data)[k] = args_buffer[k];
     }
     process_count += 1;
 
@@ -466,38 +460,40 @@ pcb_t * get_pcb_address(uint32_t pid){
  */
 extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
     // if no args OR args and terminal null dont fit into BUF then return -1
-    // puts("cmd value : ");
-    // puts(cmd_args);
-    int32_t num_bytes = args_length;
-    // printf(" \n byts: %d", num_bytes);
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
+    int32_t arg_bytes = pcb_address->args_length;
+
     int i;
 
     // invalid null buffer
     if(buf == NULL) {
         return -1;
     }
-    if ( num_bytes == 0) {
-        // terminal_write(1, " first -1 ", 11);
+    // argument is too large for the buffer provided
+    if(arg_bytes > nbytes) {
+        return -1;
+    }
+    if ( arg_bytes == 0) {
         buf = NULL;
         return -1;
     }
     if( nbytes < 0){
-        // terminal_write(1, " sec -1 ", 9);
         return -1;
     }
 
     int32_t bytes_to_read = 0;
     memset(buf, '\0', nbytes); // clear out the buffer for safety?? maybe don't need this
 
-    if(nbytes >= num_bytes){
-        bytes_to_read = num_bytes;
+    if(nbytes >= arg_bytes){
+        bytes_to_read = arg_bytes;
     }
     else{
         bytes_to_read = nbytes;
     }
 
     for(i = 0; i < bytes_to_read; i++){
-        buf[i] = args_buffer[i];
+        buf[i] = (pcb_address->args_data)[i];
     }
     
     // args_flag = 0;
