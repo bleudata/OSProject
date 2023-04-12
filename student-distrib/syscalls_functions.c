@@ -38,7 +38,8 @@ int32_t open(const uint8_t* filename){
     if(filename == NULL){
         return -1;
     }
-
+    // printf(" 42 filename: %s\n", filename);
+    // printf(" \ndone with filename \n");
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
     
@@ -53,11 +54,11 @@ int32_t open(const uint8_t* filename){
             break;
         }
     }
+
     // No open spots in array
     if (i == FD_OVERFLOW) 
         return -1;
 
-    
     // Set up any data needed to handle the file type
     int type = dentry.filetype;
     switch (type) {
@@ -123,6 +124,7 @@ int32_t close(int32_t fd){
         return -1;
 
     pcb_address->fd_array[fd].flag = 0;
+    (pcb_address->fd_array[fd]).file_position = 0;
     
     return 0; 
 }
@@ -240,11 +242,13 @@ int32_t execute(const uint8_t* command){
         // terminal_write(1, " in setting cmd args \n command: ", 22);
         cmd_args = (uint8_t*)(command + cmd_ctr + 1);
         memset(args_buffer, '\0', 33);
-        while(cmd_args[k] != '\0') {
+        // fill the actual characters
+        while((cmd_args[k] != '\0')) { 
             args_buffer[k] = cmd_args[k];
             k++;
         }
-        args_length = k;
+
+        args_length = k+1; // add +1 because need to include a null terminator 
         // puts(cmd_args);
     }
     // printf(" argument: %s", cmd_args);
@@ -266,17 +270,17 @@ int32_t execute(const uint8_t* command){
     }
     uint32_t new_pid = get_pid();
     map_helper(new_pid); // set up memory map for new process
-    if (command != "shell") {
-        // puts(" \n before the file lentgh \n ");
-        // puts(cmd_args);
-    }
+    // if (command != "shell") {
+    //     // puts(" \n before the file lentgh \n ");
+    //     // puts(cmd_args);
+    // }
     // puts(cmd_args);
     // puts("\n");
     int32_t file_length = get_file_length(dentry.inode_num);
     // puts(cmd_args);
-    if (command[cmd_ctr] == ' ' ) {
-        puts(cmd_args);
-    }
+    // if (command[cmd_ctr] == ' ' ) {
+    //     puts(cmd_args);
+    // }
     uint32_t * program_start = (uint32_t*)PROGRAM_START;
 
     if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1)  // write the executable file to the page
@@ -374,6 +378,7 @@ uint32_t get_pid(){
  */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     // Invalid parameter
+    int32_t bytes_read;
     if(fd < 0 || fd > FD_MAX_SIZE){
         return -1;
     }
@@ -393,7 +398,10 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
 
     //check if its terminal read for stdin aka if its NULL, and if it is return -1, otherwise do a normal file's read
     if((pcb_address->fd_array[fd]).fops.read != NULL){
-        return (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
+        // read the file and update the file position based on number of bytes succesfully read
+        bytes_read = (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
+        (pcb_address->fd_array[fd]).file_position += bytes_read;
+        return bytes_read;
     }
     else{
         return -1;
@@ -458,11 +466,16 @@ pcb_t * get_pcb_address(uint32_t pid){
  */
 extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
     // if no args OR args and terminal null dont fit into BUF then return -1
-    puts("cmd value : ");
-    puts(cmd_args);
+    // puts("cmd value : ");
+    // puts(cmd_args);
     int32_t num_bytes = args_length;
+    // printf(" \n byts: %d", num_bytes);
     int i;
 
+    // invalid null buffer
+    if(buf == NULL) {
+        return -1;
+    }
     if ( num_bytes == 0) {
         // terminal_write(1, " first -1 ", 11);
         buf = NULL;
@@ -474,6 +487,8 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
     }
 
     int32_t bytes_to_read = 0;
+    memset(buf, '\0', nbytes); // clear out the buffer for safety?? maybe don't need this
+
     if(nbytes >= num_bytes){
         bytes_to_read = num_bytes;
     }

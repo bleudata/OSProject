@@ -192,8 +192,8 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
     uint32_t * pcb_address = (uint32_t*)(cur_esp & PCB_STACK); 
 
     int32_t inode_num = ((pcb_t*)pcb_address)->fd_array[fd].inode_num;
-
-    return read_data(inode_num, ZERO_OFFSET , buf , nbytes); //fd -> inode num only for cp2
+    uint32_t offset = ((pcb_t*)pcb_address)->fd_array[fd].file_position;
+    return read_data(inode_num, offset , buf , nbytes); //fd -> inode num only for cp2
 }
 
 /*
