@@ -213,6 +213,15 @@ int32_t halt(uint8_t status){
  */
 int32_t execute(const uint8_t* command){
     // Parameter check
+    // get rid of trailing spaces
+    int i;
+    // uint32_t length = strlen((const int8_t*)command);
+    // for (i = length - 1; i >= 0; i--) {
+    //     if (command[i] == ' ') 
+    //         command[i] = '\0';
+    //     else 
+    //         break;
+    // }
     if(process_count >= MAX_PROC_CNT){
         return -1;
     }
@@ -246,7 +255,7 @@ int32_t execute(const uint8_t* command){
             k++;
         }
 
-        k++; // add +1 because need to include a null terminator 
+       // k++; // add +1 because need to include a null terminator 
     }
   
     
@@ -292,7 +301,7 @@ int32_t execute(const uint8_t* command){
     }
     pcb_address->args_length = k;
     // put the args into the pcb
-    for(k = 0; k < (pcb_address->args_length); k++) {
+    for(k = 0; k <= (pcb_address->args_length); k++) {
         (pcb_address->args_data)[k] = args_buffer[k];
     }
     process_count += 1;
@@ -474,7 +483,10 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
     if(arg_bytes > nbytes) {
         return -1;
     }
-    if ( arg_bytes == 0) {
+    if (arg_bytes == 1) {
+        (pcb_address->args_data)[0] = ' '; 
+    }
+    if ( arg_bytes < 1) { // If arg bytes is 1 then its just a null character
         buf = NULL;
         return -1;
     }
