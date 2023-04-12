@@ -8,7 +8,10 @@ page_directory_entry page_directory[DIR_SIZE] __attribute__((aligned(FOUR_KB)));
 
 
 //create page table for video memory
-page_table_entry first_page_table[TABLE_SIZE] __attribute__((aligned(FOUR_KB))); 
+page_table_entry first_page_table[TABLE_SIZE] __attribute__((aligned(FOUR_KB)));
+
+
+page_table_entry user_vid_mem[TABLE_SIZE] __attribute__((aligned(FOUR_KB)));
 
 
 /*
@@ -80,4 +83,16 @@ void destroy_mapping(){
     int32_t virtual = VIRT_MEM_PAGE;
     virtual = virtual >> VIRT_MEM_SHIFT;
     page_directory[virtual].entry = 0x0;
+    flush_tlb();
+}
+
+void vidmap_helper(uint32_t virutal_address){
+    uint32_t virtual = virtual_address; //can be anything like 132
+    uint32_t pd_offset = virtual >> VIRT_MEM_SHIFT;
+    pt_offset = virtual & pt_map; //need to make the map
+    page_directory[virtual].entry = (uint32_t)(user_vid_mem) | VMEM_ENTRY_SET; //might need to mess with permissions stuff check again
+    user_vid_mem[pt_offset] = 184
+    first_page_table[pt_offset].pt_fields.present = 1;
+    first_page_table[pt_offset].pt_fields.read_write = 1;
+    first_page_table[pt_offset].pt_fields.page_address = VMEM_OFFSET;
 }

@@ -448,7 +448,17 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
  *   SIDE EFFECTS:  none
  */
 extern int32_t vidmap(uint8_t** screen_start) {
-    return -1;
+    
+    // virtual memory = 
+    // make a page table
+    // set pde to point to page table
+    vidmem_helper(virtual_address);
+    // set page table to point to b8000
+
+    // flush tlb
+    // *screen_start = virtual memory
+
+    
 }
 
 /*
