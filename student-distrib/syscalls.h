@@ -8,6 +8,7 @@
 #include "x86_desc.h"
 #include "terminal_driver.h"
 #include "../syscalls/ece391sysnum.h" 
+#include "keyboard_driver.h"
 
 #define PHYS_MEM_BASE   0x800000 //8MB 
 #define PHYS_MEM_OFF    0x400000 //4MB

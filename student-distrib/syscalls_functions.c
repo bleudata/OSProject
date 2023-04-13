@@ -2,7 +2,7 @@
 #include "syscalls.h"
 
 static uint8_t* cmd_args;
-uint8_t args_buffer[FNAME_MAX_SIZE];
+uint8_t args_buffer[KEYBOARD_BUF_SIZE];
 uint32_t exception_flag = 0; //0 = no exception
 uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
@@ -236,8 +236,8 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
 
-    uint8_t fname[FNAME_MAX_SIZE];
-    memset(fname, '\0', FNAME_MAX_SIZE);
+    uint8_t fname[KEYBOARD_BUF_SIZE];
+    memset(fname, '\0', KEYBOARD_BUF_SIZE);
     uint32_t cmd_ctr = 0;
     
     // Get first word which is the fname
@@ -254,16 +254,14 @@ int32_t execute(const uint8_t* command){
     int k = 0;
     if (command[cmd_ctr] == ' ' ) {
         cmd_args = (uint8_t*)(command + cmd_ctr + 1);
-        memset(args_buffer, '\0', 33);
+        memset(args_buffer, '\0', KEYBOARD_BUF_SIZE);
         // fill the actual characters
         while((cmd_args[k] != '\0')) { 
             args_buffer[k] = cmd_args[k];
             k++;
         }
-
        // k++; // add +1 because need to include a null terminator 
     }
-  
     
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
     uint8_t exe_check[EXE_BUF];
@@ -513,8 +511,7 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
     for(i = 0; i < bytes_to_read; i++){
         buf[i] = (pcb_address->args_data)[i];
     }
-    
-    // args_flag = 0;
+
     return 0;
 }
 

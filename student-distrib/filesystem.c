@@ -37,7 +37,7 @@ void filesys_init(uint32_t* fileimg_address){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
-    
+    // printf(" in read dentry by name %s \n", fname);
     //null check for name and dentry
     if(fname == NULL || dentry == NULL){
         return -1;
@@ -46,13 +46,23 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     if(strlen((int8_t*)fname) > MAX_FILE_LENGTH){
         return -1;
     }
-
     int num_dir_entries = boot_block->dir_count;
+    int8_t * tempname; 
+    int8_t test = 0;
+    tempname = &test;
     // uint32_t str_length = strlen((int8_t*)fname);
     int i; //loop over dir_entries array and find dentry with matching filename's index, call read_dentry_by_index
     for(i = 0; i<num_dir_entries ; i++){
+        tempname = boot_block->dir_entries[i].filename;
+        // printf(" new file: %s, %d\n", tempname, strlen(boot_block->dir_entries[i].filename));
+        // if for some reason the filename is longer than 32, add null character after 32 filename characters
+        if(strlen(boot_block->dir_entries[i].filename) > FILENAME_LENGTH) {
+            (boot_block->dir_entries[i].filename)[FILENAME_LENGTH] = '\0'; 
+            printf("success %s", boot_block->dir_entries[i].filename);
+        }
         if(strlen(boot_block->dir_entries[i].filename) == strlen((int8_t*)fname)){
             if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen(boot_block->dir_entries[i].filename)) == 0){
+                printf("\n herere");
                 return read_dentry_by_index(i, dentry); 
             }
         }
@@ -141,6 +151,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t file_open(const uint8_t* filename){
+    // printf(" in file open %s\n", filename);
     //d_entry * dentry;
     // filename length check
     if(strlen((int8_t*)filename) > MAX_FILE_LENGTH || filename == NULL){
@@ -148,7 +159,6 @@ int32_t file_open(const uint8_t* filename){
     }
     d_entry dentry;
     int32_t dentry_success = read_dentry_by_name(filename, &dentry);
-
     if(dentry_success == -1){
         return -1;
     }
@@ -179,6 +189,7 @@ int32_t file_close(int32_t fd){
  *   RETURN VALUE: number of bytes read
  */
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
+    // printf(" in file read\n");
 
     //sanity check
     if(buf == NULL){
@@ -221,6 +232,7 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
  *   RETURN VALUE: fd of dentry/file on sucess, -1:fail
  */
 int32_t dir_open(const uint8_t* filename){
+    // printf("in directory open %s \n", filename);
     if(filename == NULL){
         return -1;
     }
