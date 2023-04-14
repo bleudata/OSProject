@@ -47,25 +47,27 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
         return -1;
     }
     int num_dir_entries = boot_block->dir_count;
-    int8_t * tempname; 
-    int8_t test = 0;
-    tempname = &test;
+    
     // uint32_t str_length = strlen((int8_t*)fname);
     int i; //loop over dir_entries array and find dentry with matching filename's index, call read_dentry_by_index
     for(i = 0; i<num_dir_entries ; i++){
-        tempname = boot_block->dir_entries[i].filename;
-        // printf(" new file: %s, %d\n", tempname, strlen(boot_block->dir_entries[i].filename));
-        // if for some reason the filename is longer than 32, add null character after 32 filename characters
-        if(strlen(boot_block->dir_entries[i].filename) > FILENAME_LENGTH) {
-            (boot_block->dir_entries[i].filename)[FILENAME_LENGTH] = '\0'; 
-            printf("success %s", boot_block->dir_entries[i].filename);
-        }
-        if(strlen(boot_block->dir_entries[i].filename) == strlen((int8_t*)fname)){
-            if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen(boot_block->dir_entries[i].filename)) == 0){
-                printf("\n herere");
+        //printf("%d\n", strlen(boot_block->dir_entries[i].filename));
+        if(strlen(fname)==32){
+            if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen(fname)) == 0){
+                //printf("\n herere");
                 return read_dentry_by_index(i, dentry); 
             }
+        } else {
+
+            if(strlen(boot_block->dir_entries[i].filename) == strlen((int8_t*)fname)){
+                if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen(fname)) == 0){
+                //printf("\n herere");
+                return read_dentry_by_index(i, dentry); 
+                }
+            }
         }
+        
+        
     }
     return -1;
 }

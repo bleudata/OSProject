@@ -2,7 +2,6 @@
 #include "syscalls.h"
 
 static uint8_t* cmd_args;
-uint8_t args_buffer[KEYBOARD_BUF_SIZE];
 uint32_t exception_flag = 0; //0 = no exception
 uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
@@ -221,6 +220,8 @@ int32_t execute(const uint8_t* command){
     // Parameter check
     // get rid of trailing spaces
     int i;
+    uint8_t args_buffer[KEYBOARD_BUF_SIZE];
+
     // uint32_t length = strlen((const int8_t*)command);
     // for (i = length - 1; i >= 0; i--) {
     //     if (command[i] == ' ') 
@@ -257,9 +258,16 @@ int32_t execute(const uint8_t* command){
         memset(args_buffer, '\0', KEYBOARD_BUF_SIZE);
         // fill the actual characters
         while((cmd_args[k] != '\0')) { 
-            args_buffer[k] = cmd_args[k];
+            args_buffer[k] = cmd_args[k]; // cat arg1 
             k++;
         }
+
+        // if(k > 0) {
+        //     while(args_buffer[k] == ' ' && k > 0) {
+        //         args_buffer[k] = '\0';
+        //         k--;
+        //     }
+        // }
        // k++; // add +1 because need to include a null terminator 
     }
     

@@ -71,7 +71,7 @@ typedef struct __attribute__ ((packed)){
     uint32_t parent_esp;
     uint32_t parent_ebp;
     uint8_t active;
-    uint8_t args_data[FNAME_MAX_SIZE];
+    uint8_t args_data[KEYBOARD_BUF_SIZE];
     uint8_t args_length;
 } pcb_t;
 
