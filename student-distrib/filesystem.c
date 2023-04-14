@@ -147,7 +147,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
 /*
  * file_open
- *   DESCRIPTION: initializes caller's dentry struct
+ *   DESCRIPTION: tries to read file dentry from bootblock into local dentry var, see if file exists
  *   INPUTS: filename, dentry struct ptr
  *   OUTPUTS: none
  *   RETURN VALUE: 0:success, -1:fail

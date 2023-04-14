@@ -70,6 +70,7 @@ typedef struct __attribute__ ((packed)){
     fd_entry fd_array[8]; // file descriptors: we need the actual array of file descriptors
     uint32_t parent_esp;
     uint32_t parent_ebp;
+    uint32_t scheduler_ebp; //ebp for scheduling
     uint8_t active;
     uint8_t args_data[KEYBOARD_BUF_SIZE];
     uint8_t args_length;
