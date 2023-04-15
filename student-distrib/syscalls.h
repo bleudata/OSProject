@@ -22,6 +22,7 @@
 #define PCB_STACK       0xFFFFE000
 #define VIRT_MEM_PAGE   0x08000000
 #define VIRT_MEM_SHIFT  22
+#define USER_VMEM       0xDBBA0000
 
 #define FD_OVERFLOW     8
 #define FD_INIT_SIZE    2

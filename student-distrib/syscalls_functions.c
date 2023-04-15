@@ -218,22 +218,38 @@ int32_t halt(uint8_t status){
  */
 int32_t execute(const uint8_t* command){
     // Parameter check
-    // get rid of trailing spaces
     int i;
     uint8_t args_buffer[KEYBOARD_BUF_SIZE];
 
-    // uint32_t length = strlen((const int8_t*)command);
-    // for (i = length - 1; i >= 0; i--) {
-    //     if (command[i] == ' ') 
-    //         command[i] = '\0';
-    //     else 
-    //         break;
-    // }
+    if(command == NULL){
+        return -1;
+    }
+
     if(process_count >= MAX_PROC_CNT){
         return -1;
     }
 
-    if(command == NULL){
+
+    // cmd_cpy is command but w/o front sapces/ trailing spaces/ extra middle spaces
+    uint8_t* cmd_cpy = (uint8_t*)command;
+
+    // get rid of spaces before the first letter
+    uint32_t length = strlen((const int8_t*)cmd_cpy);
+    for (i = 0; i < length; i++) {
+        if (cmd_cpy[i] != ' ') 
+            break;
+    }
+    cmd_cpy += i;
+
+    // get rid of spaces after
+    for (i = length - 1; i >= 0; i--) {
+        if (cmd_cpy[i] == ' ') 
+            cmd_cpy[i] = '\0';
+        else 
+            break;
+    }
+
+    if(cmd_cpy == NULL){
         return -1;
     }
 
@@ -242,33 +258,30 @@ int32_t execute(const uint8_t* command){
     uint32_t cmd_ctr = 0;
     
     // Get first word which is the fname
-    while( command[cmd_ctr] != ' '  && command[cmd_ctr] != '\0'  && command[cmd_ctr] != '\n'){
+    while( cmd_cpy[cmd_ctr] != ' '  && cmd_cpy[cmd_ctr] != '\0'  && cmd_cpy[cmd_ctr] != '\n'){
         cmd_ctr++;
     }
-    strncpy((int8_t*)fname, (int8_t*)command, cmd_ctr);
+    strncpy((int8_t*)fname, (int8_t*)cmd_cpy, cmd_ctr);
 
     d_entry dentry;
     if (read_dentry_by_name(fname, &dentry) == -1){
         return -1;
     }
+
     //setting the cmd ptr to point to the first char after the first space that is after the first word
     int k = 0;
-    if (command[cmd_ctr] == ' ' ) {
-        cmd_args = (uint8_t*)(command + cmd_ctr + 1);
+    int j = 0;
+    if (cmd_cpy[cmd_ctr] == ' ' ) {
+        cmd_args = (uint8_t*)(cmd_cpy + cmd_ctr + 1);
         memset(args_buffer, '\0', KEYBOARD_BUF_SIZE);
         // fill the actual characters
         while((cmd_args[k] != '\0')) { 
-            args_buffer[k] = cmd_args[k]; // cat arg1 
+            if(cmd_args[k] != ' '){
+                args_buffer[j] = cmd_args[k]; // cat arg1
+                j++; 
+            }
             k++;
         }
-
-        // if(k > 0) {
-        //     while(args_buffer[k] == ' ' && k > 0) {
-        //         args_buffer[k] = '\0';
-        //         k--;
-        //     }
-        // }
-       // k++; // add +1 because need to include a null terminator 
     }
     
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
@@ -282,7 +295,7 @@ int32_t execute(const uint8_t* command){
     }
     
     /* Set up this programs paging */
-    // Entry point into the progam (bytes 24 - 27 of the executable)
+    // Entry point into the progam (bytes 24 - 27 of the executable) OFFSET = 24 because thats the start of entrypoint
     if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, UINT_BYTES) < 0 ){  
         return -1;
     }
@@ -495,9 +508,7 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
     if(arg_bytes > nbytes) {
         return -1;
     }
-    // if (arg_bytes == 1) {
-    //     (pcb_address->args_data)[0] = ' '; 
-    // }
+  
     if ( arg_bytes <= 0) { // If arg bytes is 1 then its just a null character
         buf = NULL;
         return -1;
@@ -537,13 +548,13 @@ extern int32_t vidmap(uint8_t** screen_start) {
         return -1;
     }
     //choosing this vmem, also making sure its 4kb aligned
-    uint32_t virtual_memory = 0xDBBA0000;
+    uint32_t virtual_memory = USER_VMEM;
 
     //sets up page table and modifies directory to have this pte mapped to kernel vidmem
     vidmap_helper(virtual_memory);
 
     //sets the screen start to vmem
-    *screen_start = virtual_memory;
+    *screen_start = (uint8_t*)virtual_memory;
     return 0;
 }
 
