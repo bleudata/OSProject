@@ -182,13 +182,6 @@ int32_t halt(uint8_t status){
         exception_flag = 0; 
     }
 
-    // int i;
-	// uint32_t * ptr = (char*) 0x0B8000; 
-	// for(i = 0; i < 1024; i++){  //access video memory test
-	// 	*(ptr + i) = 0;
-	// }
-    
-
     //jump to execute return
     //does iret mess with eax
     asm volatile ("             \n\
