@@ -156,6 +156,9 @@ void setup_idt() {
         //printf("entered rtc if statement");
         rtc_irq_handler(); // this is from rtc file
     }
+    // else if(vector == PIT_VECTOR){
+        
+    // }
     // else if(vector == SYSTEM_CALL_VECTOR) {
     //     generic_system_call_handler();
     // }

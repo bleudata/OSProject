@@ -6,7 +6,7 @@ uint32_t exception_flag = 0; //0 = no exception
 uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
 uint32_t entry_point;
-uint32_t esp_start = ESP_VIRT_START;
+uint32_t esp_start = ESP_VIRT_START; 
 
 
 /*
@@ -159,7 +159,7 @@ int32_t halt(uint8_t status){
     process_count-=1;
     //check if main shell
     if(parent_pid == -1){
-        tss.esp0 = EIGHT_MB - EIGHT_KB - UINT_BYTES; 
+        tss.esp0 = EIGHT_MB - 0*EIGHT_KB - UINT_BYTES; //0 to use pid 0's kernel stack
         tss.ss0 = KERNEL_DS;
         // Unmap and call shell again
         destroy_mapping();
@@ -287,7 +287,7 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
     uint32_t new_pid = get_pid();
-    map_helper(new_pid); // set up memory map for new process
+    map_helper(new_pid); // set up memory map for new process // NOTSCHED
 
     int32_t file_length = get_file_length(dentry.inode_num);
 
@@ -296,8 +296,8 @@ int32_t execute(const uint8_t* command){
     if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1)  // write the executable file to the page
         return -1;
    
-    register uint32_t cur_esp asm("esp");
-    pcb_t * parent_pcb = (pcb_t*)(cur_esp & PCB_STACK);
+    register uint32_t cur_esp asm("esp"); // NOTSCHED
+    pcb_t * parent_pcb = (pcb_t*)(cur_esp & PCB_STACK); // NOTSCHED
 
     //fill in new process PCB
     pcb_t * pcb_address = get_pcb_address(new_pid);
@@ -305,11 +305,11 @@ int32_t execute(const uint8_t* command){
     if(process_count == 0){
         pcb_address->parent_pid = -1;
     }else{
-        pcb_address->parent_pid = parent_pcb->pid;
-        register uint32_t parent_esp asm("esp");
-        pcb_address->parent_esp = parent_esp; // technically not needed
-        register uint32_t parent_ebp asm("ebp");
-        pcb_address->parent_ebp = parent_ebp;
+        pcb_address->parent_pid = parent_pcb->pid; // NOTSCHED
+        register uint32_t parent_esp asm("esp");  // NOTSCHED
+        pcb_address->parent_esp = parent_esp; // technically not needed // NOTSCHED
+        register uint32_t parent_ebp asm("ebp");// NOTSCHED
+        pcb_address->parent_ebp = parent_ebp;// NOTSCHED
     }
     pcb_address->args_length = k;
     // put the args into the pcb
@@ -332,10 +332,10 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[STDOUT_FD].fops.write = terminal_write;
     pcb_address->fd_array[STDOUT_FD].fops.read = NULL;
     pcb_address->fd_array[STDOUT_FD].flag = 1;
-    pcb_address->active = 1;
+    
 
-    //setting the new TSS ESP0 and SS0
-    tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - UINT_BYTES;
+    //setting the new TSS ESP0 and SS0 // NOTSCHED
+    tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - UINT_BYTES; // normally - (largest register size)
     tss.ss0 = KERNEL_DS;
     
     // jump to the entry point of the program and begin execution
