@@ -74,6 +74,8 @@ typedef struct __attribute__ ((packed)){
     uint8_t active;
     uint8_t args_data[KEYBOARD_BUF_SIZE];
     uint8_t args_length;
+    uint32_t terminal;
+
 } pcb_t;
 
 

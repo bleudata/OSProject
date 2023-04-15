@@ -213,10 +213,10 @@ void entry(unsigned long magic, unsigned long addr) {
     
     
     
-    while(1){
-        uint8_t cmd[6] = "shell";
-        execute(cmd);
-    }
+    
+
+    uint8_t cmd[6] = "shell";
+    execute(cmd);
     // DO NOT MAKE IT A LOOP CHANGE IT BACK PLEASE
 
     /* Checkpoint 3 Tests */

@@ -97,3 +97,6 @@ void vidmap_helper(uint32_t virtual_address){
     flush_tlb();
 }
 
+//todo
+//check to destroy memory mapping in halt (for vidmap and stuff)
+
