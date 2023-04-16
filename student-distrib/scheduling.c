@@ -4,6 +4,7 @@
 uint32_t top_process[3] = {-1,-1,-1}; //-1: no process, else pid of top process
 int32_t schedule_flag = 0;
 uint32_t next_terminal = 0;
+uint32_t user_terminal = 0;
 
 uint32_t schedule(){
     if(schedule_flag == 0){
@@ -32,6 +33,13 @@ uint32_t schedule(){
 
     //change state
     //user vid mapping, terminate write mapping, buffer switching
+    if(user_terminal == next_terminal){
+        vidmap_helper(USER_VID_MEM);
+        //terminal write mapping todo
+        
+
+
+    }
     tss->esp0 = EIGHT_MB - next_pid*EIGHT_KB - UINT_BYTES;
     tss.ss0 = KERNEL_DS;
     

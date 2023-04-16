@@ -546,7 +546,7 @@ extern int32_t vidmap(uint8_t** screen_start) {
         return -1;
     }
     //choosing this vmem, also making sure its 4kb aligned
-    uint32_t virtual_memory = 0xDBBA0000;
+    uint32_t virtual_memory = USER_VID_MEM;
 
     //sets up page table and modifies directory to have this pte mapped to kernel vidmem
     vidmap_helper(virtual_memory);

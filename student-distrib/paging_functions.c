@@ -51,6 +51,16 @@ void init_paging() {
     first_page_table[VMEM_OFFSET].pt_fields.present = 1;
     first_page_table[VMEM_OFFSET].pt_fields.read_write = 1;
     first_page_table[VMEM_OFFSET].pt_fields.page_address = VMEM_OFFSET;
+
+    //initialize 4kb buffer kernel mapping for terminal 0,1 and 2 
+    int terminal_num;
+    for(terminal_num = 0; terminal_num < 2; terminal_num++){
+        page_directory[0].entry = (uint32_t)(first_page_table) | VMEM_ENTRY_SET;
+        first_page_table[VMEM_OFFSET+terminal_num+1].pt_fields.present = 1;
+        first_page_table[VMEM_OFFSET+terminal_num+1].pt_fields.read_write = 1;
+        first_page_table[VMEM_OFFSET+terminal_num+1].pt_fields.page_address = VMEM_OFFSET + terminal_num+1;
+    }
+    
     
     //load page dir to %cr3, enable mixed size pages and turn on paging
     load_page_dir((uint32_t *)page_directory);
@@ -84,11 +94,12 @@ void destroy_mapping(){
     flush_tlb();
 }
 
+//set user vid mem to point to vid mem
 void vidmap_helper(uint32_t virtual_address){
     uint32_t virtual = virtual_address; 
     uint32_t pd_offset = virtual >> VIRT_MEM_SHIFT;
     uint32_t pt_offset = (virtual & PT_INDEX_MAP) >>12; //need to make the map
-    page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | 7; //might need to mess with permissions stuff check again
+    page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | 7; 
 
     user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
     user_vid_mem[pt_offset].pt_fields.present = 1;
@@ -96,6 +107,29 @@ void vidmap_helper(uint32_t virtual_address){
     user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET;
     flush_tlb();
 }
+
+// set user vid mem to point to terminal buffer
+void vidmap_change(uint32_t virtual_address, uint32_t terminal){
+    uint32_t pd_offset = virtual >> VIRT_MEM_SHIFT;
+    uint32_t pt_offset = (virtual & PT_INDEX_MAP) >>12; //need to make the map
+    page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | 7; 
+
+    user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
+    user_vid_mem[pt_offset].pt_fields.present = 1;
+    user_vid_mem[pt_offset].pt_fields.read_write = 1;
+    user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET + terminal + 1;
+    flush_tlb();
+}
+
+// swap terminal buffer and video memory for two terminals
+void buffer_swap(uint32_t old_terminal, uint32_t new_terminal){
+    //vid mem to old_terminal
+    memcpy(VIDMEM + FOUR_KB + FOUR_KB*old_terminal,VIDMEM, FOUR_KB);
+    
+    //new_terminal to vidmem
+    memcpy(VIDMEM, VIDMEM + FOUR_KB + FOUR_KB*new_terminal, FOUR_KB);
+}
+
 
 //todo
 //check to destroy memory mapping in halt (for vidmap and stuff)
