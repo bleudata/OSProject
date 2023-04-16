@@ -7,6 +7,7 @@ uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
 uint32_t entry_point;
 uint32_t esp_start = ESP_VIRT_START; 
+uint32_t terminal_num = 0;
 
 
 /*
@@ -93,6 +94,7 @@ int32_t open(const uint8_t* filename){
     (pcb_address->fd_array[fd]).flag = 1;
 
     // Dont call respective open: just return the fd
+    // in actual os it actually does something like load file from disk
     if ((pcb_address->fd_array[fd]).fops.open(filename) == -1 ) 
         return -1;
 
@@ -159,11 +161,16 @@ int32_t halt(uint8_t status){
     process_count-=1;
     //check if main shell
     if(parent_pid == -1){
-        tss.esp0 = EIGHT_MB - 0*EIGHT_KB - UINT_BYTES; //0 to use pid 0's kernel stack
+        //cannot do this anymore for scheduling since it might overwrite kernel 1's stuff
+        // the kernel stack to use for pre base shell should be dependent on the pid of base shell
+        tss.esp0 = EIGHT_MB - (pcb_address->pid)*EIGHT_KB - UINT_BYTES; //0 to use pid 0's kernel stack
         tss.ss0 = KERNEL_DS;
         // Unmap and call shell again
         destroy_mapping();
-        uint8_t cmd[SHELL_SIZE] = "shell";
+        uint8_t cmd[SHELL_SIZE] = "shell"; //what if a PIT interrupt occurs here and tries to switch here??
+        //problem because kernel stack of this terminal's top process is undefined
+        //unless PIT is not able to interrupt during this section..
+        //some how decrement base shell count
         execute(cmd);
 
     }else{
@@ -287,7 +294,7 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
     uint32_t new_pid = get_pid();
-    map_helper(new_pid); // set up memory map for new process // NOTSCHED
+    map_helper(new_pid); // set up program memory map for new process
 
     int32_t file_length = get_file_length(dentry.inode_num);
 
@@ -302,14 +309,16 @@ int32_t execute(const uint8_t* command){
     //fill in new process PCB
     pcb_t * pcb_address = get_pcb_address(new_pid);
     pcb_address->pid = new_pid;
-    if(process_count == 0){
+    if(process_count ==0 || bshell_count() < 3){ //for 3 base shells
         pcb_address->parent_pid = -1;
+        pcb_address->terminal = new_pid; //terminal num correspond to pid for base shells
     }else{
         pcb_address->parent_pid = parent_pcb->pid; // NOTSCHED
         register uint32_t parent_esp asm("esp");  // NOTSCHED
         pcb_address->parent_esp = parent_esp; // technically not needed // NOTSCHED
         register uint32_t parent_ebp asm("ebp");// NOTSCHED
         pcb_address->parent_ebp = parent_ebp;// NOTSCHED
+        pcb_address->terminal = parent_pcb->terminal;
     }
     pcb_address->args_length = k;
     // put the args into the pcb

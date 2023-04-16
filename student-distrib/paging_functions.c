@@ -99,4 +99,6 @@ void vidmap_helper(uint32_t virtual_address){
 
 //todo
 //check to destroy memory mapping in halt (for vidmap and stuff)
-
+//check if about popal and eax in interrupt linkage
+//where to set the scheduling flag to 1
+//need to update setting the top task of the terminal
