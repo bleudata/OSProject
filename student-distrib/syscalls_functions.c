@@ -537,7 +537,8 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
  *   SIDE EFFECTS:  none
  */
 extern int32_t vidmap(uint8_t** screen_start) {
-    if(screen_start == NULL){
+    //checking that its not null and not in an area of kernel memory
+    if(screen_start == NULL || (screen_start >= (uint8_t**)KERNEL_START && screen_start <= (uint8_t**)KERNEL_END)){
         return -1;
     }
     //choosing this vmem, also making sure its 4kb aligned

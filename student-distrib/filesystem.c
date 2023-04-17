@@ -52,15 +52,15 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     int i; //loop over dir_entries array and find dentry with matching filename's index, call read_dentry_by_index
     for(i = 0; i<num_dir_entries ; i++){
         //printf("%d\n", strlen(boot_block->dir_entries[i].filename));
-        if(strlen(fname)==32){
-            if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen(fname)) == 0){
+        if(strlen((int8_t*)fname)==32){
+            if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen((int8_t*)fname)) == 0){
                 //printf("\n herere");
                 return read_dentry_by_index(i, dentry); 
             }
         } else {
 
             if(strlen(boot_block->dir_entries[i].filename) == strlen((int8_t*)fname)){
-                if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen(fname)) == 0){
+                if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen((int8_t*)fname)) == 0){
                 //printf("\n herere");
                 return read_dentry_by_index(i, dentry); 
                 }
