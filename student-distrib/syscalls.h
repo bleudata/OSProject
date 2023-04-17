@@ -24,6 +24,9 @@
 #define VIRT_MEM_SHIFT  22
 #define USER_VMEM       0xDBBA0000
 
+#define KERNEL_START    0x400000
+#define KERNEL_END      0x800000
+
 #define FD_OVERFLOW     8
 #define FD_INIT_SIZE    2
 #define FD_MAX_SIZE     7
