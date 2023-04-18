@@ -39,7 +39,7 @@
 #define EXCEPT_STATUS   256
 
 #define MAX_PROC_CNT    6
-#define PROC_CNT        5
+#define PROC_CNT        6
 
 #define EXE_BYTE0       0x7F
 #define EXE_BYTE1       0x45

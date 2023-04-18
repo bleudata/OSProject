@@ -145,6 +145,7 @@ void setup_idt() {
     //clear();
     //printf("printing vector %d \n", vector);
     if(vector >= 0 && vector <= 19) {
+        printf("printing vector %d \n", vector);
         set_exception_flag();
         halt(0);
         generic_intel_handler(vector);

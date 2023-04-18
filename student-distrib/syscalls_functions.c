@@ -219,7 +219,7 @@ int32_t execute(const uint8_t* command){
     }
 
     if(process_count >= MAX_PROC_CNT){
-        return -1;
+        return 256;
     }
 
 
@@ -258,7 +258,7 @@ int32_t execute(const uint8_t* command){
 
     d_entry dentry;
     if (read_dentry_by_name(fname, &dentry) == -1){
-        return -1;
+        return -1; 
     }
 
     //setting the cmd ptr to point to the first char after the first space that is after the first word
@@ -284,13 +284,13 @@ int32_t execute(const uint8_t* command){
     read_data(dentry.inode_num, 0, exe_check, EXE_BUF);
     
     if(strncmp((int8_t*)exe_check, (int8_t*)exe, EXE_BUF) != 0){
-        return -1;
+        return -1; 
     }
     
     /* Set up this programs paging */
     // Entry point into the progam (bytes 24 - 27 of the executable) OFFSET = 24 because thats the start of entrypoint
-    if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, UINT_BYTES) < 0 ){  
-        return -1;
+    if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, UINT_BYTES) < 4 ){  //@ i think should be <4
+        return -1; 
     }
     uint32_t new_pid = get_pid();
     map_helper(new_pid); // set up memory map for new process
@@ -299,9 +299,13 @@ int32_t execute(const uint8_t* command){
 
     uint32_t * program_start = (uint32_t*)PROGRAM_START;
 
-    if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1)  // write the executable file to the page
+    if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1){// write the executable file to the page
+        destroy_mapping();
+        pid_array[new_pid] = 0;
         return -1;
-   
+    }  //need to destroy mapping, and free pid, but it cant fail?
+        
+    //reach here == success
     register uint32_t cur_esp asm("esp");
     pcb_t * parent_pcb = (pcb_t*)(cur_esp & PCB_STACK);
 
@@ -338,7 +342,7 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[STDOUT_FD].fops.write = terminal_write;
     pcb_address->fd_array[STDOUT_FD].fops.read = NULL;
     pcb_address->fd_array[STDOUT_FD].flag = 1;
-    pcb_address->active = 1;
+    
 
     //setting the new TSS ESP0 and SS0
     tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - UINT_BYTES;
@@ -364,7 +368,7 @@ int32_t execute(const uint8_t* command){
             : "r"(esp_start), "r"(entry_point)
             : "memory"
     );
-  
+    
     return 0;
 }
 
@@ -529,17 +533,16 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
 
 /*
  * vidmap
- *   DESCRIPTION: call maps the text-mode video memory into user space at a pre-set virtual address
- *   INPUTS: buf -- 
- *           nbytes -- 
+ *   DESCRIPTION: create mapping for user video memory and write the virtual address to *screen_start
+ *   INPUTS: screen_start - where the user stores the address of the video memory
  *   OUTPUTS: none
  *   RETURN VALUE: 0 if successful, -1 if fail
  *   SIDE EFFECTS:  none
  */
 extern int32_t vidmap(uint8_t** screen_start) {
     //checking that its not null and not in an area of kernel memory
-    if(screen_start == NULL || (screen_start >= (uint8_t**)KERNEL_START && screen_start <= (uint8_t**)KERNEL_END)){
-        return -1;
+    if(screen_start == NULL || (screen_start >= (uint8_t**)(KERNEL_START-4) && screen_start < (uint8_t**)KERNEL_END)){
+        return -1; //ask TA BRO
     }
     //choosing this vmem, also making sure its 4kb aligned
     uint32_t virtual_memory = USER_VMEM;
