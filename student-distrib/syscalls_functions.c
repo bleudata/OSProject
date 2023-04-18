@@ -483,8 +483,8 @@ pcb_t * get_pcb_address(uint32_t pid){
 /*
  * getarg
  *   DESCRIPTION: Call reads the program’s command line arguments into a user-level buffer
- *   INPUTS: buf --
- *           nbytes -- 
+ *   INPUTS: buf -- buffer to put arguments into
+ *           nbytes -- number of bytes to read into the buffer
  *   OUTPUTS: none
  *   RETURN VALUE: 0 if successful, -1 if fail
  *   SIDE EFFECTS:  none
