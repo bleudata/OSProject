@@ -21,7 +21,7 @@
 #define RTC_GLOB_RES_VAR    0
 #define RTC_GLOB_RES_RATE   1
 #define RTC_FLAG_SET        1
-
+#define RTC_USR_DEFAULT     512
 
 #define RTC_DATA_UPPER_BYTE 0xf0
 

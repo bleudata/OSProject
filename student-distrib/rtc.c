@@ -66,7 +66,7 @@ int32_t rtc_open(const uint8_t* filename){
     outb(RTC_REG_A_DISABLE, RTC_REG_PORT);		// reset index to A
     outb((prev & RTC_DATA_UPPER_BYTE) | rate, RTC_RW_PORT); //write only our rate to A. Note, rate is the bottom 4 bits.
     rtc_ctr = 1;
-    rtc_syshz_per_uhz = RTC_GLOB_RES_RATE; //since its init, the system frequency of interrupts will always be 1 of itself
+    rtc_syshz_per_uhz = RTC_USR_DEFAULT; //since its init, the system frequency of interrupts will always be 1 of itself
     
     d_entry dentry;
     int32_t dentry_success = read_dentry_by_name(filename, &dentry);
@@ -95,7 +95,7 @@ int32_t rtc_close(int32_t fd){
 
     terminal_write(1, "in rtc \n", 9);
     rtc_ctr = 1;
-    rtc_syshz_per_uhz = RTC_GLOB_RES_RATE; //reset the # of interrupts per system freq to be just 1, so its itself
+    rtc_syshz_per_uhz = RTC_USR_DEFAULT; //reset the # of interrupts per system freq to be just 1, so its itself
     return RTC_PASS;
 }
 
