@@ -7,7 +7,7 @@
 #include "i8259.h"
 #include "tests.h"
 #include "keyboard_driver.h"
-#include "terminal_driver.h"
+
 
 /*Variables that keep track of CapsLock, Shift, Ctrl*/
 unsigned char capslock_on = 0x0;
@@ -74,6 +74,10 @@ void keyboard_irq_handler() {
             if(read_flag == 0) { //only purge the keyboard buffer if not in a terminal read
                 purge_keyboard_buffer(); 
             }
+        }
+        else if (ctrl_pressed &&(code == C_PRESS)) {
+            // set_exception_flag();
+            // halt(0);
         }
         else {
             echo = scancodes[code][val]; // print char if key was valid

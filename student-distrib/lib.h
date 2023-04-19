@@ -7,13 +7,13 @@
 
 #include "types.h"
 
-#define VIDEO       0xB8000
-#define NUM_COLS    80
-#define NUM_ROWS    25
+#define VIDEO           0xB8000
+#define NUM_COLS        80 // the screen has 80 characters per line
+#define NUM_ROWS        25 // the screen has 25 lines
 #define SCREEN_SIZE     NUM_COLS*NUM_ROWS
-#define SCREEN_BYTES    NUM_COLS*NUM_ROWS*2
-#define ATTRIB      0x7
-#define BSOD        0x1F
+#define SCREEN_BYTES    NUM_COLS*NUM_ROWS*2 // 2 bytes per char, 1 for char, 1 for attribute
+#define ATTRIB          0x7
+#define BSOD            0x1F
 #define GRAY_ON_BLACK   0x07
 #define MAX_SCANLINE    14 // number of pixels for character height - 1
 #define VGA_ADDR_REG    0x3D4

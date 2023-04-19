@@ -13,6 +13,7 @@
 #define A_PRESS        0x1E
 #define L_PRESS        0x26
 #define Z_PRESS        0x2C
+#define C_PRESS        0x2E
 #define M_PRESS        0x32
 #define TAB_PRESS      0x0F
 #define L_SHIFT_PRESS   0x2A
