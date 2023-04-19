@@ -7,9 +7,12 @@
 page_directory_entry page_directory[DIR_SIZE] __attribute__((aligned(FOUR_KB)));
 
 
-//create page table for video memory
-page_table_entry first_page_table[TABLE_SIZE] __attribute__((aligned(FOUR_KB))); 
+// Creates the page table that hold 0 - 4MB  section of Virtual Memory
+page_table_entry video_memory[TABLE_SIZE] __attribute__((aligned(FOUR_KB))); 
 
+
+// DELETE SOON cause we want to use vidmap to write to one of the 3 terminal video memories
+// This is the video
 page_table_entry user_vid_mem[TABLE_SIZE] __attribute__((aligned(FOUR_KB)));
 
 /*
@@ -29,13 +32,14 @@ void init_paging() {
 
     }
 
+    //Initialize the different video memory
     //initialize first page table to all not present
     for(i = 0; i< TABLE_SIZE; i++){
         
-        first_page_table[i].entry = BLANK_ENTRY;
+        video_memory[i].entry = BLANK_ENTRY;
 
     }
-
+   
     // 0000 0000 0100 0000  0000 0000 0000 0000 (4mb) 2^22
     // 0x0040 0000 (virtual) -> 0x0040 0000 (physical) (for kernel) (4MB page)
     // 0x000B 8000 (virtual) -> 0x000B 8000 (physical) (for video memory) (4KB page) 2^12
@@ -47,10 +51,26 @@ void init_paging() {
     page_directory[1].fourmb.page_address = 1;
 
     //initialize 4KB page for video memory
-    page_directory[0].entry = (uint32_t)(first_page_table) | VMEM_ENTRY_SET;
-    first_page_table[VMEM_OFFSET].pt_fields.present = 1;
-    first_page_table[VMEM_OFFSET].pt_fields.read_write = 1;
-    first_page_table[VMEM_OFFSET].pt_fields.page_address = VMEM_OFFSET;
+    page_directory[0].entry = (uint32_t)(video_memory) | VMEM_ENTRY_SET;
+    video_memory[VMEM_OFFSET].pt_fields.present = 1;
+    video_memory[VMEM_OFFSET].pt_fields.read_write = 1;
+    video_memory[VMEM_OFFSET].pt_fields.page_address = VMEM_OFFSET;
+
+    // Sets up the virtual memory for teminal one
+    video_memory[VMEM_OFFSET_T1].pt_fields.present = 1;
+    video_memory[VMEM_OFFSET_T1].pt_fields.read_write = 1;
+    video_memory[VMEM_OFFSET_T1].pt_fields.page_address = VMEM_OFFSET_T1;
+
+    // Sets up the virtual memory for teminal two
+    video_memory[VMEM_OFFSET_T2].pt_fields.present = 1;
+    video_memory[VMEM_OFFSET_T2].pt_fields.read_write = 1;
+    video_memory[VMEM_OFFSET_T2].pt_fields.page_address = VMEM_OFFSET_T2;
+
+    // Sets up the virtual memory for teminal three
+    video_memory[VMEM_OFFSET_T3].pt_fields.present = 1;
+    video_memory[VMEM_OFFSET_T3].pt_fields.read_write = 1;
+    video_memory[VMEM_OFFSET_T3].pt_fields.page_address = VMEM_OFFSET_T3;
+
     
     //load page dir to %cr3, enable mixed size pages and turn on paging
     load_page_dir((uint32_t *)page_directory);
@@ -121,3 +141,18 @@ void vidmap_helper(uint32_t virtual_address){
     flush_tlb();
 }
 
+/*
+ * copy_video_memory()
+ *   DESCRIPTION: Copys a 4KB block of memory from source to destination
+ *   INPUTS: source - 4KB block to copy from
+ *           destination - 4KB block to copy to
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: changes physical memory
+ */
+void copy_video_memory(uint32_t* source, uint32_t* destination) {
+    int i;
+    for (i = 0; i < SCREEN_BYTES; i++) {
+        destination[i] = source[i];
+    }
+}

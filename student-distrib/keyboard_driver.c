@@ -133,16 +133,16 @@ void keyboard_irq_handler() {
     else if (code == L_ALT_RELEASE) {
         alt_pressed = 0;
     }
+    // F1
+    else if (code == F1_PRESS) {
+
+    }
     // F2
     else if (code == F2_PRESS) {
 
     }
     // F3
     else if (code == F3_PRESS) {
-
-    }
-    // F4
-    else if (code == F4_PRESS) {
 
     }
     // BACKSPACE

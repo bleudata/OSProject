@@ -8,7 +8,11 @@
 #define PT_INDEX_MAP    0x003FF000
 
 
-#define VMEM_OFFSET     184
+#define VMEM_OFFSET         184
+#define VMEM_OFFSET_T1      186
+#define VMEM_OFFSET_T2      187
+#define VMEM_OFFSET_T3      188
+
 #define VMEM_ENTRY_SET  3
 
 #define DIR_SIZE        1024
@@ -96,9 +100,13 @@ extern void map_helper(uint32_t pid);
 
 extern void destroy_mapping();
 
-void vidmap_helper(uint32_t virtual_address);
+extern void vidmap_helper(uint32_t virtual_address);
 
 extern void flush_tlb();
+
+// helper function to copy video memory from a terminal video memory to video memory or vice versa
+// copy 4KB video page
+extern void copy_video_memory(uint32_t* source, uint32_t* destination);
 
 
 #endif
