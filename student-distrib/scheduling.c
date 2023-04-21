@@ -1,6 +1,6 @@
 #include "scheduling.h"
 
-
+//changes6
 uint32_t top_process[3] = {-1,-1,-1}; //-1: no process, else pid of top process
 int32_t schedule_flag = 0;
 uint32_t next_terminal = 0;
@@ -32,13 +32,19 @@ uint32_t schedule(){
     uint32_t next_process_ebp = next_process_pcb->scheduler_ebp; //get next process ebp
 
     //change state
-    //user vid mapping, terminate write mapping, buffer switching
+    //user vid mapping, terminal write mapping, buffer switching
     if(user_terminal == next_terminal){
+        //1. map user process vid mem to video memory
         vidmap_helper(USER_VID_MEM);
-        //terminal write mapping todo
         
+        //2. map terminal write to video memory
 
 
+    }else{
+        //1. map user process vid mem to terminal buffer
+        vidmap_change(USER_VID_MEM, next_terminal);
+
+        //2. map terminal write to terminal buffer
     }
     tss->esp0 = EIGHT_MB - next_pid*EIGHT_KB - UINT_BYTES;
     tss.ss0 = KERNEL_DS;

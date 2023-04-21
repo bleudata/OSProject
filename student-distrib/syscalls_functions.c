@@ -139,6 +139,7 @@ int32_t close(int32_t fd){
  *   SIDE EFFECTS:  edits the PCB returns to parent process
  */
 int32_t halt(uint8_t status){
+    cli();
     uint32_t ret_status = status;
 
     //close all files
@@ -197,7 +198,7 @@ int32_t halt(uint8_t status){
 	// 	*(ptr + i) = 0;
 	// }
     
-
+    sti();
     //jump to execute return
     //does iret mess with eax
     asm volatile ("             \n\
@@ -226,6 +227,7 @@ int32_t halt(uint8_t status){
  *   SIDE EFFECTS:  Hands off the processor 
  */
 int32_t execute(const uint8_t* command){
+    cli();
     // Parameter check
     int i;
     uint8_t args_buffer[KEYBOARD_BUF_SIZE];
@@ -373,6 +375,8 @@ int32_t execute(const uint8_t* command){
     //line 3: This pushes the flags
     //line 4: This value is USER CS
     //line 5: This pushes the EIP
+
+    sti(); 
 
     asm volatile (" \n\
             pushl $0x002B           \n\
