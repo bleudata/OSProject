@@ -9,9 +9,12 @@
 
 
 #define VMEM_OFFSET         184
-#define VMEM_OFFSET_T1      186
-#define VMEM_OFFSET_T2      187
-#define VMEM_OFFSET_T3      188
+#define VMEM_OFFSET_T0      186
+#define VMEM_OFFSET_T1      187
+#define VMEM_OFFSET_T2      188
+#define T1_VIRTUAL_ADDR     0x000BA000  // directory entry 0, table entry 186, offset 0
+#define T2_VIRTUAL_ADDR     0x000BB000  // directory entry 0, table entry 187, offset 0
+#define T3_VIRTUAL_ADDR     0x000BC000
 
 #define VMEM_ENTRY_SET  3
 

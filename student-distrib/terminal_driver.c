@@ -27,12 +27,16 @@ void terminal_init(){
         terminal_array[i].keyboard.buf_end_addr = (terminal_array[i].keyboard.keyboard_buf) + KEYBOARD_BUF_SIZE - 1; 
         terminal_array[i].keyboard.buf_line_two_addr = (terminal_array[i].keyboard.keyboard_buf) + NEWLINE_INDEX;
     }
+    terminal_array[0].virtual_mem_addr = VMEM_OFFSET_T0;
+    terminal_array[1].virtual_mem_addr = VMEM_OFFSET_T1;
+    terminal_array[2].virtual_mem_addr = VMEM_OFFSET_T2;
+
     displayed_terminal_num = 2; // default  to display terminal 0?
-    set_active_keyboard_buffer(get_active_keyboard());
+    set_active_keyboard_buffer(&(get_terminal()->keyboard));
     displayed_terminal_num = 1;
-    set_active_keyboard_buffer(get_active_keyboard());
+    set_active_keyboard_buffer(&(get_terminal()->keyboard));
     displayed_terminal_num = 0;
-    set_active_keyboard_buffer(get_active_keyboard());
+    set_active_keyboard_buffer(&(get_terminal()->keyboard));
     // need to set each terminal to have the active keyboard buffer and purge the buffer to help the init
 }
 
@@ -221,4 +225,17 @@ unsigned char set_active_terminal_num(unsigned char num) {
  */
 keyboard_buf_t* get_active_keyboard() {
     return &(terminal_array[displayed_terminal_num].keyboard);
+}
+
+
+/*
+ * get_terminal
+ *   DESCRIPTION: returns the address of the terminal struct corresponding to the active terminal
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: address of the terminal struct corresponding to the active terminal
+ *   SIDE EFFECTS: none
+ */
+terminal_t* get_terminal() {
+    return &(terminal_array[displayed_terminal_num]);
 }

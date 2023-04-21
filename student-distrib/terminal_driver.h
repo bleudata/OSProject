@@ -13,7 +13,7 @@
 typedef struct __attribute__ ((packed)) {
     int screen_x;
     int screen_y; 
-    unsigned char* virtual_mem_addr;
+    uint32_t* virtual_mem_addr;
     keyboard_buf_t keyboard;
     
 } terminal_t;
@@ -30,7 +30,8 @@ extern int terminal_close(int32_t fd); // assuming don't need other params?
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
 void update_cursor(int x, int y);
 extern unsigned char get_active_terminal_num();
+extern unsigned char set_active_terminal_num(unsigned char num);
 extern keyboard_buf_t* get_active_keyboard();
-
+extern terminal_t* get_terminal();
 
 #endif /*TERMINAL_DRIVER_H*/

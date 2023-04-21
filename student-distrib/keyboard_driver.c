@@ -22,6 +22,10 @@ keyboard_buf_t * active_keyboard;
 unsigned char enter_count = 0;
 unsigned char read_flag = 0; // 1 if inside a read, 0 else
 
+// Flags for initial boot up of terminal 1 and 2
+unsigned char t1_flag = 0;
+unsigned char t2_flag = 0;
+
 // Array that holds Shifted Values
 // [nonshifted value, shifted value], \0 are function keys!! except the first two
 static unsigned char scancodes[58][2] = { // values 0x00 - 0x39
@@ -129,16 +133,46 @@ void keyboard_irq_handler() {
         alt_pressed = 0;
     }
     // F1
-    else if (code == F1_PRESS) {
-
+    else if ( (code == F1_PRESS) && alt_pressed) {
+        // Copy memory from the vm to the terminal specific vm
+        copy_video_memory((uint32_t*)VMEM_OFFSET, (uint32_t*)get_terminal()->virtual_mem_addr);
+        set_active_terminal_num(0);
+        set_active_keyboard_buffer(&(get_terminal()->keyboard));
+        // Copy new terminal vm to the vm
+        copy_video_memory((uint32_t*)get_terminal()->virtual_mem_addr, (uint32_t*)VMEM_OFFSET);
     }
     // F2
-    else if (code == F2_PRESS) {
-
+    else if ( (code == F2_PRESS) && alt_pressed) {
+        // Copy memory from the vm to the terminal specific vm
+        puts(" 147 \n ");
+        // PAGE FAULT
+        copy_video_memory((uint32_t*)VMEM_OFFSET, (uint32_t*)get_terminal()->virtual_mem_addr);
+        puts(" 149 \n ");
+        set_active_terminal_num(1);
+        set_active_keyboard_buffer(&(get_terminal()->keyboard));
+        puts(" 151 \n ");
+        // Copy new terminal vm to the vm
+        copy_video_memory((uint32_t*)get_terminal()->virtual_mem_addr, (uint32_t*)VMEM_OFFSET);
+        puts(" 154 \n ");
+        if (!t1_flag) {
+            uint8_t cmd[6] = "shell";
+            execute(cmd);
+            t1_flag = 1;
+        }
     }
     // F3
-    else if (code == F3_PRESS) {
-
+    else if ( (code == F3_PRESS) && alt_pressed) {
+        // Copy memory from the vm to the terminal specific vm
+        copy_video_memory((uint32_t*)VMEM_OFFSET, (uint32_t*)get_terminal()->virtual_mem_addr);
+        set_active_terminal_num(2);
+        set_active_keyboard_buffer(&(get_terminal()->keyboard));
+        // Copy new terminal vm to the vm
+        copy_video_memory((uint32_t*)get_terminal()->virtual_mem_addr, (uint32_t*)VMEM_OFFSET);
+        if (!t2_flag) {
+            uint8_t cmd[6] = "shell";
+            execute(cmd);
+            t2_flag = 1;
+        }
     }
     // BACKSPACE
     else if (code == BACKSPACE) {
