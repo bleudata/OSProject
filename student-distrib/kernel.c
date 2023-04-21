@@ -176,7 +176,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     
     printf("Enabling Interrupts\n");
-    sti(); //DELETE THIS
+    
     // if(file_sys_start == boot_block){
     //     printf("sys_start same as bootblock");
     // }
@@ -213,8 +213,7 @@ void entry(unsigned long magic, unsigned long addr) {
     
     
     
-    
-
+    sti(); 
     uint8_t cmd[6] = "shell";
     execute(cmd);
     

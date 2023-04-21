@@ -164,8 +164,8 @@ int32_t halt(uint8_t status){
     if(parent_pid == -1){
         //cannot do this anymore for scheduling since it might overwrite kernel 1's stuff
         // the kernel stack to use for pre base shell should be dependent on the pid of base shell
-        tss.esp0 = EIGHT_MB - (pcb_address->pid)*EIGHT_KB - UINT_BYTES; 
-        tss.ss0 = KERNEL_DS;
+        // tss.esp0 = EIGHT_MB - (pcb_address->pid)*EIGHT_KB - UINT_BYTES; 
+        // tss.ss0 = KERNEL_DS;
         // Unmap and call shell again
         destroy_mapping();
         uint8_t cmd[SHELL_SIZE] = "shell"; //what if a PIT interrupt occurs here and tries to switch here??
@@ -198,13 +198,14 @@ int32_t halt(uint8_t status){
 	// 	*(ptr + i) = 0;
 	// }
     
-    sti();
+    
     //jump to execute return
     //does iret mess with eax
     asm volatile ("             \n\
         movl %0, %%esp          \n\
         movl %1, %%ebp          \n\
         movl %2, %%eax          \n\
+        sti                     \n\
         leave                   \n\
         ret                     \n\
         "
@@ -333,6 +334,7 @@ int32_t execute(const uint8_t* command){
     if(process_count ==0 || bshell_count() < 3){ //for 3 base shells
         pcb_address->parent_pid = -1;
         pcb_address->terminal = new_pid; //terminal num correspond to pid for base shells
+        set_top_process(pcb_address->terminal, new_pid);
     }else{
         pcb_address->parent_pid = parent_pcb->pid; // NOTSCHED
         register uint32_t parent_esp asm("esp");  // NOTSCHED
@@ -340,6 +342,9 @@ int32_t execute(const uint8_t* command){
         register uint32_t parent_ebp asm("ebp");// NOTSCHED
         pcb_address->parent_ebp = parent_ebp;// NOTSCHED
         pcb_address->terminal = parent_pcb->terminal;
+        //top_process[1] = 1;
+        set_top_process(parent_pcb->terminal, new_pid);
+        
     }
     pcb_address->args_length = k;
     // put the args into the pcb
@@ -376,7 +381,7 @@ int32_t execute(const uint8_t* command){
     //line 4: This value is USER CS
     //line 5: This pushes the EIP
 
-    sti(); 
+    
 
     asm volatile (" \n\
             pushl $0x002B           \n\
@@ -384,6 +389,7 @@ int32_t execute(const uint8_t* command){
             pushfl                  \n\
             pushl $0x0023           \n\
             pushl %1                \n\
+            sti                     \n\
             iret                    \n\
             "
             :
@@ -425,6 +431,7 @@ uint32_t get_pid(){
  */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     // Invalid parameter
+    
     int32_t bytes_read;
     if(fd < 0 || fd > FD_MAX_SIZE){
         return -1;
@@ -442,17 +449,17 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     if((pcb_address->fd_array[fd]).flag == 0){
         return -1;
     }
-    //sti
+    //sti();
     //check if its terminal read for stdin aka if its NULL, and if it is return -1, otherwise do a normal file's read
     if((pcb_address->fd_array[fd]).fops.read != NULL){
         // read the file and update the file position based on number of bytes succesfully read
         bytes_read = (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
         (pcb_address->fd_array[fd]).file_position += bytes_read;
-        //cli
+        //cli();
         return bytes_read;
     }
     else{
-        //cli
+        //cli();
         return -1;
     }
 }

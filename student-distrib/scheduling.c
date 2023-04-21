@@ -1,10 +1,11 @@
 #include "scheduling.h"
 
 //changes6
-uint32_t top_process[3] = {-1,-1,-1}; //-1: no process, else pid of top process
+int32_t top_process[3] = {-1,-1,-1}; //-1: no process, else pid of top process
 int32_t schedule_flag = 0;
 uint32_t next_terminal = 0;
 uint32_t user_terminal = 0;
+uint32_t counter = 0;
 
 uint32_t schedule(){
     if(schedule_flag == 0){
@@ -19,14 +20,20 @@ uint32_t schedule(){
 
     
 
-    int i; //execute all base shells
-    for(i = 0; i < 3; i++){
-        if(top_process[i] == -1){
-            execute("shell"); // have to edit execute to make this work
-        }
+    // int i; //execute all base shells
+    // for(i = 1; i < 3; i++){
+    //     if(top_process[i] == -1){
+    //         execute("shell"); // have to edit execute to make this work
+    //     }
+    // }
+
+    //^ or this
+    if(counter < 2){
+        counter +=1;
+        execute("shell");
     }
 
-    
+    //only reach here on the third PIT interrupt and after
     int32_t next_pid = top_process[next_terminal];
     pcb_t * next_process_pcb = (pcb_t *)get_pcb_address(next_pid);
     uint32_t next_process_ebp = next_process_pcb->scheduler_ebp; //get next process ebp
@@ -72,6 +79,7 @@ uint32_t schedule(){
     return 0;
 }
 
+//returns number of base shells
 uint32_t bshell_count(){
     uint32_t count = 0;
     int i;
@@ -82,4 +90,10 @@ uint32_t bshell_count(){
     }
     
     return count;
+    //or return counter+1;
+}
+
+//set top process to be equal to some pid, or -1 for no process
+void set_top_process(int32_t terminal, int32_t pid){
+    top_process[terminal] = pid;
 }
