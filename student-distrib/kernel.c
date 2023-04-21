@@ -165,6 +165,7 @@ void entry(unsigned long magic, unsigned long addr) {
     enable_irq(PIC2_IRQ); 
     keyboard_init();
     rtc_init();
+    terminal_init();
     enable_cursor(MAX_SCANLINE, MAX_SCANLINE); 
     update_cursor(0,0);
     //init fops tables

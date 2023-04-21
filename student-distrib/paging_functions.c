@@ -56,17 +56,17 @@ void init_paging() {
     video_memory[VMEM_OFFSET].pt_fields.read_write = 1;
     video_memory[VMEM_OFFSET].pt_fields.page_address = VMEM_OFFSET;
 
-    // Sets up the virtual memory for teminal one
+    // Sets up the virtual memory for terminal one
     video_memory[VMEM_OFFSET_T1].pt_fields.present = 1;
     video_memory[VMEM_OFFSET_T1].pt_fields.read_write = 1;
     video_memory[VMEM_OFFSET_T1].pt_fields.page_address = VMEM_OFFSET_T1;
 
-    // Sets up the virtual memory for teminal two
+    // Sets up the virtual memory for terminal two
     video_memory[VMEM_OFFSET_T2].pt_fields.present = 1;
     video_memory[VMEM_OFFSET_T2].pt_fields.read_write = 1;
     video_memory[VMEM_OFFSET_T2].pt_fields.page_address = VMEM_OFFSET_T2;
 
-    // Sets up the virtual memory for teminal three
+    // Sets up the virtual memory for terminal three
     video_memory[VMEM_OFFSET_T3].pt_fields.present = 1;
     video_memory[VMEM_OFFSET_T3].pt_fields.read_write = 1;
     video_memory[VMEM_OFFSET_T3].pt_fields.page_address = VMEM_OFFSET_T3;

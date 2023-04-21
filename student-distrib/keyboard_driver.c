@@ -17,15 +17,10 @@ unsigned char ctrl_pressed = 0x0;
 unsigned char alt_pressed = 0x0;
 
 /*Keyboard buffer variables*/
-static unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
-static unsigned char* buf_position = keyboard_buf; //points to next empty index in the buffer
+keyboard_buf_t * active_keyboard;
 //static unsigned char* buf_end = keyboard_buf+128;
 unsigned char enter_count = 0;
 unsigned char read_flag = 0; // 1 if inside a read, 0 else
-
-#define BUF_END_ADDR        keyboard_buf+127 // need minus one because the last index is the newline
-#define BUF_LINE_TWO_ADDR   keyboard_buf+80
-#define NEWLINE_INDEX       80
 
 // Array that holds Shifted Values
 // [nonshifted value, shifted value], \0 are function keys!! except the first two
@@ -157,7 +152,7 @@ void keyboard_irq_handler() {
                 unput_c(' '); // delete space 4
             }
             else {
-                unput_c(*(buf_position+1));
+                unput_c(*((active_keyboard->buf_position)+1));
             }
             update_cursor(get_x_position(), get_y_position());
         }
@@ -187,7 +182,7 @@ void keyboard_irq_handler() {
 
 /*
  * keyboard_init
- *   DESCRIPTION: initializes the keyboard by enabling its irq on the PIC
+ *   DESCRIPTION: initializes the keyboard by enabling its irq on the PIC 
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: none
@@ -195,7 +190,6 @@ void keyboard_irq_handler() {
  */
 void keyboard_init() {
     enable_irq(KEYBOARD_IRQ);
-    purge_keyboard_buffer(); // make sure the buffer is clean when we first start
 }
 
 /*
@@ -207,8 +201,8 @@ void keyboard_init() {
  *   SIDE EFFECTS: chnages keyboard buffer
  */
 void purge_keyboard_buffer() {
-    memset(keyboard_buf, '\0', KEYBOARD_BUF_SIZE);
-    buf_position = keyboard_buf; // move position back to the start of the buffer
+    memset(active_keyboard->keyboard_buf, '\0', KEYBOARD_BUF_SIZE);
+    active_keyboard->buf_position = active_keyboard->keyboard_buf; // move position back to the start of the buffer
 }
 
 /*
@@ -221,13 +215,13 @@ void purge_keyboard_buffer() {
  */
 void purge_and_align_keyboard_buffer(int n) {
     if(n <= KEYBOARD_BUF_SIZE) {
-        memset(keyboard_buf, '\0', n);
+        memset(active_keyboard->keyboard_buf, '\0', n);
     }
     if(n < KEYBOARD_BUF_SIZE) {
         align_keyboard_buffer(n); // only need to align if didn't completely purge the buffer
     }
     else {
-        buf_position = keyboard_buf;
+        active_keyboard->buf_position = active_keyboard->keyboard_buf;
     }
 }
 /*
@@ -245,15 +239,15 @@ void align_keyboard_buffer(int new_start) {
         return; 
     }
     while((new_start < KEYBOARD_BUF_SIZE)) { 
-        keyboard_buf[i] = keyboard_buf[new_start];
+        active_keyboard->keyboard_buf[i] = active_keyboard->keyboard_buf[new_start];
         i++;
         new_start++;
     }
     while(i < KEYBOARD_BUF_SIZE) {
-        keyboard_buf[i] = '\0';
+        active_keyboard->keyboard_buf[i] = '\0';
         i++;
     }
-    buf_position = keyboard_buf + KEYBOARD_BUF_SIZE - new_start; // point to next empty
+    active_keyboard->buf_position = active_keyboard->keyboard_buf + KEYBOARD_BUF_SIZE - new_start; // point to next empty
 }
 
 
@@ -266,7 +260,7 @@ void align_keyboard_buffer(int new_start) {
  *   SIDE EFFECTS: none
  */
 unsigned char * get_keyboard_buffer() {
-    return keyboard_buf;
+    return active_keyboard->keyboard_buf;
 }
 
 /*
@@ -278,14 +272,14 @@ unsigned char * get_keyboard_buffer() {
  *   SIDE EFFECTS: none
  */
 unsigned char add_to_keyboard_buffer(unsigned char input) {
-    if(buf_position < BUF_END_ADDR){
-        *buf_position = input;
-        buf_position++;
+    if(active_keyboard->buf_position < active_keyboard->buf_end_addr){
+        *(active_keyboard->buf_position) = input;
+        active_keyboard->buf_position++;
         return 1;
     }
-    if(buf_position == BUF_END_ADDR) { // keyboard_buf[127] can only be a newline
+    if(active_keyboard->buf_position == active_keyboard->buf_end_addr) { // keyboard_buf[127] can only be a newline
         if(input == '\n') {
-           *buf_position = '\n'; 
+           *(active_keyboard->buf_position) = '\n'; 
         }
         
     } 
@@ -301,17 +295,17 @@ unsigned char add_to_keyboard_buffer(unsigned char input) {
  *   SIDE EFFECTS: changes the keyboard buffer
  */
 unsigned char remove_from_keyboard_buffer() {
-    if(buf_position > keyboard_buf) { // if buffer is not empty 
-        if(*(buf_position-1) == '\n') {
+    if(active_keyboard->buf_position > active_keyboard->keyboard_buf) { // if buffer is not empty 
+        if(*(active_keyboard->buf_position-1) == '\n') {
             return 0;
         }
-        buf_position--; 
-        if(*buf_position == '\t') {
-            *buf_position = '\0';
+        active_keyboard->buf_position--; 
+        if(*(active_keyboard->buf_position) == '\t') {
+            *(active_keyboard->buf_position) = '\0';
             return 2;
         }
         else {
-            *buf_position = '\0';
+            *(active_keyboard->buf_position) = '\0';
             return 1;
         }
     }
@@ -342,6 +336,37 @@ void decrement_enter_count() {
     enter_count--;
 }
 
-void set_read_flag(unsigned char flag) {
+/*
+ * set_read_flag
+ *   DESCRIPTION: sets the read flag to either 1 or 0. Read flag says if currently in a terminal_read call
+ *   INPUTS: flag -- value to set read flag to 
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 success, -1 fail
+ *   SIDE EFFECTS: none
+ */
+unsigned char set_read_flag(unsigned char flag) {
+    if(flag > 1){
+        return -1;
+    }
     read_flag = flag;
+    return 0;
 }
+
+/*
+ * set_active_keyboard_buffer
+ *   DESCRIPTION: sets active keyboard based on the terminal that is currently being displayed
+ *   INPUTS: terminal -- struct of terminal that is currently being displayed
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 success, -1 fail
+ *   SIDE EFFECTS: none
+ */
+unsigned char set_active_keyboard_buffer (keyboard_buf_t * keyboard) {
+    if(keyboard == NULL) {
+        return -1;
+    }
+    active_keyboard = keyboard;
+    return 0;
+}
+
+
+

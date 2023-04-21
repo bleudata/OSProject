@@ -6,6 +6,7 @@
 #define SCAN_CODE_START     0x00
 #define SCAN_CODE_END       0x39
 #define KEYBOARD_BUF_SIZE   128
+#define NEWLINE_INDEX       80
 
 // some scancodes
 #define Q_PRESS        0x10
@@ -32,6 +33,13 @@
 #define BACKSPACE       0x0E
 #define MULT_KEY_CODES  0xE0
 
+typedef struct __attribute__ ((packed)){
+    unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
+    unsigned char* buf_position;
+    unsigned char* buf_end_addr; 
+    unsigned char* buf_line_two_addr;
+    
+} keyboard_buf_t;
 
 // handle keyboard interrupt
 void keyboard_irq_handler();
@@ -67,7 +75,11 @@ extern void decrement_enter_count();
 extern void clear_enter_flag();
 
 // sets read_flag 
-extern void set_read_flag(unsigned char flag);
+extern unsigned char set_read_flag(unsigned char flag);
+
+// sets the active keyboard to the currently displayed terminal
+extern unsigned char set_active_keyboard_buffer (keyboard_buf_t * keyboard);
+
 
 
 #endif /*KEYBOARD_DRIVER_H*/
