@@ -163,13 +163,15 @@ int32_t halt(uint8_t status){
     if(parent_pid == -1){
         //cannot do this anymore for scheduling since it might overwrite kernel 1's stuff
         // the kernel stack to use for pre base shell should be dependent on the pid of base shell
-        tss.esp0 = EIGHT_MB - (pcb_address->pid)*EIGHT_KB - UINT_BYTES; //0 to use pid 0's kernel stack
+        tss.esp0 = EIGHT_MB - (pcb_address->pid)*EIGHT_KB - UINT_BYTES; 
         tss.ss0 = KERNEL_DS;
         // Unmap and call shell again
         destroy_mapping();
         uint8_t cmd[SHELL_SIZE] = "shell"; //what if a PIT interrupt occurs here and tries to switch here??
         //problem because kernel stack of this terminal's top process is undefined
-        //unless PIT is not able to interrupt during this section..
+        //unless PIT is not able to interrupt during this section.. cannot nest interrupt, priority??
+        // check about enabling scheduler function
+
         //some how decrement base shell count
         execute(cmd);
 
@@ -225,22 +227,38 @@ int32_t halt(uint8_t status){
  */
 int32_t execute(const uint8_t* command){
     // Parameter check
-    // get rid of trailing spaces
     int i;
     uint8_t args_buffer[KEYBOARD_BUF_SIZE];
 
-    // uint32_t length = strlen((const int8_t*)command);
-    // for (i = length - 1; i >= 0; i--) {
-    //     if (command[i] == ' ') 
-    //         command[i] = '\0';
-    //     else 
-    //         break;
-    // }
-    if(process_count >= MAX_PROC_CNT){
+    if(command == NULL){
         return -1;
     }
 
-    if(command == NULL){
+    if(process_count >= MAX_PROC_CNT){
+        return 256;
+    }
+
+
+    // cmd_cpy is command but w/o front sapces/ trailing spaces/ extra middle spaces
+    uint8_t* cmd_cpy = (uint8_t*)command;
+
+    // get rid of spaces before the first letter
+    uint32_t length = strlen((const int8_t*)cmd_cpy);
+    for (i = 0; i < length; i++) {
+        if (cmd_cpy[i] != ' ') 
+            break;
+    }
+    cmd_cpy += i;
+
+    // get rid of spaces after
+    for (i = length - 1; i >= 0; i--) {
+        if (cmd_cpy[i] == ' ') 
+            cmd_cpy[i] = '\0';
+        else 
+            break;
+    }
+
+    if(cmd_cpy == NULL){
         return -1;
     }
 
@@ -249,33 +267,30 @@ int32_t execute(const uint8_t* command){
     uint32_t cmd_ctr = 0;
     
     // Get first word which is the fname
-    while( command[cmd_ctr] != ' '  && command[cmd_ctr] != '\0'  && command[cmd_ctr] != '\n'){
+    while( cmd_cpy[cmd_ctr] != ' '  && cmd_cpy[cmd_ctr] != '\0'  && cmd_cpy[cmd_ctr] != '\n'){
         cmd_ctr++;
     }
-    strncpy((int8_t*)fname, (int8_t*)command, cmd_ctr);
+    strncpy((int8_t*)fname, (int8_t*)cmd_cpy, cmd_ctr);
 
     d_entry dentry;
     if (read_dentry_by_name(fname, &dentry) == -1){
-        return -1;
+        return -1; 
     }
+
     //setting the cmd ptr to point to the first char after the first space that is after the first word
     int k = 0;
-    if (command[cmd_ctr] == ' ' ) {
-        cmd_args = (uint8_t*)(command + cmd_ctr + 1);
+    int j = 0;
+    if (cmd_cpy[cmd_ctr] == ' ' ) {
+        cmd_args = (uint8_t*)(cmd_cpy + cmd_ctr + 1);
         memset(args_buffer, '\0', KEYBOARD_BUF_SIZE);
         // fill the actual characters
         while((cmd_args[k] != '\0')) { 
-            args_buffer[k] = cmd_args[k]; // cat arg1 
+            if(cmd_args[k] != ' '){
+                args_buffer[j] = cmd_args[k]; // cat arg1
+                j++; 
+            }
             k++;
         }
-
-        // if(k > 0) {
-        //     while(args_buffer[k] == ' ' && k > 0) {
-        //         args_buffer[k] = '\0';
-        //         k--;
-        //     }
-        // }
-       // k++; // add +1 because need to include a null terminator 
     }
     
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
@@ -285,26 +300,30 @@ int32_t execute(const uint8_t* command){
     read_data(dentry.inode_num, 0, exe_check, EXE_BUF);
     
     if(strncmp((int8_t*)exe_check, (int8_t*)exe, EXE_BUF) != 0){
-        return -1;
+        return -1; 
     }
     
     /* Set up this programs paging */
-    // Entry point into the progam (bytes 24 - 27 of the executable)
-    if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, UINT_BYTES) < 0 ){  
-        return -1;
+    // Entry point into the progam (bytes 24 - 27 of the executable) OFFSET = 24 because thats the start of entrypoint
+    if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, UINT_BYTES) < 4 ){  //@ i think should be <4
+        return -1; 
     }
     uint32_t new_pid = get_pid();
-    map_helper(new_pid); // set up program memory map for new process
+    map_helper(new_pid); // set up memory map for new process
 
     int32_t file_length = get_file_length(dentry.inode_num);
 
     uint32_t * program_start = (uint32_t*)PROGRAM_START;
 
-    if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1)  // write the executable file to the page
+    if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1){// write the executable file to the page
+        destroy_mapping();
+        pid_array[new_pid] = 0;
         return -1;
-   
-    register uint32_t cur_esp asm("esp"); // NOTSCHED
-    pcb_t * parent_pcb = (pcb_t*)(cur_esp & PCB_STACK); // NOTSCHED
+    }  //need to destroy mapping, and free pid, but it cant fail?
+        
+    //reach here == success
+    register uint32_t cur_esp asm("esp");
+    pcb_t * parent_pcb = (pcb_t*)(cur_esp & PCB_STACK);
 
     //fill in new process PCB
     pcb_t * pcb_address = get_pcb_address(new_pid);
@@ -412,22 +431,24 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     if(nbytes < 0){
         return -1;
     }
-
+    
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
 
     if((pcb_address->fd_array[fd]).flag == 0){
         return -1;
     }
-
+    //sti
     //check if its terminal read for stdin aka if its NULL, and if it is return -1, otherwise do a normal file's read
     if((pcb_address->fd_array[fd]).fops.read != NULL){
         // read the file and update the file position based on number of bytes succesfully read
         bytes_read = (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
         (pcb_address->fd_array[fd]).file_position += bytes_read;
+        //cli
         return bytes_read;
     }
     else{
+        //cli
         return -1;
     }
 }
@@ -542,9 +563,11 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
  *   SIDE EFFECTS:  none
  */
 extern int32_t vidmap(uint8_t** screen_start) {
-    if(screen_start == NULL){
-        return -1;
+    
+    if(screen_start == NULL || (screen_start >= (uint8_t**)(KERNEL_START-3) && screen_start < (uint8_t**)KERNEL_END)){
+        return -1; 
     }
+
     //choosing this vmem, also making sure its 4kb aligned
     uint32_t virtual_memory = USER_VID_MEM;
 

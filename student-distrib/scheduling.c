@@ -15,7 +15,7 @@ uint32_t schedule(){
     pcb_t * pcb_address = (pcb_t*)(cur_ebp & PCB_STACK);
 
     register uint32_t cur_ebp asm("ebp");
-    pcb_address->scheduler_ebp = cur_ebp; //save value of ebp to stack
+    pcb_address->scheduler_ebp = cur_ebp; //save value of ebp to pcb
 
     
 

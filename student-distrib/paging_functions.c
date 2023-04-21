@@ -68,6 +68,14 @@ void init_paging() {
     enable_paging();
 }
 
+/*
+ * map_helper()
+ *   DESCRIPTION: maps virtual memory 128 MB to the correct 4MB page in physical memory depending on the pid
+ *   INPUTS: pid - is a process ID BRO
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none 
+ */
 void map_helper(uint32_t pid) {
     // get the offset into the page directory
     // uint32_t dir_offset = virtual_address >> 22;
@@ -87,6 +95,14 @@ void map_helper(uint32_t pid) {
 
 }
 
+/*
+ * destroy_mapping()
+ *   DESCRIPTION: destroy the 128MB mapping
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 void destroy_mapping(){
     int32_t virtual = VIRT_MEM_PAGE;
     virtual = virtual >> VIRT_MEM_SHIFT;
@@ -94,11 +110,18 @@ void destroy_mapping(){
     flush_tlb();
 }
 
-//set user vid mem to point to vid mem
+/*
+ * vidmap_helper()
+ *   DESCRIPTION: sets up page table and page dir and modifies directory to have this pte mapped to kernel vidmem
+ *   INPUTS: pid
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 void vidmap_helper(uint32_t virtual_address){
     uint32_t virtual = virtual_address; 
     uint32_t pd_offset = virtual >> VIRT_MEM_SHIFT;
-    uint32_t pt_offset = (virtual & PT_INDEX_MAP) >>12; //need to make the map
+    uint32_t pt_offset = (virtual & PT_INDEX_MAP) >>12; 
     page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | 7; 
 
     user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
@@ -111,7 +134,7 @@ void vidmap_helper(uint32_t virtual_address){
 // set user vid mem to point to terminal buffer
 void vidmap_change(uint32_t virtual_address, uint32_t terminal){
     uint32_t pd_offset = virtual >> VIRT_MEM_SHIFT;
-    uint32_t pt_offset = (virtual & PT_INDEX_MAP) >>12; //need to make the map
+    uint32_t pt_offset = (virtual & PT_INDEX_MAP) >>12; 
     page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | 7; 
 
     user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
