@@ -586,7 +586,7 @@ extern int32_t vidmap(uint8_t** screen_start) {
     vidmap_helper(virtual_memory);
 
     //sets the screen start to vmem
-    *screen_start = virtual_memory;
+    *screen_start = (uint8_t*)virtual_memory;
     return 0;
 }
 

@@ -9,6 +9,7 @@
 #include "rtc.h"
 #include "keyboard_driver.h"
 #include "syscalls.h"
+#include "scheduling.h"
 
 // array of strings to print for each vector 0-19 exception
 static unsigned char * intel_handler_strings[] = {
@@ -60,6 +61,16 @@ void idt_init() {
         idt[i].seg_selector = KERNEL_CS;
     }
     // pic irqs
+    idt[PIT_VECTOR].size = 1;
+    idt[PIT_VECTOR].reserved1 = 1; 
+    idt[PIT_VECTOR].reserved2 = 1;
+    idt[PIT_VECTOR].reserved3 = 0;
+    idt[PIT_VECTOR].reserved4 = 0;
+    idt[PIT_VECTOR].reserved0 = 0;
+    idt[PIT_VECTOR].dpl = 0;
+    idt[PIT_VECTOR].present = 1;
+    idt[PIT_VECTOR].seg_selector = KERNEL_CS;
+
     idt[KEYBOARD_VECTOR].size = 1; // 1110 for interrupt gate
     idt[KEYBOARD_VECTOR].reserved1 = 1; 
     idt[KEYBOARD_VECTOR].reserved2 = 1;
@@ -127,6 +138,7 @@ void setup_idt() {
     SET_IDT_ENTRY(idt[SIMD_FLOAT_EXCEPTION], smid_float_exception_handler_lnk);
 
     // pic and system call
+    SET_IDT_ENTRY(idt[PIT_VECTOR], pit_handler_lnk);
     SET_IDT_ENTRY(idt[KEYBOARD_VECTOR], keyboard_handler_lnk);
     SET_IDT_ENTRY(idt[RTC_VECTOR], rtc_handler_lnk);
     SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], system_call_handler_lnk);
@@ -148,6 +160,8 @@ void setup_idt() {
         set_exception_flag();
         halt(0);
         generic_intel_handler(vector);
+    }else if(vector == PIT_VECTOR){
+        schedule();
     }
     else if(vector == KEYBOARD_VECTOR) {
         keyboard_irq_handler(vector); // this is from pic file
@@ -156,9 +170,7 @@ void setup_idt() {
         //printf("entered rtc if statement");
         rtc_irq_handler(); // this is from rtc file
     }
-    // else if(vector == PIT_VECTOR){
-        
-    // }
+    
     // else if(vector == SYSTEM_CALL_VECTOR) {
     //     generic_system_call_handler();
     // }

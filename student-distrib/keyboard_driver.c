@@ -8,6 +8,7 @@
 #include "tests.h"
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
+#include "scheduling.h"
 
 /*Variables that keep track of CapsLock, Shift, Ctrl*/
 unsigned char capslock_on = 0x0;
@@ -129,17 +130,17 @@ void keyboard_irq_handler() {
     else if (code == L_ALT_RELEASE) {
         alt_pressed = 0;
     }
-    // F2
-    else if (code == F2_PRESS) {
-
+    else if ( (code == F1_PRESS) && alt_pressed) {
+        set_target_terminal(0);
+        user_switch_hanlder();
     }
-    // F3
-    else if (code == F3_PRESS) {
-
+    else if ( (code == F2_PRESS) && alt_pressed) {
+        set_target_terminal(1);
+        user_switch_hanlder();
     }
-    // F4
-    else if (code == F4_PRESS) {
-
+    else if ( (code == F3_PRESS) && alt_pressed) {
+        set_target_terminal(2);
+        user_switch_hanlder();
     }
     // BACKSPACE
     else if (code == BACKSPACE) {

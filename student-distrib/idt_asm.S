@@ -49,6 +49,7 @@ HANDLER_LNK(smid_float_exception_handler_lnk, generic_handler, 19)
 
 # pic irq vectors - keyboard and rtc
 # these might need to push own unique error code, to be figured out later.
+HANDLER_LNK(pit_handler_lnk, generic_handler, PIT_VECTOR)
 HANDLER_LNK(keyboard_handler_lnk, generic_handler, KEYBOARD_VECTOR) 
 HANDLER_LNK(rtc_handler_lnk, generic_handler, RTC_VECTOR)
 

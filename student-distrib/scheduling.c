@@ -7,8 +7,13 @@ uint32_t cur_sched_terminal = 2; //sched
 uint32_t user_terminal = 0; //keyboard and sched
 uint32_t cur_user_terminal = 0; //same as user_terminal for now
 uint32_t counter = 0;
+uint32_t target_terminal = 0;
 
-void kb_sched_handler(){
+void set_target_terminal(uint32_t terminal_num){
+    target_terminal = terminal_num;
+}
+
+void user_switch_hanlder(){
 
     if(cur_user_terminal == target_terminal){
         return;
@@ -20,6 +25,7 @@ void kb_sched_handler(){
     if(target_terminal == cur_sched_terminal){
         vidmap_helper(USER_VID_MEM);
         //change terminal write to write to video mem
+
         cur_user_terminal = target_terminal;
         return;
     }
@@ -28,6 +34,7 @@ void kb_sched_handler(){
     if(cur_user_terminal == cur_sched_terminal){
         vidmap_change(USER_VID_MEM, cur_sched_terminal);
         //change terminal write to write to cur_sched_terminal buffer
+
         cur_user_terminal = target_terminal;
         return;
     }
@@ -41,7 +48,7 @@ uint32_t schedule(){
     // }
 
     register uint32_t cur_esp asm("esp");
-    pcb_t * pcb_address = (pcb_t*)(cur_ebp & PCB_STACK);
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
 
     register uint32_t cur_ebp asm("ebp");
     pcb_address->scheduler_ebp = cur_ebp; //save value of ebp to pcb
@@ -58,7 +65,8 @@ uint32_t schedule(){
     //^ or this
     if(counter < 2){
         counter +=1;
-        execute("shell");
+        uint8_t cmd[6] = "shell";
+        execute(cmd);
     }
 
     //only reach here on the third PIT interrupt and after
@@ -85,7 +93,7 @@ uint32_t schedule(){
 
         //2. map terminal write to terminal buffer
     }
-    tss->esp0 = EIGHT_MB - next_pid*EIGHT_KB - UINT_BYTES;
+    tss.esp0 = EIGHT_MB - next_pid*EIGHT_KB - UINT_BYTES;
     tss.ss0 = KERNEL_DS;
     
     map_helper(next_pid); //remap program memory for process
@@ -123,4 +131,8 @@ uint32_t bshell_count(){
 //set top process to be equal to some pid, or -1 for no process
 void set_top_process(int32_t terminal, int32_t pid){
     top_process[terminal] = pid;
+}
+
+uint32_t get_cur_sched_terminal(){
+    return cur_sched_terminal; 
 }

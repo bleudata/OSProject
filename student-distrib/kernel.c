@@ -16,6 +16,7 @@
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 #include "rtc.h"
+#include "pit.h"
 
 #define RUN_TESTS
 
@@ -163,6 +164,7 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("done with idt init");
     // now unmask the irqs we want
     enable_irq(PIC2_IRQ); 
+    pit_init(20);
     keyboard_init();
     rtc_init();
     enable_cursor(MAX_SCANLINE, MAX_SCANLINE); 

@@ -1,8 +1,8 @@
 #include "rtc.h"
 
-static int rtc_irq_flag;
-static uint32_t rtc_syshz_per_uhz;
-static uint32_t rtc_ctr;
+static int rtc_irq_flag[3];
+static uint32_t rtc_syshz_per_uhz[3];
+static uint32_t rtc_ctr[3];
 
 /*
  * rtc_init
@@ -36,12 +36,13 @@ void rtc_irq_handler() {
     outb(RTC_REG_C, RTC_REG_PORT); // select register c
     result = inb(RTC_RW_PORT); // need to read from c register or the interrupt won't happen again
     send_eoi(RTC_IRQ);
-    if(rtc_ctr < rtc_syshz_per_uhz){
-        rtc_ctr++;
+    uint32_t idx = get_cur_sched_terminal();
+    if(rtc_ctr[idx] < rtc_syshz_per_uhz[idx]){
+        rtc_ctr[idx]++;
     }
     else{
-        rtc_ctr = 1;
-        rtc_irq_flag = RTC_FLAG_SET;
+        rtc_ctr[idx] = 1;
+        rtc_irq_flag[idx] = RTC_FLAG_SET;
     }
 }
 
@@ -65,8 +66,10 @@ int32_t rtc_open(const uint8_t* filename){
     char prev = inb(RTC_RW_PORT);	// get initial value of register A, should be 32kHz
     outb(RTC_REG_A_DISABLE, RTC_REG_PORT);		// reset index to A
     outb((prev & RTC_DATA_UPPER_BYTE) | rate, RTC_RW_PORT); //write only our rate to A. Note, rate is the bottom 4 bits.
-    rtc_ctr = 1;
-    rtc_syshz_per_uhz = RTC_GLOB_RES_RATE; //since its init, the system frequency of interrupts will always be 1 of itself
+
+    uint32_t idx = get_cur_sched_terminal();
+    rtc_ctr[idx] = 1;
+    rtc_syshz_per_uhz[idx] = RTC_USR_DEFAULT; //since its init, the system frequency of interrupts will always be 1 of itself
     
     d_entry dentry;
     int32_t dentry_success = read_dentry_by_name(filename, &dentry);
@@ -93,9 +96,9 @@ int32_t rtc_close(int32_t fd){
         return -1;
     }
 
-    terminal_write(1, "in rtc \n", 9);
-    rtc_ctr = 1;
-    rtc_syshz_per_uhz = RTC_GLOB_RES_RATE; //reset the # of interrupts per system freq to be just 1, so its itself
+    uint32_t idx = get_cur_sched_terminal();
+    rtc_ctr[idx] = 1;
+    rtc_syshz_per_uhz[idx] = RTC_USR_DEFAULT; //reset the # of interrupts per system freq to be just 1, so its itself
     return RTC_PASS;
 }
 
@@ -119,9 +122,11 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
     if(nbytes < 0){
         return -1;
     }
-    rtc_irq_flag = RTC_GLOB_RES_VAR;
-    while(rtc_irq_flag != RTC_FLAG_SET);
-    rtc_irq_flag = RTC_GLOB_RES_VAR;
+
+    uint32_t idx = get_cur_sched_terminal();
+    rtc_irq_flag[idx] = RTC_GLOB_RES_VAR;
+    while(rtc_irq_flag[idx] != RTC_FLAG_SET);
+    rtc_irq_flag[idx] = RTC_GLOB_RES_VAR;
     return RTC_PASS;
 }
 
@@ -158,6 +163,7 @@ int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes){
     }
 
     /*Should load the ratio of 1 system cycle per however many requested user cycles*/
-    rtc_syshz_per_uhz = RTC_HZ / req_freq;
+    uint32_t idx = get_cur_sched_terminal();
+    rtc_syshz_per_uhz[idx] = RTC_HZ / req_freq;
     return RTC_PASS;
 }

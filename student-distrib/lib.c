@@ -211,6 +211,45 @@ void putc(uint8_t c) {
     }
 }
 
+/*
+ * cp5_putc
+ *   DESCRIPTION: prints one character to the screen, with vertical scrolling enabled
+ *   INPUTS: c -- character to print
+ *           buf -- buffer respresenting the whole screen for when we need to vertical scroll
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: edits the screen, might shift everything up one line for vertical scrolling
+ */
+void cp5_putc(uint8_t c) {
+     if(c == '\n' || c == '\r') {
+        if((screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
+            shift_screen_up();
+        }
+        else {
+            screen_y = (screen_y + 1); // next row
+        }
+        screen_x = 0;
+        
+    } else {
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c; // add the character and attrib colors to video memory
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+        if((screen_x+1) > NUM_COLS-1) {
+            if((screen_y + 1) > NUM_ROWS-1) { // might need to shift the screen
+                shift_screen_up();
+            }
+            else {
+                screen_y = (screen_y + 1);
+            }
+            screen_x = 0;
+        }
+        else {
+            screen_x++; 
+        }
+        screen_x %= NUM_COLS;
+        screen_y = (screen_y + (screen_x / NUM_COLS));
+    }
+}
+
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
  * Inputs: uint32_t value = number to convert
  *            int8_t* buf = allocated buffer to place string in

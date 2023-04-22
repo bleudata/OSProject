@@ -133,8 +133,8 @@ void vidmap_helper(uint32_t virtual_address){
 
 // set user vid mem to point to terminal buffer
 void vidmap_change(uint32_t virtual_address, uint32_t terminal){
-    uint32_t pd_offset = virtual >> VIRT_MEM_SHIFT;
-    uint32_t pt_offset = (virtual & PT_INDEX_MAP) >>12; 
+    uint32_t pd_offset = virtual_address >> VIRT_MEM_SHIFT;
+    uint32_t pt_offset = (virtual_address & PT_INDEX_MAP) >>12; 
     page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | 7; 
 
     user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
@@ -147,10 +147,10 @@ void vidmap_change(uint32_t virtual_address, uint32_t terminal){
 // swap terminal buffer and video memory for two terminals
 void buffer_swap(uint32_t old_terminal, uint32_t new_terminal){
     //vid mem to old_terminal
-    memcpy(VIDMEM + FOUR_KB + FOUR_KB*old_terminal,VIDMEM, FOUR_KB);
+    memcpy((void*)(VIDMEM + FOUR_KB + FOUR_KB*old_terminal),(void*)VIDMEM, FOUR_KB);
     
     //new_terminal to vidmem
-    memcpy(VIDMEM, VIDMEM + FOUR_KB + FOUR_KB*new_terminal, FOUR_KB);
+    memcpy((void*)VIDMEM, (void*)(VIDMEM + FOUR_KB + FOUR_KB*new_terminal), FOUR_KB);
 }
 
 
