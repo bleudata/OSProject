@@ -13,7 +13,7 @@
 typedef struct __attribute__ ((packed)) {
     int screen_x;
     int screen_y; 
-    uint32_t* virtual_mem_addr;
+    unsigned char * virtual_mem_addr;
     keyboard_buf_t keyboard;
     
 } terminal_t;

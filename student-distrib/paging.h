@@ -12,9 +12,9 @@
 #define VMEM_OFFSET_T0      186
 #define VMEM_OFFSET_T1      187
 #define VMEM_OFFSET_T2      188
-#define T1_VIRTUAL_ADDR     0x000BA000  // directory entry 0, table entry 186, offset 0
-#define T2_VIRTUAL_ADDR     0x000BB000  // directory entry 0, table entry 187, offset 0
-#define T3_VIRTUAL_ADDR     0x000BC000
+#define T0_VIRTUAL_ADDR     0x000BA000  // directory entry 0, table entry 186, offset 0
+#define T1_VIRTUAL_ADDR     0x000BB000  // directory entry 0, table entry 187, offset 0
+#define T2_VIRTUAL_ADDR     0x000BC000
 
 #define VMEM_ENTRY_SET  3
 
@@ -109,8 +109,8 @@ extern void flush_tlb();
 
 // helper function to copy video memory from a terminal video memory to video memory or vice versa
 // copy 4KB video page
-extern void copy_video_memory(uint32_t* source, uint32_t* destination);
+extern void copy_video_memory(unsigned char* source, unsigned char* destination);
 
-
+extern uint32_t translate_virtual_address(uint32_t addr);
 #endif
 

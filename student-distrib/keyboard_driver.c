@@ -57,8 +57,7 @@ static unsigned char scancodes[58][2] = { // values 0x00 - 0x39
  */
 void keyboard_irq_handler() {
     int code = inb(KEYBOARD_PORT);
-    unsigned char echo;
-
+    unsigned char echo; 
     if(code >= SCAN_CODE_START && code <= SCAN_CODE_END) { // check if key is invalid for print
         unsigned char val = 0;
         if ((code >= Q_PRESS && code <= P_PRESS) || (code >= A_PRESS && code <= L_PRESS) || (code >= Z_PRESS && code <= M_PRESS)) {
@@ -135,40 +134,42 @@ void keyboard_irq_handler() {
     // F1
     else if ( (code == F1_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
-        copy_video_memory((uint32_t*)VMEM_OFFSET, (uint32_t*)get_terminal()->virtual_mem_addr);
+        copy_video_memory((unsigned char *)VIDEO, get_terminal()->virtual_mem_addr);
         set_active_terminal_num(0);
         set_active_keyboard_buffer(&(get_terminal()->keyboard));
         // Copy new terminal vm to the vm
-        copy_video_memory((uint32_t*)get_terminal()->virtual_mem_addr, (uint32_t*)VMEM_OFFSET);
+        copy_video_memory(get_terminal()->virtual_mem_addr, (unsigned char*)VIDEO);
     }
     // F2
     else if ( (code == F2_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
         puts(" 147 \n ");
         // PAGE FAULT
-        copy_video_memory((uint32_t*)VMEM_OFFSET, (uint32_t*)get_terminal()->virtual_mem_addr);
+        copy_video_memory((unsigned char *)VIDEO, get_terminal()->virtual_mem_addr);
         puts(" 149 \n ");
         set_active_terminal_num(1);
         set_active_keyboard_buffer(&(get_terminal()->keyboard));
         puts(" 151 \n ");
         // Copy new terminal vm to the vm
-        copy_video_memory((uint32_t*)get_terminal()->virtual_mem_addr, (uint32_t*)VMEM_OFFSET);
+        copy_video_memory(get_terminal()->virtual_mem_addr, (unsigned char*)VIDEO);
         puts(" 154 \n ");
         if (!t1_flag) {
+            send_eoi(KEYBOARD_IRQ); // send the irq
+            t1_flag = 1;
             uint8_t cmd[6] = "shell";
             execute(cmd);
-            t1_flag = 1;
         }
     }
     // F3
     else if ( (code == F3_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
-        copy_video_memory((uint32_t*)VMEM_OFFSET, (uint32_t*)get_terminal()->virtual_mem_addr);
+        copy_video_memory((unsigned char *)VIDEO, get_terminal()->virtual_mem_addr);
         set_active_terminal_num(2);
         set_active_keyboard_buffer(&(get_terminal()->keyboard));
         // Copy new terminal vm to the vm
-        copy_video_memory((uint32_t*)get_terminal()->virtual_mem_addr, (uint32_t*)VMEM_OFFSET);
+        copy_video_memory(get_terminal()->virtual_mem_addr, (unsigned char*)VIDEO);
         if (!t2_flag) {
+            send_eoi(KEYBOARD_IRQ); // send the irq
             uint8_t cmd[6] = "shell";
             execute(cmd);
             t2_flag = 1;

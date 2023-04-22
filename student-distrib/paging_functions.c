@@ -54,22 +54,22 @@ void init_paging() {
     page_directory[0].entry = (uint32_t)(video_memory) | VMEM_ENTRY_SET;
     video_memory[VMEM_OFFSET].pt_fields.present = 1;
     video_memory[VMEM_OFFSET].pt_fields.read_write = 1;
-    video_memory[VMEM_OFFSET].pt_fields.page_address = VMEM_OFFSET*4096;
+    video_memory[VMEM_OFFSET].pt_fields.page_address = VMEM_OFFSET;
 
     // Sets up the virtual memory for terminal one
     video_memory[VMEM_OFFSET_T0].pt_fields.present = 1;
     video_memory[VMEM_OFFSET_T0].pt_fields.read_write = 1;
-    video_memory[VMEM_OFFSET_T0].pt_fields.page_address = VMEM_OFFSET_T0*4096;
+    video_memory[VMEM_OFFSET_T0].pt_fields.page_address = VMEM_OFFSET_T0;
 
     // Sets up the virtual memory for terminal two
     video_memory[VMEM_OFFSET_T1].pt_fields.present = 1;
     video_memory[VMEM_OFFSET_T1].pt_fields.read_write = 1;
-    video_memory[VMEM_OFFSET_T1].pt_fields.page_address = VMEM_OFFSET_T1*4096;
+    video_memory[VMEM_OFFSET_T1].pt_fields.page_address = VMEM_OFFSET_T1;
 
     // Sets up the virtual memory for terminal three
     video_memory[VMEM_OFFSET_T2].pt_fields.present = 1;
     video_memory[VMEM_OFFSET_T2].pt_fields.read_write = 1;
-    video_memory[VMEM_OFFSET_T2].pt_fields.page_address = VMEM_OFFSET_T2*4096;
+    video_memory[VMEM_OFFSET_T2].pt_fields.page_address = VMEM_OFFSET_T2;
 
     
     //load page dir to %cr3, enable mixed size pages and turn on paging
@@ -150,9 +150,11 @@ void vidmap_helper(uint32_t virtual_address){
  *   RETURN VALUE: none
  *   SIDE EFFECTS: changes physical memory
  */
-void copy_video_memory(uint32_t* source, uint32_t* destination) {
+void copy_video_memory(unsigned char * source, unsigned char * destination) {
     int i;
     for (i = 0; i < SCREEN_BYTES; i++) {
         destination[i] = source[i];
     }
 }
+
+

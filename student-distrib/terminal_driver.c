@@ -27,9 +27,9 @@ void terminal_init(){
         terminal_array[i].keyboard.buf_end_addr = (terminal_array[i].keyboard.keyboard_buf) + KEYBOARD_BUF_SIZE - 1; 
         terminal_array[i].keyboard.buf_line_two_addr = (terminal_array[i].keyboard.keyboard_buf) + NEWLINE_INDEX;
     }
-    terminal_array[0].virtual_mem_addr = VMEM_OFFSET_T0;
-    terminal_array[1].virtual_mem_addr = VMEM_OFFSET_T1;
-    terminal_array[2].virtual_mem_addr = VMEM_OFFSET_T2;
+    terminal_array[0].virtual_mem_addr = (unsigned char* ) T0_VIRTUAL_ADDR;
+    terminal_array[1].virtual_mem_addr = (unsigned char* ) T1_VIRTUAL_ADDR;
+    terminal_array[2].virtual_mem_addr = (unsigned char* )T2_VIRTUAL_ADDR;
 
     displayed_terminal_num = 2; // default  to display terminal 0?
     set_active_keyboard_buffer(&(get_terminal()->keyboard));
