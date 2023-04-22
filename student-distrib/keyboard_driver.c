@@ -75,7 +75,8 @@ void keyboard_irq_handler() {
         }
         else if (ctrl_pressed &&(code == C_PRESS)) {
             // set_exception_flag();
-            // halt(0);
+            send_eoi(KEYBOARD_IRQ); // send the irq
+            halt(0);
         }
         else {
             echo = scancodes[code][val]; // print char if key was valid
@@ -154,9 +155,9 @@ void keyboard_irq_handler() {
         copy_video_memory(get_terminal()->virtual_mem_addr, (unsigned char*)VIDEO);
         puts(" 154 \n ");
         if (!t1_flag) {
-            send_eoi(KEYBOARD_IRQ); // send the irq
             t1_flag = 1;
             uint8_t cmd[6] = "shell";
+            send_eoi(KEYBOARD_IRQ); // send the irq
             execute(cmd);
         }
     }
@@ -169,10 +170,10 @@ void keyboard_irq_handler() {
         // Copy new terminal vm to the vm
         copy_video_memory(get_terminal()->virtual_mem_addr, (unsigned char*)VIDEO);
         if (!t2_flag) {
-            send_eoi(KEYBOARD_IRQ); // send the irq
-            uint8_t cmd[6] = "shell";
-            execute(cmd);
             t2_flag = 1;
+            uint8_t cmd[6] = "shell";
+            send_eoi(KEYBOARD_IRQ); // send the irq
+            execute(cmd);
         }
     }
     // BACKSPACE
