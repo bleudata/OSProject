@@ -3,14 +3,42 @@
 //changes6
 int32_t top_process[3] = {-1,-1,-1}; //-1: no process, else pid of top process
 int32_t schedule_flag = 0;
-uint32_t next_terminal = 0;
-uint32_t user_terminal = 0;
+uint32_t cur_sched_terminal = 2; //sched
+uint32_t user_terminal = 0; //keyboard and sched
+uint32_t cur_user_terminal = 0; //same as user_terminal for now
 uint32_t counter = 0;
 
-uint32_t schedule(){
-    if(schedule_flag == 0){
-        return -1;
+void kb_sched_handler(){
+
+    if(cur_user_terminal == target_terminal){
+        return;
     }
+
+    buffer_swap(cur_user_terminal, target_terminal);
+
+    //switching into sched terminal
+    if(target_terminal == cur_sched_terminal){
+        vidmap_helper(USER_VID_MEM);
+        //change terminal write to write to video mem
+        cur_user_terminal = target_terminal;
+        return;
+    }
+
+    //switching out of sched terminal
+    if(cur_user_terminal == cur_sched_terminal){
+        vidmap_change(USER_VID_MEM, cur_sched_terminal);
+        //change terminal write to write to cur_sched_terminal buffer
+        cur_user_terminal = target_terminal;
+        return;
+    }
+
+}
+
+
+uint32_t schedule(){
+    // if(schedule_flag == 0){
+    //     return -1;
+    // }
 
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_ebp & PCB_STACK);
@@ -34,13 +62,17 @@ uint32_t schedule(){
     }
 
     //only reach here on the third PIT interrupt and after
-    int32_t next_pid = top_process[next_terminal];
+
+    //increment terminal number to get next terminal number
+    uint32_t cur_sched_terminal = (cur_sched_terminal + 1) % 3;
+    
+    int32_t next_pid = top_process[cur_sched_terminal];
     pcb_t * next_process_pcb = (pcb_t *)get_pcb_address(next_pid);
     uint32_t next_process_ebp = next_process_pcb->scheduler_ebp; //get next process ebp
 
     //change state
     //user vid mapping, terminal write mapping, buffer switching
-    if(user_terminal == next_terminal){
+    if(user_terminal == cur_sched_terminal){
         //1. map user process vid mem to video memory
         vidmap_helper(USER_VID_MEM);
         
@@ -49,7 +81,7 @@ uint32_t schedule(){
 
     }else{
         //1. map user process vid mem to terminal buffer
-        vidmap_change(USER_VID_MEM, next_terminal);
+        vidmap_change(USER_VID_MEM, cur_sched_terminal);
 
         //2. map terminal write to terminal buffer
     }
@@ -58,11 +90,6 @@ uint32_t schedule(){
     
     map_helper(next_pid); //remap program memory for process
 
-
-
-
-    //increment terminal number
-    uint32_t next_terminal = (next_terminal + 1) % 3;
 
     asm volatile ("             \n\
         movl %0, %%ebp          \n\

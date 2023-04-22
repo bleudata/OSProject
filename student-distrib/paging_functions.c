@@ -157,5 +157,21 @@ void buffer_swap(uint32_t old_terminal, uint32_t new_terminal){
 //todo
 //check to destroy memory mapping in halt (for vidmap and stuff)
 //check if about popal and eax in interrupt linkage
-//where to set the scheduling flag to 1
 //need to update setting the top task of the terminal
+
+// terminal write mapping
+// extra keyboard buffer and keyboard buffer mapping
+// buffer swapping
+// PIT interrupt initialization
+// make sure the buffer switching works for all cases
+// check what int 0x80 does
+// difference between handler_lnk and do_call
+// clarify what happens during interrupt hit, and difference between syscall 
+// make sure that old ebp value doesnt really matter since we are just popping and iret (sched)
+
+// what happens when interrupt occurs when executing system call, does it just push the
+// iret context above the kernelstack it is working on
+
+//int0x80 for system calls, when doing iret we are going back to the user space but isnt the asm code stored in the kernel?
+
+// cursor positions
