@@ -1,6 +1,8 @@
 #ifndef KEYBOARD_DRIVER_H
 #define KEYBOARD_DRIVER_H
 
+#include "terminal_driver.h"
+
 #define KEYBOARD_IRQ        0x01
 #define KEYBOARD_PORT       0x60
 #define SCAN_CODE_START     0x00
@@ -77,8 +79,8 @@ extern void clear_enter_flag();
 // sets read_flag 
 extern unsigned char set_read_flag(unsigned char flag);
 
-// sets the active keyboard to the currently displayed terminal
-extern unsigned char set_active_keyboard_buffer (keyboard_buf_t * keyboard);
+// sets the active keyboard and the currently active (displayed) terminal
+extern unsigned char set_active_terminal_and_keyboard (void * new_terminal);
 
 
 

@@ -1,5 +1,6 @@
 
 #include "syscalls.h"
+#include "lib.h"
 
 static uint8_t* cmd_args;
 uint32_t exception_flag = 0; //0 = no exception
@@ -544,14 +545,14 @@ extern int32_t vidmap(uint8_t** screen_start) {
     if(screen_start == NULL || (screen_start >= (uint8_t**)(KERNEL_START-4) && screen_start < (uint8_t**)KERNEL_END)){
         return -1; //ask TA BRO
     }
-    //choosing this vmem, also making sure its 4kb aligned
-    uint32_t virtual_memory = USER_VMEM;
+    // //choosing this vmem, also making sure its 4kb aligned
+    // uint32_t virtual_memory = USER_VMEM;
 
-    //sets up page table and modifies directory to have this pte mapped to kernel vidmem
-    vidmap_helper(virtual_memory);
+    // //sets up page table and modifies directory to have this pte mapped to kernel vidmem
+    // vidmap_helper(virtual_memory);
 
-    //sets the screen start to vmem
-    *screen_start = (uint8_t*)virtual_memory;
+    // //sets the screen start to vmem
+    *screen_start = (uint8_t*)VIDEO;
     return 0;
 }
 

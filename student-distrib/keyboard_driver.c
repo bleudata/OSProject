@@ -17,6 +17,7 @@ unsigned char ctrl_pressed = 0x0;
 unsigned char alt_pressed = 0x0;
 
 /*Keyboard buffer variables*/
+terminal_t * active_terminal;
 keyboard_buf_t * active_keyboard;
 //static unsigned char* buf_end = keyboard_buf+128;
 unsigned char enter_count = 0;
@@ -135,45 +136,48 @@ void keyboard_irq_handler() {
     // F1
     else if ( (code == F1_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
-        copy_video_memory((unsigned char *)VIDEO, get_terminal()->virtual_mem_addr);
+        puts(" 139 \n ");
+
+        copy_video_memory((unsigned char *)VIDEO, get_terminal()->storage_addr);
+        puts(" 142 \n ");
+
         set_active_terminal_num(0);
-        set_active_keyboard_buffer(&(get_terminal()->keyboard));
+        set_active_terminal_and_keyboard(get_terminal());
         // Copy new terminal vm to the vm
-        copy_video_memory(get_terminal()->virtual_mem_addr, (unsigned char*)VIDEO);
+        copy_video_memory(get_terminal()->storage_addr, (unsigned char*)VIDEO);
     }
     // F2
     else if ( (code == F2_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
-        puts(" 147 \n ");
         // PAGE FAULT
-        copy_video_memory((unsigned char *)VIDEO, get_terminal()->virtual_mem_addr);
-        puts(" 149 \n ");
+        copy_video_memory((unsigned char *)VIDEO, get_terminal()->storage_addr);
         set_active_terminal_num(1);
-        set_active_keyboard_buffer(&(get_terminal()->keyboard));
-        puts(" 151 \n ");
+        set_active_terminal_and_keyboard(get_terminal());
         // Copy new terminal vm to the vm
-        copy_video_memory(get_terminal()->virtual_mem_addr, (unsigned char*)VIDEO);
-        puts(" 154 \n ");
+        copy_video_memory(get_terminal()->storage_addr, (unsigned char*)VIDEO);
         if (!t1_flag) {
             t1_flag = 1;
-            uint8_t cmd[6] = "shell";
-            send_eoi(KEYBOARD_IRQ); // send the irq
-            execute(cmd);
+            puts(" terminal 1 \n ");
+            // uint8_t cmd[6] = "shell";
+            // send_eoi(KEYBOARD_IRQ); // send the irq
+            // execute(cmd);
         }
     }
     // F3
     else if ( (code == F3_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
-        copy_video_memory((unsigned char *)VIDEO, get_terminal()->virtual_mem_addr);
+        copy_video_memory((unsigned char *)VIDEO, get_terminal()->storage_addr);
         set_active_terminal_num(2);
-        set_active_keyboard_buffer(&(get_terminal()->keyboard));
+        set_active_terminal_and_keyboard(get_terminal());
         // Copy new terminal vm to the vm
-        copy_video_memory(get_terminal()->virtual_mem_addr, (unsigned char*)VIDEO);
+        copy_video_memory(get_terminal()->storage_addr, (unsigned char*)VIDEO);
         if (!t2_flag) {
             t2_flag = 1;
-            uint8_t cmd[6] = "shell";
-            send_eoi(KEYBOARD_IRQ); // send the irq
-            execute(cmd);
+            puts(" terminal 2 \n ");
+
+            // uint8_t cmd[6] = "shell";
+            // send_eoi(KEYBOARD_IRQ); // send the irq
+            // execute(cmd);
         }
     }
     // BACKSPACE
@@ -389,18 +393,20 @@ unsigned char set_read_flag(unsigned char flag) {
 }
 
 /*
- * set_active_keyboard_buffer
- *   DESCRIPTION: sets active keyboard based on the terminal that is currently being displayed
+ * set_active_terminal_and_keyboard
+ *   DESCRIPTION: sets active keyboard and active terminal based on terminal that is currently being displayed
  *   INPUTS: terminal -- struct of terminal that is currently being displayed
  *   OUTPUTS: none
  *   RETURN VALUE: 0 success, -1 fail
  *   SIDE EFFECTS: none
  */
-unsigned char set_active_keyboard_buffer (keyboard_buf_t * keyboard) {
-    if(keyboard == NULL) {
+unsigned char set_active_terminal_and_keyboard (void* terminal) {
+    if(terminal == NULL) {
         return -1;
     }
-    active_keyboard = keyboard;
+    terminal_t * new_terminal = (terminal_t *) terminal;
+    active_terminal = new_terminal;
+    active_keyboard = &(new_terminal->keyboard);
     return 0;
 }
 

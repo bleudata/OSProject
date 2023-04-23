@@ -10,7 +10,7 @@
 #include "terminal_driver.h"
 
 terminal_t terminal_array[3]; 
-unsigned char displayed_terminal_num = 0; // 0-2, which of the 3 terminals is currently being displayed
+unsigned char active_terminal_num = 0; // 0-2, which of the 3 terminals is currently being displayed
 
 /*
  * terminal_init
@@ -27,16 +27,20 @@ void terminal_init(){
         terminal_array[i].keyboard.buf_end_addr = (terminal_array[i].keyboard.keyboard_buf) + KEYBOARD_BUF_SIZE - 1; 
         terminal_array[i].keyboard.buf_line_two_addr = (terminal_array[i].keyboard.keyboard_buf) + NEWLINE_INDEX;
     }
-    terminal_array[0].virtual_mem_addr = (unsigned char* ) T0_VIRTUAL_ADDR;
-    terminal_array[1].virtual_mem_addr = (unsigned char* ) T1_VIRTUAL_ADDR;
-    terminal_array[2].virtual_mem_addr = (unsigned char* )T2_VIRTUAL_ADDR;
+    terminal_array[0].storage_addr = (unsigned char* ) T0_VIRTUAL_ADDR;
+    terminal_array[0].storage_offset = (uint8_t) VMEM_OFFSET_T0;
+    terminal_array[1].storage_addr = (unsigned char* ) T1_VIRTUAL_ADDR;
+    terminal_array[1].storage_offset = (uint8_t) VMEM_OFFSET_T1;
+    terminal_array[2].storage_addr = (unsigned char* )T2_VIRTUAL_ADDR;
+    terminal_array[2].storage_offset = (uint8_t) VMEM_OFFSET_T2;
 
-    displayed_terminal_num = 2; // default  to display terminal 0?
-    set_active_keyboard_buffer(&(get_terminal()->keyboard));
-    displayed_terminal_num = 1;
-    set_active_keyboard_buffer(&(get_terminal()->keyboard));
-    displayed_terminal_num = 0;
-    set_active_keyboard_buffer(&(get_terminal()->keyboard));
+
+    active_terminal_num = 2; // default  to display terminal 0?
+    set_active_terminal_and_keyboard(&terminal_array[2]);
+    active_terminal_num = 1;
+    set_active_terminal_and_keyboard(&terminal_array[1]);
+    active_terminal_num = 0;
+    set_active_terminal_and_keyboard(&terminal_array[0]);
     // need to set each terminal to have the active keyboard buffer and purge the buffer to help the init
 }
 
@@ -67,7 +71,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     unsigned char * new_buf = (unsigned char *)buf;
   // now use newBuf instead of buf
     unsigned char * keyboard_buf;
-    keyboard_buf = terminal_array[displayed_terminal_num].keyboard.keyboard_buf;
+    keyboard_buf = terminal_array[active_terminal_num].keyboard.keyboard_buf;
     set_read_flag(1); // tell keyboard we're inside a terminal read
 
     // validate input, null pointer provided by user
@@ -211,7 +215,7 @@ unsigned char set_active_terminal_num(unsigned char num) {
     if((num > 2)) {
         return -1;
     }
-    displayed_terminal_num = num;
+    active_terminal_num = num;
     return 0;
 }
 
@@ -224,7 +228,7 @@ unsigned char set_active_terminal_num(unsigned char num) {
  *   SIDE EFFECTS: none
  */
 keyboard_buf_t* get_active_keyboard() {
-    return &(terminal_array[displayed_terminal_num].keyboard);
+    return &(terminal_array[active_terminal_num].keyboard);
 }
 
 
@@ -237,5 +241,5 @@ keyboard_buf_t* get_active_keyboard() {
  *   SIDE EFFECTS: none
  */
 terminal_t* get_terminal() {
-    return &(terminal_array[displayed_terminal_num]);
+    return &(terminal_array[active_terminal_num]);
 }
