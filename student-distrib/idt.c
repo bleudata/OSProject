@@ -164,7 +164,7 @@ void setup_idt() {
         schedule();
     }
     else if(vector == KEYBOARD_VECTOR) {
-        keyboard_irq_handler(vector); // this is from pic file
+        keyboard_irq_handler(); // this is from pic file
     }
     else if(vector == RTC_VECTOR) {
         //printf("entered rtc if statement");

@@ -146,7 +146,7 @@ void vidmap_change(uint32_t virtual_address, uint32_t terminal){
 
 // swap terminal buffer and video memory for two terminals
 void buffer_swap(uint32_t old_terminal, uint32_t new_terminal){
-    //vid mem to old_terminal
+    //vid mem to old_terminal , maybe do for loop if slow
     memcpy((void*)(VIDMEM + FOUR_KB + FOUR_KB*old_terminal),(void*)VIDMEM, FOUR_KB);
     
     //new_terminal to vidmem

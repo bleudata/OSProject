@@ -32,6 +32,13 @@
 #define BACKSPACE       0x0E
 #define MULT_KEY_CODES  0xE0
 
+typedef struct __attribute__ ((packed)){
+    unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
+    unsigned char* buf_position;
+    unsigned char* buf_end_addr; 
+    unsigned char* buf_line_two_addr;
+    
+} keyboard_buf_t;
 
 // handle keyboard interrupt
 void keyboard_irq_handler();
