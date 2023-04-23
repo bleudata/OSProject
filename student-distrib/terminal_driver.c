@@ -9,6 +9,44 @@
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 
+terminal_t terminal_array[3];
+unsigned char active_terminal_num = 0; //probably not used
+
+/*
+ * terminal_init
+ *   DESCRIPTION: Sets the values in each of the terminal structs in the terminal array, and clears the keyboard buffers for each terminal
+ *   INPUTS: filename -- name of file to open
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS:  none
+ */
+void terminal_init(){
+    int i;
+    for(i = 0; i < 3; i++) {
+        terminal_array[i].keyboard.buf_position = terminal_array[i].keyboard.keyboard_buf;
+        terminal_array[i].keyboard.buf_end_addr = (terminal_array[i].keyboard.keyboard_buf) + KEYBOARD_BUF_SIZE - 1; 
+        terminal_array[i].keyboard.buf_line_two_addr = (terminal_array[i].keyboard.keyboard_buf) + NEWLINE_INDEX;
+    }
+    // terminal_array[0].storage_addr = (unsigned char* ) T0_VIRTUAL_ADDR;
+    // terminal_array[0].storage_offset = (uint8_t) VMEM_OFFSET_T0;
+    // terminal_array[1].storage_addr = (unsigned char* ) T1_VIRTUAL_ADDR;
+    // terminal_array[1].storage_offset = (uint8_t) VMEM_OFFSET_T1;
+    // terminal_array[2].storage_addr = (unsigned char* )T2_VIRTUAL_ADDR;
+    // terminal_array[2].storage_offset = (uint8_t) VMEM_OFFSET_T2;
+
+
+    active_terminal_num = 2; // default  to display terminal 0?
+    set_active_terminal_and_keyboard(&terminal_array[2]);
+    purge_keyboard_buffer();
+    active_terminal_num = 1;
+    set_active_terminal_and_keyboard(&terminal_array[1]);
+    purge_keyboard_buffer();
+    active_terminal_num = 0;
+    set_active_terminal_and_keyboard(&terminal_array[0]);
+    purge_keyboard_buffer();
+    // need to set each terminal to have the active keyboard buffer and purge the buffer to help the init
+}
+
 /*
  * terminal_open
  *   DESCRIPTION: Doesn't actually do anything, just need to match system call params
@@ -36,7 +74,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     unsigned char * new_buf = (unsigned char *)buf;
   // now use newBuf instead of buf
     unsigned char * keyboard_buf;
-    keyboard_buf = get_keyboard_buffer();
+    keyboard_buf = terminal_array[active_terminal_num].keyboard.keyboard_buf;
     set_read_flag(1); // tell keyboard we're inside a terminal read
 
     // validate input, null pointer provided by user
@@ -168,3 +206,43 @@ void update_cursor(int x, int y)
     outb((uint8_t) ((pos >> BYTE_SHIFT) & LOWER_16), VGA_DATA_REG);
 }
 
+/*
+ * set_active_terminal_num
+ *   DESCRIPTION: sets the active terminal number
+ *   INPUTS: num -- 0-2 corresponding to terminal number 
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 success, -1 fail
+ *   SIDE EFFECTS: terminal number changes
+ */
+unsigned char set_active_terminal_num(unsigned char num) {
+    if((num > 2)) {
+        return -1;
+    }
+    active_terminal_num = num;
+    return 0;
+}
+
+/*
+ * get_active_keyboard
+ *   DESCRIPTION: returns the address of the keyboard struct corresponding to the active terminal
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: address of the keyboard struct corresponding to the active terminal
+ *   SIDE EFFECTS: none
+ */
+keyboard_buf_t* get_active_keyboard() {
+    return &(terminal_array[active_terminal_num].keyboard);
+}
+
+
+/*
+ * get_terminal
+ *   DESCRIPTION: returns the address of the terminal struct corresponding to the active terminal
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: address of the terminal struct corresponding to the active terminal
+ *   SIDE EFFECTS: none
+ */
+terminal_t* get_terminal() {
+    return &(terminal_array[active_terminal_num]);
+}

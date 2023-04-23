@@ -37,7 +37,8 @@ typedef struct __attribute__ ((packed)){
     unsigned char* buf_position;
     unsigned char* buf_end_addr; 
     unsigned char* buf_line_two_addr;
-    
+    unsigned char enter_count;
+    unsigned char read_flag = 0;
 } keyboard_buf_t;
 
 // handle keyboard interrupt
@@ -76,5 +77,7 @@ extern void clear_enter_flag();
 // sets read_flag 
 extern void set_read_flag(unsigned char flag);
 
+// sets the active keyboard and the currently active (displayed) terminal
+extern unsigned char set_active_terminal_and_keyboard (void * new_terminal);
 
 #endif /*KEYBOARD_DRIVER_H*/

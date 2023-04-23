@@ -4,7 +4,7 @@
 int32_t top_process[3] = {-1,-1,-1}; //-1: no process, else pid of top process
 int32_t schedule_flag = 0;
 uint32_t cur_sched_terminal = 2; //sched
-uint32_t user_terminal = 0; //keyboard and sched
+//uint32_t user_terminal = 0; //keyboard and sched
 uint32_t cur_user_terminal = 0; //same as user_terminal for now
 uint32_t counter = 0;
 uint32_t target_terminal = 0;
@@ -80,7 +80,7 @@ uint32_t schedule(){
 
     //change state
     //user vid mapping, terminal write mapping, buffer switching
-    if(user_terminal == cur_sched_terminal){
+    if(cur_user_terminal == cur_sched_terminal){
         //1. map user process vid mem to video memory
         vidmap_helper(USER_VID_MEM);
         

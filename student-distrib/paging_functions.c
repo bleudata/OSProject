@@ -70,8 +70,8 @@ void init_paging() {
 
 /*
  * map_helper()
- *   DESCRIPTION: maps virtual memory 128 MB to the correct 4MB page in physical memory depending on the pid
- *   INPUTS: pid - is a process ID BRO
+ *   DESCRIPTION: maps virtual memory 128 MB (program memory) to the correct 4MB page in physical memory depending on the pid
+ *   INPUTS: pid - is a process ID 
  *   OUTPUTS: none
  *   RETURN VALUE: none
  *   SIDE EFFECTS: none 
