@@ -138,23 +138,23 @@ void keyboard_irq_handler() {
         // Copy memory from the vm to the terminal specific vm
         puts(" 139 \n ");
 
-        copy_video_memory((unsigned char *)VIDEO, get_terminal()->storage_addr);
+        copy_video_memory((unsigned char *)VIDEO, get_active_terminal()->storage_addr);
         puts(" 142 \n ");
 
         set_active_terminal_num(0);
-        set_active_terminal_and_keyboard(get_terminal());
+        set_active_terminal_and_keyboard(get_active_terminal());
         // Copy new terminal vm to the vm
-        copy_video_memory(get_terminal()->storage_addr, (unsigned char*)VIDEO);
+        copy_video_memory(get_active_terminal()->storage_addr, (unsigned char*)VIDEO);
     }
     // F2
     else if ( (code == F2_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
         // PAGE FAULT
-        copy_video_memory((unsigned char *)VIDEO, get_terminal()->storage_addr);
+        copy_video_memory((unsigned char *)VIDEO, get_active_terminal()->storage_addr);
         set_active_terminal_num(1);
-        set_active_terminal_and_keyboard(get_terminal());
+        set_active_terminal_and_keyboard(get_active_terminal());
         // Copy new terminal vm to the vm
-        copy_video_memory(get_terminal()->storage_addr, (unsigned char*)VIDEO);
+        copy_video_memory(get_active_terminal()->storage_addr, (unsigned char*)VIDEO);
         if (!t1_flag) {
             t1_flag = 1;
             puts(" terminal 1 \n ");
@@ -166,11 +166,11 @@ void keyboard_irq_handler() {
     // F3
     else if ( (code == F3_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
-        copy_video_memory((unsigned char *)VIDEO, get_terminal()->storage_addr);
+        copy_video_memory((unsigned char *)VIDEO, get_active_terminal()->storage_addr);
         set_active_terminal_num(2);
-        set_active_terminal_and_keyboard(get_terminal());
+        set_active_terminal_and_keyboard(get_active_terminal());
         // Copy new terminal vm to the vm
-        copy_video_memory(get_terminal()->storage_addr, (unsigned char*)VIDEO);
+        copy_video_memory(get_active_terminal()->storage_addr, (unsigned char*)VIDEO);
         if (!t2_flag) {
             t2_flag = 1;
             puts(" terminal 2 \n ");

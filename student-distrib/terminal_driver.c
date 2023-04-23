@@ -28,11 +28,15 @@ void terminal_init(){
         terminal_array[i].keyboard.buf_line_two_addr = (terminal_array[i].keyboard.keyboard_buf) + NEWLINE_INDEX;
     }
     terminal_array[0].storage_addr = (unsigned char* ) T0_VIRTUAL_ADDR;
-    terminal_array[0].storage_offset = (uint8_t) VMEM_OFFSET_T0;
+    terminal_array[0].storage_offset = (unsigned char) VMEM_OFFSET_T0;
+    terminal_array[0].number = 0;
     terminal_array[1].storage_addr = (unsigned char* ) T1_VIRTUAL_ADDR;
-    terminal_array[1].storage_offset = (uint8_t) VMEM_OFFSET_T1;
+    terminal_array[1].storage_offset = (unsigned char) VMEM_OFFSET_T1;
+    terminal_array[1].number = 1;
     terminal_array[2].storage_addr = (unsigned char* )T2_VIRTUAL_ADDR;
-    terminal_array[2].storage_offset = (uint8_t) VMEM_OFFSET_T2;
+    terminal_array[2].storage_offset = (unsigned char) VMEM_OFFSET_T2;
+    terminal_array[2].number = 2;
+
 
 
     active_terminal_num = 2; // default  to display terminal 0?
@@ -233,13 +237,15 @@ keyboard_buf_t* get_active_keyboard() {
 
 
 /*
- * get_terminal
+ * get_active_terminal
  *   DESCRIPTION: returns the address of the terminal struct corresponding to the active terminal
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: address of the terminal struct corresponding to the active terminal
  *   SIDE EFFECTS: none
  */
-terminal_t* get_terminal() {
+terminal_t* get_active_terminal() {
     return &(terminal_array[active_terminal_num]);
 }
+
+
