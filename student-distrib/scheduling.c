@@ -13,7 +13,7 @@ void set_target_terminal(uint32_t terminal_num){
     target_terminal = terminal_num;
 }
 
-void user_switch_hanlder(){
+void user_switch_handler(){
 
     if(cur_user_terminal == target_terminal){
         return;

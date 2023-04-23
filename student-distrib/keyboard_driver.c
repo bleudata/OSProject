@@ -21,6 +21,8 @@ unsigned char alt_pressed = 0x0;
 static unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
 static unsigned char* buf_position = keyboard_buf; //points to next empty index in the buffer
 //static unsigned char* buf_end = keyboard_buf+128;
+
+keyboard_buf_t * active_keyboard;
 unsigned char enter_count = 0;
 unsigned char read_flag = 0; // 1 if inside a read, 0 else
 
@@ -136,11 +138,11 @@ void keyboard_irq_handler() {
     }
     else if ( (code == F2_PRESS) && alt_pressed) {
         set_target_terminal(1);
-        user_switch_hanlder();
+        user_switch_handler();
     }
     else if ( (code == F3_PRESS) && alt_pressed) {
         set_target_terminal(2);
-        user_switch_hanlder();
+        user_switch_handler();
     }
     // BACKSPACE
     else if (code == BACKSPACE) {
