@@ -38,7 +38,7 @@ typedef struct __attribute__ ((packed)){
     unsigned char* buf_end_addr; 
     unsigned char* buf_line_two_addr;
     unsigned char enter_count;
-    unsigned char read_flag = 0;
+    unsigned char read_flag;
 } keyboard_buf_t;
 
 // handle keyboard interrupt
