@@ -27,7 +27,7 @@ void user_switch_handler(){
 
     //switching into sched terminal
     if(target_terminal == cur_sched_terminal){
-        vidmap_helper(USER_VID_MEM); //map user video memory to actual video memory
+        vidmap_helper(USER_VID_MEM); //map user virtual video memory to actual video memory
 
         //TODO change terminal write to write to video mem
         set_video_mem(VIDMEM);
@@ -75,6 +75,19 @@ uint32_t schedule(){
         counter +=1;
         uint8_t cmd[6] = "shell";
         printf("first two PIT\n");
+        if(counter ==1 ){
+            vidmap_change(USER_VID_MEM, 1);
+
+            //TODO 2. map terminal write to terminal buffer
+            set_video_mem(VIDMEM + FOUR_KB*1 + FOUR_KB);
+        }
+        if(counter ==2){
+            vidmap_change(USER_VID_MEM, 2);
+
+            //TODO 2. map terminal write to terminal buffer
+            set_video_mem(VIDMEM + FOUR_KB*2 + FOUR_KB);
+        }
+        send_eoi(0);
         execute(cmd);
     }
 
@@ -89,28 +102,38 @@ uint32_t schedule(){
     printf("next_pid : %d\n", next_pid);
     //change state
     //user vid mapping, terminal write mapping, buffer switching
-    // if(cur_user_terminal == cur_sched_terminal){ //switching into a terminal user is on
-    //     //1. map user process vid mem to video memory
-    //     vidmap_helper(USER_VID_MEM);
+    if(cur_user_terminal == cur_sched_terminal){ //switching into a terminal user is on
+        //1. map user process vid mem to video memory
+        vidmap_helper(USER_VID_MEM);
+
+        // update cursor
+        // get tje 
         
-    //     //TODO 2. map terminal write to video memory
-    //     set_video_mem(VIDMEM);
+        terminal_t * terminal = get_active_terminal();
+        set_x_position(terminal->screen_x);
+        set_y_position(terminal->screen_y);
+        update_cursor(terminal->screen_x, terminal->screen_y); //update cursor using active termial's screen_x y
     
 
-    // }else{ //switching to a terminal that user is not on
-    //     //1. map user process vid mem to terminal buffer
-    //     vidmap_change(USER_VID_MEM, cur_sched_terminal);
+        //TODO 2. map terminal write to video memory
+        set_video_mem(VIDMEM);
+    
 
-    //     //TODO 2. map terminal write to terminal buffer
-    //     set_video_mem(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB);
-    // }
+    }else{ //switching to a terminal that user is not on
+        //1. map user process vid mem to terminal buffer
+        vidmap_change(USER_VID_MEM, cur_sched_terminal);
+        
+
+        //TODO 2. map terminal write to terminal buffer
+        set_video_mem(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB);
+    }
 
     tss.esp0 = EIGHT_MB - next_pid*EIGHT_KB - UINT_BYTES;
     tss.ss0 = KERNEL_DS;
     
     map_helper(next_pid); //remap program memory for process
 
-
+    send_eoi(0);
     asm volatile ("             \n\
         movl %0, %%ebp          \n\
         leave                   \n\
@@ -120,8 +143,6 @@ uint32_t schedule(){
         : "r"(next_process_ebp)
         : "memory"
     );
-
-
 
     return 0;
 }

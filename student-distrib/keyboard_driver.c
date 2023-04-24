@@ -140,7 +140,7 @@ void keyboard_irq_handler() {
         set_active_terminal_num(0); //TODO saving screen_x, screen_y and restoring them 
 
         set_active_terminal_and_keyboard(get_terminal());
-
+        
         set_x_position(active_terminal->screen_x);
         set_y_position(active_terminal->screen_y);
         

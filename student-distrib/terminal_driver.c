@@ -236,13 +236,13 @@ keyboard_buf_t* get_active_keyboard() {
 
 
 /*
- * get_terminal
+ * get_active_terminal
  *   DESCRIPTION: returns the address of the terminal struct corresponding to the active terminal
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: address of the terminal struct corresponding to the active terminal
  *   SIDE EFFECTS: none
  */
-terminal_t* get_terminal() {
+terminal_t* get_active_terminal() {
     return &(terminal_array[active_terminal_num]);
 }
