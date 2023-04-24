@@ -21,7 +21,7 @@
 
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
-void vmem_putc(uint8_t c);
+
 int32_t puts(int8_t *s);
 int8_t *itoa(uint32_t value, int8_t* buf, int32_t radix);
 int8_t *strrev(int8_t* s);
@@ -45,8 +45,6 @@ int get_x_position();
 int get_y_position();
 void set_x_position(int x_position);
 void set_y_position(int y_position);
-void set_screen_x(int * new_x);
-void set_screen_y(int * new_y);
 char* get_video_mem();
 void set_video_mem(char* video_mem_address);
 
