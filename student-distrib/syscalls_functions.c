@@ -236,7 +236,7 @@ int32_t execute(const uint8_t* command){
     if(command == NULL){
         return -1;
     }
-
+    
     if(process_count >= MAX_PROC_CNT){
         return 256;
     }
@@ -320,6 +320,7 @@ int32_t execute(const uint8_t* command){
 
     if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1){// write the executable file to the page
         destroy_mapping();
+        printf("read_data stuff\n");
         pid_array[new_pid] = 0;
         return -1;
     }  //need to destroy mapping, and free pid, but it cant fail?
@@ -431,7 +432,7 @@ uint32_t get_pid(){
  */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     // Invalid parameter
-    
+    printf("read syscall\n");
     int32_t bytes_read;
     if(fd < 0 || fd > FD_MAX_SIZE){
         return -1;
@@ -449,17 +450,21 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     if((pcb_address->fd_array[fd]).flag == 0){
         return -1;
     }
-    //sti();
+    sti();
     //check if its terminal read for stdin aka if its NULL, and if it is return -1, otherwise do a normal file's read
+    printf("read:455 \n");
     if((pcb_address->fd_array[fd]).fops.read != NULL){
         // read the file and update the file position based on number of bytes succesfully read
+        printf("read:458 \n");
         bytes_read = (pcb_address->fd_array[fd]).fops.read(fd, buf, nbytes);
+        printf("read:460 \n");
         (pcb_address->fd_array[fd]).file_position += bytes_read;
         //cli();
         return bytes_read;
     }
     else{
         //cli();
+        printf("read:467 \n");
         return -1;
     }
 }

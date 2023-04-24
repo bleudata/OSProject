@@ -7,8 +7,13 @@ static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
-//TODO setter function for screen_x and screen_y
-//TODO getter for screen_x and screen_y
+char* get_video_mem(){
+    return video_mem;
+}
+
+void set_video_mem(char* video_mem_address){
+    video_mem = video_mem_address;
+}
 
 //TODO getter and setter for video_mem
 
@@ -644,3 +649,10 @@ int get_y_position() {
     return screen_y;
 }
 
+void set_x_position(int x_position){
+    screen_x = x_position;
+}
+
+void set_y_position(int y_position){
+    screen_y = y_position;
+}

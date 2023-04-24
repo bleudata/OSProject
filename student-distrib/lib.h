@@ -42,6 +42,11 @@ void color_screen(unsigned char color);
 void unput_c(unsigned char input);
 int get_x_position();
 int get_y_position();
+void set_x_position(int x_position);
+void set_y_position(int y_position);
+char* get_video_mem();
+void set_video_mem(char* video_mem_address);
+
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);
 int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);

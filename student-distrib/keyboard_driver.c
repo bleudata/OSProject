@@ -60,6 +60,7 @@ static unsigned char scancodes[58][2] = { // values 0x00 - 0x39
  *   SIDE EFFECTS: prints a character to the screen
  */
 void keyboard_irq_handler() {
+    printf("keyboard handler");
     int code = inb(KEYBOARD_PORT);
     unsigned char echo;
 
@@ -133,25 +134,40 @@ void keyboard_irq_handler() {
         alt_pressed = 0;
     }
     else if ( (code == F1_PRESS) && alt_pressed) { //switch to terminal 0
+        active_terminal->screen_x = get_x_position();
+        active_terminal->screen_y = get_y_position();
         set_target_terminal(0);
         set_active_terminal_num(0); //TODO saving screen_x, screen_y and restoring them 
 
         set_active_terminal_and_keyboard(get_terminal());
-        //save cursor position
+
+        set_x_position(active_terminal->screen_x);
+        set_y_position(active_terminal->screen_y);
+        
         user_switch_handler();
         //restore new cursor position
+        
+        
     }
     else if ( (code == F2_PRESS) && alt_pressed) { //switch to terminal1
+        active_terminal->screen_x = get_x_position();
+        active_terminal->screen_y = get_y_position();
         set_target_terminal(1);
         set_active_terminal_num(1);
         set_active_terminal_and_keyboard(get_terminal());
+        set_x_position(active_terminal->screen_x);
+        set_y_position(active_terminal->screen_y);
         user_switch_handler();
 
     }
     else if ( (code == F3_PRESS) && alt_pressed) { //switch to terminal 2
+        active_terminal->screen_x = get_x_position();
+        active_terminal->screen_y = get_y_position();
         set_target_terminal(2);
         set_active_terminal_num(2);
         set_active_terminal_and_keyboard(get_terminal());
+        set_x_position(active_terminal->screen_x);
+        set_y_position(active_terminal->screen_y);
         user_switch_handler();
     }
     // BACKSPACE

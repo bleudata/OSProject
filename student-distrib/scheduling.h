@@ -2,10 +2,11 @@
 #define SCHEDULING_H
 
 #include "syscalls.h"
+#include "paging.h"
 
 #define PCB_STACK       0xFFFFE000
 
-uint32_t schedule();
+extern uint32_t schedule();
 uint32_t bshell_count();
 void set_target_terminal(uint32_t terminal_num);
 void user_switch_hanlder();

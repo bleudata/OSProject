@@ -23,15 +23,14 @@ void user_switch_handler(){
     }
 
     buffer_swap(cur_user_terminal, target_terminal);
-    //TODO save screen_x and screen_y to cur_user_terminal's struct
-    //TODO update screen_x and screen_y to correct value from target_terminal's struct
+    
 
     //switching into sched terminal
     if(target_terminal == cur_sched_terminal){
         vidmap_helper(USER_VID_MEM); //map user video memory to actual video memory
 
         //TODO change terminal write to write to video mem
-
+        set_video_mem(VIDMEM);
 
         cur_user_terminal = target_terminal;
         return;
@@ -42,6 +41,7 @@ void user_switch_handler(){
         vidmap_change(USER_VID_MEM, cur_sched_terminal); // map user vid mem to correct terminal buffer
 
         //TODO change terminal write to write to cur_sched_terminal buffer
+        set_video_mem(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB);
 
         cur_user_terminal = target_terminal;
         return;
@@ -74,6 +74,7 @@ uint32_t schedule(){
     if(counter < 2){
         counter +=1;
         uint8_t cmd[6] = "shell";
+        printf("first two PIT\n");
         execute(cmd);
     }
 
@@ -85,23 +86,24 @@ uint32_t schedule(){
     int32_t next_pid = top_process[cur_sched_terminal];
     pcb_t * next_process_pcb = (pcb_t *)get_pcb_address(next_pid);
     uint32_t next_process_ebp = next_process_pcb->scheduler_ebp; //get next process ebp
-
+    printf("next_pid : %d\n", next_pid);
     //change state
     //user vid mapping, terminal write mapping, buffer switching
-    if(cur_user_terminal == cur_sched_terminal){ //switching into a terminal user is on
-        //1. map user process vid mem to video memory
-        vidmap_helper(USER_VID_MEM);
+    // if(cur_user_terminal == cur_sched_terminal){ //switching into a terminal user is on
+    //     //1. map user process vid mem to video memory
+    //     vidmap_helper(USER_VID_MEM);
         
-        //TODO 2. map terminal write to video memory
+    //     //TODO 2. map terminal write to video memory
+    //     set_video_mem(VIDMEM);
     
 
-    }else{ //switching to a terminal that user is not on
-        //1. map user process vid mem to terminal buffer
-        vidmap_change(USER_VID_MEM, cur_sched_terminal);
+    // }else{ //switching to a terminal that user is not on
+    //     //1. map user process vid mem to terminal buffer
+    //     vidmap_change(USER_VID_MEM, cur_sched_terminal);
 
-        //TODO 2. map terminal write to terminal buffer
-
-    }
+    //     //TODO 2. map terminal write to terminal buffer
+    //     set_video_mem(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB);
+    // }
 
     tss.esp0 = EIGHT_MB - next_pid*EIGHT_KB - UINT_BYTES;
     tss.ss0 = KERNEL_DS;
@@ -129,7 +131,7 @@ uint32_t bshell_count(){
     uint32_t count = 0;
     int i;
     for(i = 0; i<3; i++){
-        if(top_process[i] == -1){
+        if(top_process[i] != -1){
             count+=1;
         }
     }
