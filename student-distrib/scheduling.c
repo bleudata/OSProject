@@ -9,10 +9,13 @@ uint32_t cur_user_terminal = 0; //same as user_terminal for now
 uint32_t counter = 0;
 uint32_t target_terminal = 0;
 
+//setter function for cur_user_terminal maybe
+
 void set_target_terminal(uint32_t terminal_num){
     target_terminal = terminal_num;
 }
 
+// this is for the keyboard handler
 void user_switch_handler(){
 
     if(cur_user_terminal == target_terminal){
@@ -20,11 +23,15 @@ void user_switch_handler(){
     }
 
     buffer_swap(cur_user_terminal, target_terminal);
+    //TODO save screen_x and screen_y to cur_user_terminal's struct
+    //TODO update screen_x and screen_y to correct value from target_terminal's struct
 
     //switching into sched terminal
     if(target_terminal == cur_sched_terminal){
-        vidmap_helper(USER_VID_MEM);
-        //change terminal write to write to video mem
+        vidmap_helper(USER_VID_MEM); //map user video memory to actual video memory
+
+        //TODO change terminal write to write to video mem
+
 
         cur_user_terminal = target_terminal;
         return;
@@ -32,8 +39,9 @@ void user_switch_handler(){
 
     //switching out of sched terminal
     if(cur_user_terminal == cur_sched_terminal){
-        vidmap_change(USER_VID_MEM, cur_sched_terminal);
-        //change terminal write to write to cur_sched_terminal buffer
+        vidmap_change(USER_VID_MEM, cur_sched_terminal); // map user vid mem to correct terminal buffer
+
+        //TODO change terminal write to write to cur_sched_terminal buffer
 
         cur_user_terminal = target_terminal;
         return;
@@ -80,19 +88,21 @@ uint32_t schedule(){
 
     //change state
     //user vid mapping, terminal write mapping, buffer switching
-    if(cur_user_terminal == cur_sched_terminal){
+    if(cur_user_terminal == cur_sched_terminal){ //switching into a terminal user is on
         //1. map user process vid mem to video memory
         vidmap_helper(USER_VID_MEM);
         
-        //2. map terminal write to video memory
+        //TODO 2. map terminal write to video memory
+    
 
-
-    }else{
+    }else{ //switching to a terminal that user is not on
         //1. map user process vid mem to terminal buffer
         vidmap_change(USER_VID_MEM, cur_sched_terminal);
 
-        //2. map terminal write to terminal buffer
+        //TODO 2. map terminal write to terminal buffer
+
     }
+
     tss.esp0 = EIGHT_MB - next_pid*EIGHT_KB - UINT_BYTES;
     tss.ss0 = KERNEL_DS;
     

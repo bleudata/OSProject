@@ -1,6 +1,8 @@
 #ifndef TERMINAL_DRIVER_H
 #define TERMINAL_DRIVER_H
 
+#include "keyboard_driver.h"
+
 #define CURSOR_ENABLE   0xC0
 #define CURSOR_SKEW     0xE0
 
@@ -10,9 +12,9 @@
 typedef struct __attribute__ ((packed)) {
     int screen_x;
     int screen_y; 
-    unsigned char * write_to_addr; // pointer to where the terminal currently writes to, either video mem or the storage
-    unsigned char * storage_addr; // pointer to the page used to store data in virtual memory
-    uint32_t storage_offset;
+    // unsigned char * write_to_addr; // pointer to where the terminal currently writes to, either video mem or the storage
+    // unsigned char * storage_addr; // pointer to the page used to store data in virtual memory
+    // uint32_t storage_offset;
     keyboard_buf_t keyboard;
     
 } terminal_t;

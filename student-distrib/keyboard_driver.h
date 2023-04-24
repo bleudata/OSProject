@@ -6,6 +6,7 @@
 #define SCAN_CODE_START     0x00
 #define SCAN_CODE_END       0x39
 #define KEYBOARD_BUF_SIZE   128
+#define NEWLINE_INDEX       80
 
 // some scancodes
 #define Q_PRESS        0x10

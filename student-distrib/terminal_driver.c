@@ -10,7 +10,7 @@
 #include "terminal_driver.h"
 
 terminal_t terminal_array[3];
-unsigned char active_terminal_num = 0; //probably not used
+unsigned char active_terminal_num = 0; //terminal that user is on
 
 /*
  * terminal_init
@@ -144,7 +144,7 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
         return -1;
     }
 
-    // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
+    // : How do we know the buffer size? How to check if the buffer size is equal to n ?
     for(i = 0; i < n; i ++) {
         if(new_buf[i] != '\0') {
             putc(new_buf[i]);

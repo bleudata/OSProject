@@ -7,6 +7,11 @@ static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
+//TODO setter function for screen_x and screen_y
+//TODO getter for screen_x and screen_y
+
+//TODO getter and setter for video_mem
+
 /* void clear(void);
  * Inputs: void
  * Return Value: none
@@ -221,7 +226,9 @@ void putc(uint8_t c) {
  *   SIDE EFFECTS: edits the screen, might shift everything up one line for vertical scrolling
  */
 void cp5_putc(uint8_t c) {
-     if(c == '\n' || c == '\r') {
+    //TODO char* write_address = terminal_struct->where_to_write;
+
+    if(c == '\n' || c == '\r') {
         if((screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
             shift_screen_up();
         }

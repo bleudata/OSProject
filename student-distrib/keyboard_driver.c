@@ -74,7 +74,7 @@ void keyboard_irq_handler() {
         if (ctrl_pressed && code == L_PRESS) { // 0x26 is the scan code for L/l
             clear_reset_cursor(); 
             update_cursor(0,0); // move cursor back to top left of the screen
-            if(read_flag == 0) { //only purge the keyboard buffer if not in a terminal read
+            if(active_keyboard->read_flag == 0) { //only purge the keyboard buffer if not in a terminal read
                 purge_keyboard_buffer(); 
             }
         }
@@ -132,25 +132,27 @@ void keyboard_irq_handler() {
     else if (code == L_ALT_RELEASE) {
         alt_pressed = 0;
     }
-    else if ( (code == F1_PRESS) && alt_pressed) {
+    else if ( (code == F1_PRESS) && alt_pressed) { //switch to terminal 0
         set_target_terminal(0);
-        set_active_terminal_num(0);
+        set_active_terminal_num(0); //TODO saving screen_x, screen_y and restoring them 
+
         set_active_terminal_and_keyboard(get_terminal());
         //save cursor position
-        user_switch_hanlder();
+        user_switch_handler();
         //restore new cursor position
     }
-    else if ( (code == F2_PRESS) && alt_pressed) {
+    else if ( (code == F2_PRESS) && alt_pressed) { //switch to terminal1
         set_target_terminal(1);
         set_active_terminal_num(1);
         set_active_terminal_and_keyboard(get_terminal());
-        user_switch_hanlder();
+        user_switch_handler();
+
     }
-    else if ( (code == F3_PRESS) && alt_pressed) {
+    else if ( (code == F3_PRESS) && alt_pressed) { //switch to terminal 2
         set_target_terminal(2);
         set_active_terminal_num(2);
         set_active_terminal_and_keyboard(get_terminal());
-        user_switch_hanlder();
+        user_switch_handler();
     }
     // BACKSPACE
     else if (code == BACKSPACE) {
@@ -164,7 +166,7 @@ void keyboard_irq_handler() {
                 unput_c(' '); // delete space 4
             }
             else {
-                unput_c(*(buf_position+1));
+                unput_c(*((active_keyboard->buf_position)+1));
             }
             update_cursor(get_x_position(), get_y_position());
         }
