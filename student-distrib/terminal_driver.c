@@ -26,6 +26,9 @@ void terminal_init(){
         terminal_array[i].keyboard.buf_position = terminal_array[i].keyboard.keyboard_buf;
         terminal_array[i].keyboard.buf_end_addr = (terminal_array[i].keyboard.keyboard_buf) + KEYBOARD_BUF_SIZE - 1; 
         terminal_array[i].keyboard.buf_line_two_addr = (terminal_array[i].keyboard.keyboard_buf) + NEWLINE_INDEX;
+        terminal_array[i].screen_x = 0;
+        terminal_array[i].screen_y = 0;
+
     }
     // terminal_array[0].storage_addr = (unsigned char* ) T0_VIRTUAL_ADDR;
     // terminal_array[0].storage_offset = (uint8_t) VMEM_OFFSET_T0;

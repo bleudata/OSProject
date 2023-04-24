@@ -2,9 +2,10 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
-
-static int screen_x;
-static int screen_y;
+#include "terminal_driver.h"
+#include "keyboard_driver.h";
+static int * screen_x;
+static int * screen_y;
 static char* video_mem = (char *)VIDEO;
 
 char* get_video_mem(){
@@ -38,7 +39,7 @@ void clear_reset_cursor(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
-    screen_x = screen_y = 0;
+    *screen_x = *screen_y = 0;
 }
 
 
@@ -193,72 +194,75 @@ int32_t puts(int8_t* s) {
  */
 void putc(uint8_t c) {
      if(c == '\n' || c == '\r') {
-        if((screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
+        if((*screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
             shift_screen_up();
         }
         else {
-            screen_y = (screen_y + 1); // next row
+            *screen_y = (*screen_y + 1); // next row
         }
-        screen_x = 0;
+        *screen_x = 0;
         
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c; // add the character and attrib colors to video memory
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        if((screen_x+1) > NUM_COLS-1) {
-            if((screen_y + 1) > NUM_ROWS-1) { // might need to shift the screen
+        *(uint8_t *)(video_mem + ((NUM_COLS * (*screen_y) + (*screen_x)) << 1)) = c; // add the character and attrib colors to video memory
+        *(uint8_t *)(video_mem + ((NUM_COLS * (*screen_y) + (*screen_x)) << 1) + 1) = ATTRIB;
+        if((*screen_x+1) > NUM_COLS-1) {
+            if((*screen_y + 1) > NUM_ROWS-1) { // might need to shift the screen
                 shift_screen_up();
             }
             else {
-                screen_y = (screen_y + 1);
+                *screen_y = (*screen_y + 1);
             }
-            screen_x = 0;
+            *screen_x = 0;
         }
         else {
-            screen_x++; 
+            *screen_x++; 
         }
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS));
+        *screen_x %= NUM_COLS;
+        *screen_y = (*screen_y + (*screen_x / NUM_COLS));
     }
 }
 
 /*
- * cp5_putc
- *   DESCRIPTION: prints one character to the screen, with vertical scrolling enabled
+ * vmem_putc
+ *   DESCRIPTION: prints one character to the currently viewed terminal regardless of scheduler
  *   INPUTS: c -- character to print
  *           buf -- buffer respresenting the whole screen for when we need to vertical scroll
  *   OUTPUTS: none
  *   RETURN VALUE: none
- *   SIDE EFFECTS: edits the screen, might shift everything up one line for vertical scrolling
+ *   SIDE EFFECTS: edits the currently viewed screen, might shift everything up one line for vertical scrolling
  */
-void cp5_putc(uint8_t c) {
-    //TODO char* write_address = terminal_struct->where_to_write;
+void vmem_putc(uint8_t c) {
+    unsigned char* vmem = (unsigned char*)VIDEO;
+    terminal_t * terminal = get_active_terminal();
+    int * vmem_screen_x = &(terminal->screen_x);
+    int * vmem_screen_y = &(terminal->screen_y);
 
     if(c == '\n' || c == '\r') {
-        if((screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
+        if((*vmem_screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
             shift_screen_up();
         }
         else {
-            screen_y = (screen_y + 1); // next row
+            *vmem_screen_y = (*vmem_screen_y + 1); // next row
         }
-        screen_x = 0;
+        vmem_screen_x = 0;
         
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c; // add the character and attrib colors to video memory
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        if((screen_x+1) > NUM_COLS-1) {
-            if((screen_y + 1) > NUM_ROWS-1) { // might need to shift the screen
+        *(uint8_t *)(vmem + ((NUM_COLS * (*vmem_screen_y) + (*vmem_screen_x)) << 1)) = c; // add the character and attrib colors to video memory
+        *(uint8_t *)(vmem + ((NUM_COLS * (*vmem_screen_y) + (*vmem_screen_x)) << 1) + 1) = ATTRIB;
+        if((*vmem_screen_x+1) > NUM_COLS-1) {
+            if((*vmem_screen_y + 1) > NUM_ROWS-1) { // might need to shift the screen
                 shift_screen_up();
             }
             else {
-                screen_y = (screen_y + 1);
+                *vmem_screen_y = (*vmem_screen_y + 1);
             }
-            screen_x = 0;
+            *vmem_screen_x = 0;
         }
         else {
-            screen_x++; 
+            *vmem_screen_x++; 
         }
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS));
+        *vmem_screen_x %= NUM_COLS;
+        *vmem_screen_y = (*vmem_screen_y + (*vmem_screen_x / NUM_COLS));
     }
 }
 
@@ -608,20 +612,20 @@ void color_screen(unsigned char color) {
  */
 void unput_c(unsigned char input) {
     unsigned char line_flag = 0;
-    unsigned char * addr = (unsigned char *) video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1);
+    unsigned char * addr = (unsigned char *) video_mem + ((NUM_COLS * (*screen_y) + (*screen_x)-1) << 1);
     if((unsigned char * )addr < (unsigned char *)video_mem) { // can't backspace beyond start of memory
         return;
     }
-    unsigned char c = *(unsigned char *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1));
+    unsigned char c = *(unsigned char *)(video_mem + ((NUM_COLS * (*screen_y) + (*screen_x)-1) << 1));
     if(c == '\n' || c == '\r') { // not newline in keyboard buffer but still need to get rid of a newline
-        screen_y = (screen_y -1);
-        screen_x = NUM_COLS - 1; // up one row, at the last column  
+        *screen_y = (*screen_y -1);
+        *screen_x = NUM_COLS - 1; // up one row, at the last column  
         
     }    
     *addr = ' '; // replace the character with space to get rid of it
     *(addr + 1) = ATTRIB;
     if(!line_flag) {
-        screen_x--;
+        *screen_x--;
     } 
 }
 
@@ -634,7 +638,7 @@ void unput_c(unsigned char input) {
  *   SIDE EFFECTS: none
  */
 int get_x_position() {
-    return screen_x;
+    return *screen_x;
 }
 
 /*
@@ -646,13 +650,21 @@ int get_x_position() {
  *   SIDE EFFECTS: none
  */
 int get_y_position() {
-    return screen_y;
+    return *screen_y;
 }
 
 void set_x_position(int x_position){
-    screen_x = x_position;
+    *screen_x = x_position;
 }
 
 void set_y_position(int y_position){
-    screen_y = y_position;
+    *screen_y = y_position;
+}
+
+void set_screen_x(int * new_x) {
+    screen_x = new_x;
+}
+
+void set_screen_y(int * new_y) {
+    screen_y = new_y;
 }

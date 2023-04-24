@@ -81,4 +81,6 @@ extern void set_read_flag(unsigned char flag);
 // sets the active keyboard and the currently active (displayed) terminal
 extern unsigned char set_active_terminal_and_keyboard (void * new_terminal);
 
+ 
+
 #endif /*KEYBOARD_DRIVER_H*/

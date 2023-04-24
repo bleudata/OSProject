@@ -9,7 +9,7 @@
 extern uint32_t schedule();
 uint32_t bshell_count();
 void set_target_terminal(uint32_t terminal_num);
-void user_switch_hanlder();
+extern void user_switch_handler();
 void set_top_process(int32_t terminal, int32_t pid);
 uint32_t get_cur_sched_terminal();
 // extern int32_t top_process[3]; could do this

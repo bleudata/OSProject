@@ -87,13 +87,13 @@ void keyboard_irq_handler() {
             if((echo != '\0')) { // if not function key
                 if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
                     if(echo == '\t') { // special case for tab
-                        putc(' '); // need to print multiple spaces
-                        putc(' ');
-                        putc(' ');
-                        putc(' ');
+                        vmem_putc(' '); // need to print multiple spaces
+                        vmem_putc(' ');
+                        vmem_putc(' ');
+                        vmem_putc(' ');
                     }
                     else {
-                        putc(echo);
+                        vmem_putc(echo);
                     }
                     update_cursor(get_x_position(), get_y_position()); 
                 }
@@ -139,7 +139,7 @@ void keyboard_irq_handler() {
         set_target_terminal(0);
         set_active_terminal_num(0); //TODO saving screen_x, screen_y and restoring them 
 
-        set_active_terminal_and_keyboard(get_terminal());
+        set_active_terminal_and_keyboard(get_active_terminal());
         
         set_x_position(active_terminal->screen_x);
         set_y_position(active_terminal->screen_y);
@@ -154,7 +154,7 @@ void keyboard_irq_handler() {
         active_terminal->screen_y = get_y_position();
         set_target_terminal(1);
         set_active_terminal_num(1);
-        set_active_terminal_and_keyboard(get_terminal());
+        set_active_terminal_and_keyboard(get_active_terminal());
         set_x_position(active_terminal->screen_x);
         set_y_position(active_terminal->screen_y);
         user_switch_handler();
@@ -165,7 +165,7 @@ void keyboard_irq_handler() {
         active_terminal->screen_y = get_y_position();
         set_target_terminal(2);
         set_active_terminal_num(2);
-        set_active_terminal_and_keyboard(get_terminal());
+        set_active_terminal_and_keyboard(get_active_terminal());
         set_x_position(active_terminal->screen_x);
         set_y_position(active_terminal->screen_y);
         user_switch_handler();

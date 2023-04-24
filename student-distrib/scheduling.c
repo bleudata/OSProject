@@ -1,4 +1,5 @@
 #include "scheduling.h"
+#include "lib.h"
 
 //changes6
 int32_t top_process[3] = {-1,-1,-1}; //-1: no process, else pid of top process
