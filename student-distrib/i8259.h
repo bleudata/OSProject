@@ -48,8 +48,7 @@ void enable_irq(uint32_t irq_num);
 void disable_irq(uint32_t irq_num);
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num);
-// handle keyboard interrupt
-void keyboard_irq_handler();
+
 // enable nmi
 void nmi_enable();
 // disable nmi

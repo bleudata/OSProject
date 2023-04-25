@@ -3,6 +3,7 @@
 
 
 #define SYSTEM_CALL_VECTOR 0x80
+#define PIT_VECTOR 0x20
 #define KEYBOARD_VECTOR  0x21
 #define RTC_VECTOR   0x28
 
@@ -55,6 +56,7 @@ extern void machine_check_handler_lnk();
 extern void smid_float_exception_handler_lnk();
 
 // pic irqs
+extern void pit_handler_lnk();
 extern void keyboard_handler_lnk();
 extern void rtc_handler_lnk();
 

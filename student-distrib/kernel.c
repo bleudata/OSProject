@@ -16,6 +16,7 @@
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 #include "rtc.h"
+#include "pit.h"
 
 #define RUN_TESTS
 
@@ -163,8 +164,10 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("done with idt init");
     // now unmask the irqs we want
     enable_irq(PIC2_IRQ); 
+    pit_init(20);
     keyboard_init();
     rtc_init();
+    terminal_init();
     enable_cursor(MAX_SCANLINE, MAX_SCANLINE); 
     update_cursor(0,0);
     //init fops tables
@@ -176,7 +179,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     
     printf("Enabling Interrupts\n");
-    sti();
+    
     // if(file_sys_start == boot_block){
     //     printf("sys_start same as bootblock");
     // }
@@ -213,10 +216,10 @@ void entry(unsigned long magic, unsigned long addr) {
     
     
     
-    while(1){
-        uint8_t cmd[6] = "shell";
-        execute(cmd);
-    }
+    sti(); 
+    uint8_t cmd[6] = "shell";
+    execute(cmd);
+    
 
     /* Checkpoint 3 Tests */
     //launch_tests(SYSCALL_OPEN_INP);

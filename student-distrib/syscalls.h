@@ -8,6 +8,7 @@
 #include "x86_desc.h"
 #include "terminal_driver.h"
 #include "../syscalls/ece391sysnum.h" 
+#include "keyboard_driver.h"
 
 #define PHYS_MEM_BASE   0x800000 //8MB 
 #define PHYS_MEM_OFF    0x400000 //4MB
@@ -21,6 +22,10 @@
 #define PCB_STACK       0xFFFFE000
 #define VIRT_MEM_PAGE   0x08000000
 #define VIRT_MEM_SHIFT  22
+#define USER_VID_MEM    0xDBBA0000
+
+#define KERNEL_START    0x400000
+#define KERNEL_END      0x800000
 
 #define FD_OVERFLOW     8
 #define FD_INIT_SIZE    2
@@ -34,7 +39,7 @@
 #define EXCEPT_STATUS   256
 
 #define MAX_PROC_CNT    6
-#define PROC_CNT        5
+#define PROC_CNT        6
 
 #define EXE_BYTE0       0x7F
 #define EXE_BYTE1       0x45
@@ -43,7 +48,11 @@
 
 #define STDIN_FD        0
 #define STDOUT_FD       1
-
+// p2 kernel stack ebp location: 7F BFBC i think have to minus 4 for all
+// p1 kernel stack ebp location: 7F DFBC
+// p0 kernel stack ebp location: 7F FFBC
+// EIGHT_MB - pid*EIGHT_KB -20 -32 - 4 - 4 -8
+// 0x800000 -5 -8*4 -1*4-1*4-2*4
 // Function pointer struct 
 typedef struct __attribute__ ((packed)){
     int32_t (*open)(const uint8_t* filename);
@@ -69,7 +78,12 @@ typedef struct __attribute__ ((packed)){
     fd_entry fd_array[8]; // file descriptors: we need the actual array of file descriptors
     uint32_t parent_esp;
     uint32_t parent_ebp;
+    uint32_t scheduler_ebp; //ebp for scheduling
     uint8_t active;
+    uint8_t args_data[KEYBOARD_BUF_SIZE];
+    uint8_t args_length;
+    uint32_t terminal;
+
 } pcb_t;
 
 
