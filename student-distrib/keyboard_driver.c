@@ -143,26 +143,31 @@ void keyboard_irq_handler() {
     // F1
     else if ( (code == F1_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
-        copy_video_memory((unsigned char *)VIDEO, get_active_terminal()->storage_addr);
+        copy_video_memory((unsigned char *)VIDEO, active_terminal->storage_addr);
+        active_terminal->write_to_addr = active_terminal->storage_addr; // this terminal now writes to storage
+
+        // set the new active terminal to terminal 0 and update the terminal and keyboard structs the driver uses
         set_active_terminal_num(0);
-        set_active_terminal_and_keyboard(get_active_terminal());
+        set_active_terminal_and_keyboard(get_active_terminal()); // need to update to the new active terminal
         // Copy new terminal vm to the vm to show on the screen, update the screen position pointers, and move the cursor
-        copy_video_memory(get_active_terminal()->storage_addr, (unsigned char*)VIDEO);
-        set_screen_x(&(get_active_terminal()->screen_x));
-        set_screen_y(&(get_active_terminal()->screen_y));
+        copy_video_memory(active_terminal->storage_addr, (unsigned char*)VIDEO);
+        active_terminal->write_to_addr = (unsigned char*)VIDEO; // this terminal now writes to video memory
+        set_screen_x(&(active_terminal->screen_x));
+        set_screen_y(&(active_terminal->screen_y));
         update_cursor(get_x_position(), get_y_position());
     }
     // F2
     else if ( (code == F2_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
-        // PAGE FAULT
-        copy_video_memory((unsigned char *)VIDEO, get_active_terminal()->storage_addr);
+        copy_video_memory((unsigned char *)VIDEO, active_terminal->storage_addr);
+        active_terminal->write_to_addr = active_terminal->storage_addr;
         set_active_terminal_num(1);
         set_active_terminal_and_keyboard(get_active_terminal());
         // Copy new terminal vm to the vm to show on the screen, update the screen position pointers, and move the cursor
-        copy_video_memory(get_active_terminal()->storage_addr, (unsigned char*)VIDEO);
-        set_screen_x(&(get_active_terminal()->screen_x));
-        set_screen_y(&(get_active_terminal()->screen_y));
+        copy_video_memory(active_terminal->storage_addr, (unsigned char*)VIDEO);
+        active_terminal->write_to_addr = (unsigned char*)VIDEO;
+        set_screen_x(&(active_terminal->screen_x));
+        set_screen_y(&(active_terminal->screen_y));
         update_cursor(get_x_position(), get_y_position());
 
         if (!t1_flag) {
@@ -176,13 +181,15 @@ void keyboard_irq_handler() {
     // F3
     else if ( (code == F3_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
-        copy_video_memory((unsigned char *)VIDEO, get_active_terminal()->storage_addr);
+        copy_video_memory((unsigned char *)VIDEO, active_terminal->storage_addr);
+        active_terminal->write_to_addr = active_terminal->storage_addr; //this terminal now writes to storage 
         set_active_terminal_num(2);
         set_active_terminal_and_keyboard(get_active_terminal());
         // Copy new terminal vm to the vm to show on the screen, update the screen position pointers, and move the cursor
-        copy_video_memory(get_active_terminal()->storage_addr, (unsigned char*)VIDEO);
-        set_screen_x(&(get_active_terminal()->screen_x));
-        set_screen_y(&(get_active_terminal()->screen_y));
+        copy_video_memory(active_terminal->storage_addr, (unsigned char*)VIDEO);
+        active_terminal->write_to_addr = (unsigned char*)VIDEO; // this terminal now writes to video memory
+        set_screen_x(&(active_terminal->screen_x));
+        set_screen_y(&(active_terminal->screen_y));
         update_cursor(get_x_position(), get_y_position());
         if (!t2_flag) {
             t2_flag = 1;

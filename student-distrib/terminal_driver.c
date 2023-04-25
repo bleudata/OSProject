@@ -254,4 +254,3 @@ terminal_t* get_active_terminal() {
     return &(terminal_array[active_terminal_num]);
 }
 
-
