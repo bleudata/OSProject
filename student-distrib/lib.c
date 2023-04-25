@@ -2,6 +2,8 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "terminal_driver.h"
+#include "keyboard_driver.h"
 
 int init1 = 0;
 int init2 = 0;
@@ -551,29 +553,33 @@ void color_screen(unsigned char color) {
 
 /*
  * unput_c
- *   DESCRIPTION: delete a character from video memory
+ *   DESCRIPTION: delete a character from video memory. Don't use the normal screen_x, screen_y. 
+ *   Have to get the ones from the active terminal because backspace / unputc can only be called on the active terminal
  *   INPUTS: input -- character in the keyboard buffer
  *   OUTPUTS: none
  *   RETURN VALUE: none
  *   SIDE EFFECTS: deletes a character on the screen
  */
 void unput_c(unsigned char input) {
-    // unsigned char line_flag = 0;
-    // unsigned char * addr = (unsigned char *) video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1);
-    // if((unsigned char * )addr < (unsigned char *)video_mem) { // can't backspace beyond start of memory
-    //     return;
-    // }
-    // unsigned char c = *(unsigned char *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1));
-    // if(c == '\n' || c == '\r') { // not newline in keyboard buffer but still need to get rid of a newline
-    //     screen_y = (screen_y -1);
-    //     screen_x = NUM_COLS - 1; // up one row, at the last column  
+    terminal_t * terminal = get_active_terminal();
+    int * my_screen_x = &(terminal->screen_x);
+    int * my_screen_y = &(terminal->screen_y);
+    unsigned char line_flag = 0;
+    unsigned char * addr = (unsigned char *) video_mem + ((NUM_COLS * (*my_screen_y) + (*my_screen_x)-1) << 1);
+    if((unsigned char * )addr < (unsigned char *)video_mem) { // can't backspace beyond start of memory
+        return;
+    }
+    unsigned char c = *(unsigned char *)(video_mem + ((NUM_COLS * (*my_screen_y) + (*my_screen_x)-1) << 1));
+    if(c == '\n' || c == '\r') { // not newline in keyboard buffer but still need to get rid of a newline
+        *my_screen_y = ((*my_screen_y) -1);
+        *my_screen_x = NUM_COLS - 1; // up one row, at the last column  
         
-    // }    
-    // *addr = ' '; // replace the character with space to get rid of it
-    // *(addr + 1) = ATTRIB;
-    // if(!line_flag) {
-    //     screen_x--;
-    // } 
+    }    
+    *addr = ' '; // replace the character with space to get rid of it
+    *(addr + 1) = ATTRIB;
+    if(!line_flag) {
+        (*my_screen_x)--;
+    } 
 }
 
 /*
