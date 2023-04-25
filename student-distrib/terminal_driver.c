@@ -26,6 +26,8 @@ void terminal_init(){
         terminal_array[i].keyboard.buf_position = terminal_array[i].keyboard.keyboard_buf;
         terminal_array[i].keyboard.buf_end_addr = (terminal_array[i].keyboard.keyboard_buf) + KEYBOARD_BUF_SIZE - 1; 
         terminal_array[i].keyboard.buf_line_two_addr = (terminal_array[i].keyboard.keyboard_buf) + NEWLINE_INDEX;
+        terminal_array[i].screen_x = 0;
+        terminal_array[i].screen_y = 0;
     }
     terminal_array[0].storage_addr = (unsigned char* ) T0_VIRTUAL_ADDR;
     terminal_array[0].storage_offset = (unsigned char) VMEM_OFFSET_T0;
@@ -45,6 +47,8 @@ void terminal_init(){
     set_active_terminal_and_keyboard(&terminal_array[1]);
     active_terminal_num = 0;
     set_active_terminal_and_keyboard(&terminal_array[0]);
+    set_screen_x(&(terminal_array[0].screen_x));
+    set_screen_y(&(terminal_array[0].screen_y));
     // need to set each terminal to have the active keyboard buffer and purge the buffer to help the init
 }
 

@@ -3,8 +3,10 @@
 
 #include "lib.h"
 
-static int screen_x;
-static int screen_y;
+int init1 = 0;
+int init2 = 0;
+static int * screen_x = &init1;
+static int * screen_y = &init2;
 static char* video_mem = (char *)VIDEO;
 
 /* void clear(void);
@@ -28,7 +30,7 @@ void clear_reset_cursor(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
-    screen_x = screen_y = 0;
+    *screen_x = *screen_y = 0;
 }
 
 
@@ -183,31 +185,31 @@ int32_t puts(int8_t* s) {
  */
 void putc(uint8_t c) {
      if(c == '\n' || c == '\r') {
-        if((screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
+        if((*screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
             shift_screen_up();
         }
         else {
-            screen_y = (screen_y + 1); // next row
+            *screen_y = (*screen_y + 1); // next row
         }
-        screen_x = 0;
+        *screen_x = 0;
         
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c; // add the character and attrib colors to video memory
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        if((screen_x+1) > NUM_COLS-1) {
-            if((screen_y + 1) > NUM_ROWS-1) { // might need to shift the screen
+        *(uint8_t *)(video_mem + ((NUM_COLS * (*screen_y) + *screen_x) << 1)) = c; // add the character and attrib colors to video memory
+        *(uint8_t *)(video_mem + ((NUM_COLS * (*screen_y) + *screen_x) << 1) + 1) = ATTRIB;
+        if(((*screen_x)+1) > NUM_COLS-1) {
+            if(((*screen_y) + 1) > NUM_ROWS-1) { // might need to shift the screen
                 shift_screen_up();
             }
             else {
-                screen_y = (screen_y + 1);
+                *screen_y = (*screen_y) + 1;
             }
-            screen_x = 0;
+            *screen_x = 0;
         }
         else {
-            screen_x++; 
+            (*screen_x)++; 
         }
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS));
+        *screen_x %= NUM_COLS;
+        *screen_y = (*screen_y + (*screen_x / NUM_COLS));
     }
 }
 
@@ -556,22 +558,22 @@ void color_screen(unsigned char color) {
  *   SIDE EFFECTS: deletes a character on the screen
  */
 void unput_c(unsigned char input) {
-    unsigned char line_flag = 0;
-    unsigned char * addr = (unsigned char *) video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1);
-    if((unsigned char * )addr < (unsigned char *)video_mem) { // can't backspace beyond start of memory
-        return;
-    }
-    unsigned char c = *(unsigned char *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1));
-    if(c == '\n' || c == '\r') { // not newline in keyboard buffer but still need to get rid of a newline
-        screen_y = (screen_y -1);
-        screen_x = NUM_COLS - 1; // up one row, at the last column  
+    // unsigned char line_flag = 0;
+    // unsigned char * addr = (unsigned char *) video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1);
+    // if((unsigned char * )addr < (unsigned char *)video_mem) { // can't backspace beyond start of memory
+    //     return;
+    // }
+    // unsigned char c = *(unsigned char *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1));
+    // if(c == '\n' || c == '\r') { // not newline in keyboard buffer but still need to get rid of a newline
+    //     screen_y = (screen_y -1);
+    //     screen_x = NUM_COLS - 1; // up one row, at the last column  
         
-    }    
-    *addr = ' '; // replace the character with space to get rid of it
-    *(addr + 1) = ATTRIB;
-    if(!line_flag) {
-        screen_x--;
-    } 
+    // }    
+    // *addr = ' '; // replace the character with space to get rid of it
+    // *(addr + 1) = ATTRIB;
+    // if(!line_flag) {
+    //     screen_x--;
+    // } 
 }
 
 /*
@@ -583,7 +585,7 @@ void unput_c(unsigned char input) {
  *   SIDE EFFECTS: none
  */
 int get_x_position() {
-    return screen_x;
+    return *screen_x;
 }
 
 /*
@@ -595,6 +597,13 @@ int get_x_position() {
  *   SIDE EFFECTS: none
  */
 int get_y_position() {
-    return screen_y;
+    return *screen_y;
 }
 
+void set_screen_x(int * new_x) {
+    screen_x = new_x;
+}
+
+void set_screen_y(int * new_y) {
+    screen_y = new_y;
+}
