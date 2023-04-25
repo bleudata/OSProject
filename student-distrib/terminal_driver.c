@@ -149,13 +149,15 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
         return -1;
     }
 
-    // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
+    // print until reach a null terminator
     for(i = 0; i < n; i ++) {
         if(new_buf[i] != '\0') {
             putc(new_buf[i]);
         }
     }
 
+    // TODO: find a way to check if the current process is shown on the active terminal
+    // only want to update the cursor if on the active terminal
     update_cursor(get_x_position(), get_y_position());
     return n;
 }

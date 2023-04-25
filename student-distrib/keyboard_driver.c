@@ -86,15 +86,22 @@ void keyboard_irq_handler() {
             }
             if((echo != '\0')) { // if not function key
                 if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
-                    if(echo == '\t') { // special case for tab
-                        putc(' '); // need to print multiple spaces
-                        putc(' ');
-                        putc(' ');
-                        putc(' ');
+                    if(echo == '\t') { // special case for tab since it is one char in the buffer but 4 on the screen
+                        // putc(' '); // need to print multiple spaces
+                        // putc(' ');
+                        // putc(' ');
+                        // putc(' ');
+                        putc_vidmem(' '); // need to print multiple spaces
+                        putc_vidmem(' ');
+                        putc_vidmem(' ');
+                        putc_vidmem(' ');
                     }
                     else {
-                        putc(echo);
+                        // putc(echo);
+                        putc_vidmem(echo);
                     }
+                    // might need to have some logic for this, we want to update to the x/y position of the terminal showing on the screen
+                    // but the screen_x and y could be set to a currently executing background terminal process
                     update_cursor(get_x_position(), get_y_position()); 
                 }
             }
@@ -136,15 +143,14 @@ void keyboard_irq_handler() {
     // F1
     else if ( (code == F1_PRESS) && alt_pressed) {
         // Copy memory from the vm to the terminal specific vm
-        puts(" 139 \n ");
-
         copy_video_memory((unsigned char *)VIDEO, get_active_terminal()->storage_addr);
-        puts(" 142 \n ");
-
         set_active_terminal_num(0);
         set_active_terminal_and_keyboard(get_active_terminal());
-        // Copy new terminal vm to the vm
+        // Copy new terminal vm to the vm to show on the screen, update the screen position pointers, and move the cursor
         copy_video_memory(get_active_terminal()->storage_addr, (unsigned char*)VIDEO);
+        set_screen_x(&(get_active_terminal()->screen_x));
+        set_screen_y(&(get_active_terminal()->screen_y));
+        update_cursor(get_x_position(), get_y_position());
     }
     // F2
     else if ( (code == F2_PRESS) && alt_pressed) {
@@ -153,8 +159,12 @@ void keyboard_irq_handler() {
         copy_video_memory((unsigned char *)VIDEO, get_active_terminal()->storage_addr);
         set_active_terminal_num(1);
         set_active_terminal_and_keyboard(get_active_terminal());
-        // Copy new terminal vm to the vm
+        // Copy new terminal vm to the vm to show on the screen, update the screen position pointers, and move the cursor
         copy_video_memory(get_active_terminal()->storage_addr, (unsigned char*)VIDEO);
+        set_screen_x(&(get_active_terminal()->screen_x));
+        set_screen_y(&(get_active_terminal()->screen_y));
+        update_cursor(get_x_position(), get_y_position());
+
         if (!t1_flag) {
             t1_flag = 1;
             puts(" terminal 1 \n ");
@@ -169,8 +179,11 @@ void keyboard_irq_handler() {
         copy_video_memory((unsigned char *)VIDEO, get_active_terminal()->storage_addr);
         set_active_terminal_num(2);
         set_active_terminal_and_keyboard(get_active_terminal());
-        // Copy new terminal vm to the vm
+        // Copy new terminal vm to the vm to show on the screen, update the screen position pointers, and move the cursor
         copy_video_memory(get_active_terminal()->storage_addr, (unsigned char*)VIDEO);
+        set_screen_x(&(get_active_terminal()->screen_x));
+        set_screen_y(&(get_active_terminal()->screen_y));
+        update_cursor(get_x_position(), get_y_position());
         if (!t2_flag) {
             t2_flag = 1;
             puts(" terminal 2 \n ");

@@ -178,9 +178,8 @@ int32_t puts(int8_t* s) {
 
 /*
  * putc
- *   DESCRIPTION: prints one character to the screen, with vertical scrolling enabled
+ *   DESCRIPTION: prints one character to the wherever video_mem points to, could be real video memory or storage for a background terminal
  *   INPUTS: c -- character to print
- *           buf -- buffer respresenting the whole screen for when we need to vertical scroll
  *   OUTPUTS: none
  *   RETURN VALUE: none
  *   SIDE EFFECTS: edits the screen, might shift everything up one line for vertical scrolling
@@ -199,11 +198,11 @@ void putc(uint8_t c) {
         *(uint8_t *)(video_mem + ((NUM_COLS * (*screen_y) + *screen_x) << 1)) = c; // add the character and attrib colors to video memory
         *(uint8_t *)(video_mem + ((NUM_COLS * (*screen_y) + *screen_x) << 1) + 1) = ATTRIB;
         if(((*screen_x)+1) > NUM_COLS-1) {
-            if(((*screen_y) + 1) > NUM_ROWS-1) { // might need to shift the screen
+            if(((*screen_y) + 1) > NUM_ROWS-1) { // might need to shift the screen, check if at the bottom of the screen
                 shift_screen_up();
             }
             else {
-                *screen_y = (*screen_y) + 1;
+                *screen_y = (*screen_y) + 1; // or just go to the new row
             }
             *screen_x = 0;
         }
@@ -214,6 +213,48 @@ void putc(uint8_t c) {
         *screen_y = (*screen_y + (*screen_x / NUM_COLS));
     }
 }
+
+/*
+ * putc_vidmem
+ *   DESCRIPTION: prints one character to the screen, with vertical scrolling enabled. Always prints to the same virtual/physical mem address VIDEO
+ *   INPUTS: c -- character to print
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: edits the screen, might shift everything up one line for vertical scrolling
+ */
+void putc_vidmem(uint8_t c) {
+    terminal_t * terminal = get_active_terminal();
+    int * my_screen_x = &(terminal->screen_x);
+    int * my_screen_y = &(terminal->screen_y); 
+     if(c == '\n' || c == '\r') {
+        if((*my_screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
+            shift_screen_up();
+        }
+        else {
+            *my_screen_y = (*my_screen_y + 1); // next row
+        }
+        *screen_x = 0;
+        
+    } else {
+        *(uint8_t *)(video_mem + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1)) = c; // add the character and attrib colors to video memory
+        *(uint8_t *)(video_mem + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1) + 1) = ATTRIB;
+        if(((*my_screen_x)+1) > NUM_COLS-1) {
+            if(((*my_screen_y) + 1) > NUM_ROWS-1) { // might need to shift the screen, check if at the bottom of the screen
+                shift_screen_up();
+            }
+            else {
+                *my_screen_y = (*my_screen_y) + 1; // or just go to the next row
+            }
+            *my_screen_x = 0; // move cursor to the left to  the start of the row
+        }
+        else {
+            (*my_screen_x)++; 
+        }
+        *my_screen_x %= NUM_COLS;
+        *my_screen_y = (*my_screen_y + (*my_screen_y / NUM_COLS));
+    }
+}
+
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
  * Inputs: uint32_t value = number to convert
@@ -565,11 +606,11 @@ void unput_c(unsigned char input) {
     int * my_screen_x = &(terminal->screen_x);
     int * my_screen_y = &(terminal->screen_y);
     unsigned char line_flag = 0;
-    unsigned char * addr = (unsigned char *) video_mem + ((NUM_COLS * (*my_screen_y) + (*my_screen_x)-1) << 1);
-    if((unsigned char * )addr < (unsigned char *)video_mem) { // can't backspace beyond start of memory
+    unsigned char * addr = (unsigned char *)VIDEO + ((NUM_COLS * (*my_screen_y) + (*my_screen_x)-1) << 1);
+    if((unsigned char * )addr < (unsigned char *)VIDEO) { // can't backspace beyond start of memory
         return;
     }
-    unsigned char c = *(unsigned char *)(video_mem + ((NUM_COLS * (*my_screen_y) + (*my_screen_x)-1) << 1));
+    unsigned char c = *(unsigned char *)(VIDEO + ((NUM_COLS * (*my_screen_y) + (*my_screen_x)-1) << 1));
     if(c == '\n' || c == '\r') { // not newline in keyboard buffer but still need to get rid of a newline
         *my_screen_y = ((*my_screen_y) -1);
         *my_screen_x = NUM_COLS - 1; // up one row, at the last column  
@@ -591,7 +632,8 @@ void unput_c(unsigned char input) {
  *   SIDE EFFECTS: none
  */
 int get_x_position() {
-    return *screen_x;
+    terminal_t * terminal = get_active_terminal();
+    return terminal->screen_x;
 }
 
 /*
@@ -603,13 +645,43 @@ int get_x_position() {
  *   SIDE EFFECTS: none
  */
 int get_y_position() {
-    return *screen_y;
+    terminal_t * terminal = get_active_terminal();
+    return terminal->screen_y;
 }
 
+/*
+ * set_screen_x
+ *   DESCRIPTION: sets the screen_x pointer to a new pointer, this is for when the scheduler switches between processes
+ *   INPUTS: new_x -- pointer to the screen_x values of the current process (can be either background or active terminal process)
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: changes the screen_x pointer 
+ */
 void set_screen_x(int * new_x) {
     screen_x = new_x;
 }
 
+/*
+ * set_screen_y
+ *   DESCRIPTION: sets the screen_y pointer to a new pointer, this is for when the scheduler switches between processes
+ *   INPUTS: new_y -- pointer to the screen_y values of the current process (can be either background or active terminal process)
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: changes the screen_y pointer
+ */
 void set_screen_y(int * new_y) {
     screen_y = new_y;
+}
+
+/*
+ * set_vidmem_address
+ *   DESCRIPTION: sets address that putc will write to. Can be either actual video memory for an active terminal, or 
+ *   storage memory for background terminals (putc is called in terminal write)
+ *   INPUTS: new_video_address -- the address that you want putc to write to 
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: changes the memory that putc will write to
+ */
+void set_video_mem_address(unsigned char * new_video_address) {
+    video_mem = (char * ) new_video_address;
 }
