@@ -8,10 +8,7 @@ page_directory_entry page_directory[DIR_SIZE] __attribute__((aligned(FOUR_KB)));
 
 
 //create page table for video memory
-page_table_entry first_page_table[TABLE_SIZE] __attribute__((aligned(FOUR_KB)));
-
-
-page_table_entry user_vid_mem[TABLE_SIZE] __attribute__((aligned(FOUR_KB)));
+page_table_entry first_page_table[TABLE_SIZE] __attribute__((aligned(FOUR_KB))); 
 
 page_table_entry user_vid_mem[TABLE_SIZE] __attribute__((aligned(FOUR_KB)));
 
