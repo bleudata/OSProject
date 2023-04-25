@@ -547,38 +547,47 @@ extern int32_t vidmap(uint8_t** screen_start) {
     if(screen_start == NULL || (screen_start >= (uint8_t**)(KERNEL_START-4) && screen_start < (uint8_t**)KERNEL_END)){
         return -1; //ask TA BRO
     }
-    uint32_t virtual = virtual_address; 
-    uint32_t pd_offset = virtual >> VIRT_MEM_SHIFT;
-    uint32_t pt_offset = (virtual & PT_INDEX_MAP) >>12; 
-    // uint32_t base_addr = ((page_directory[pd_offset]).entry)[pt_offset].pt_fields.page_address;
-    base_addr = base_addr << 12;
-    terminal_t* terminal = get_active_terminal();
-    unsigned char terminal_num = terminal->number;
+    //choosing this vmem, also making sure its 4kb aligned
+    uint32_t virtual_memory = USER_VMEM;
+
+    //sets up page table and modifies directory to have this pte mapped to kernel vidmem
+    vidmap_helper(virtual_memory);
+
+    //sets the screen start to vmem
+    *screen_start = (uint8_t*)virtual_memory;
+
+    // uint32_t virtual = virtual_address; 
+    // uint32_t pd_offset = virtual >> VIRT_MEM_SHIFT;
+    // uint32_t pt_offset = (virtual & PT_INDEX_MAP) >>12; 
+    // // uint32_t base_addr = ((page_directory[pd_offset]).entry)[pt_offset].pt_fields.page_address;
+    // base_addr = base_addr << 12;
+    // terminal_t* terminal = get_active_terminal();
+    // unsigned char terminal_num = terminal->number;
     
-    // currently on active terminal, make sure lib.c video_mem points to VIDEO
-    if((terminal->storage_offset) == pt_offset) {
-        //set lib.c video_mem to VIDEO
-        return;
-    }
-    // on a background terminal, set lib.c video_mem to storage addr
-    if(pt_offset == VMEM_OFFSET_T0) {
-        // video_mem = (unsigned char * ) T0_VIRTUAL_ADDR
-    }
-    else if (pt_offset == VMEM_OFFSET_T1) {
-        // video_mem = (unsigned char * ) T0_VIRTUAL_ADDR
-    }
-    else if (pt_offset == VMEM_OFFSET_T2) {
-        // video_mem = (unsigned char * ) T0_VIRTUAL_ADDR    
-    }
-    flush_tlb();
-    // //choosing this vmem, also making sure its 4kb aligned
-    // uint32_t virtual_memory = USER_VMEM;
+    // // currently on active terminal, make sure lib.c video_mem points to VIDEO
+    // if((terminal->storage_offset) == pt_offset) {
+    //     //set lib.c video_mem to VIDEO
+    //     return;
+    // }
+    // // on a background terminal, set lib.c video_mem to storage addr
+    // if(pt_offset == VMEM_OFFSET_T0) {
+    //     // video_mem = (unsigned char * ) T0_VIRTUAL_ADDR
+    // }
+    // else if (pt_offset == VMEM_OFFSET_T1) {
+    //     // video_mem = (unsigned char * ) T0_VIRTUAL_ADDR
+    // }
+    // else if (pt_offset == VMEM_OFFSET_T2) {
+    //     // video_mem = (unsigned char * ) T0_VIRTUAL_ADDR    
+    // }
+    // flush_tlb();
+    // // //choosing this vmem, also making sure its 4kb aligned
+    // // uint32_t virtual_memory = USER_VMEM;
 
-    // //sets up page table and modifies directory to have this pte mapped to kernel vidmem
-    // vidmap_helper(virtual_memory);
+    // // //sets up page table and modifies directory to have this pte mapped to kernel vidmem
+    // // vidmap_helper(virtual_memory);
 
-    // //sets the screen start to vmem
-    *screen_start = (uint8_t*)VIDEO;
+    // // //sets the screen start to vmem
+    // *screen_start = (uint8_t*)VIDEO;
     return 0;
 }
 
