@@ -60,7 +60,7 @@ static unsigned char scancodes[58][2] = { // values 0x00 - 0x39
  *   SIDE EFFECTS: prints a character to the screen
  */
 void keyboard_irq_handler() {
-    printf("keyboard handler");
+    //printf("keyboard handler");
     int code = inb(KEYBOARD_PORT);
     unsigned char echo;
 

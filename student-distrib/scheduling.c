@@ -11,7 +11,12 @@ uint32_t counter = 0;
 uint32_t target_terminal = 0;
 
 //setter function for cur_user_terminal maybe
-
+uint32_t get_cur_user_terminal(){
+    return cur_user_terminal;
+}
+uint32_t get_cur_sched_terminal(){
+    return cur_sched_terminal;
+}
 void set_target_terminal(uint32_t terminal_num){
     target_terminal = terminal_num;
 }
@@ -75,7 +80,7 @@ uint32_t schedule(){
     if(counter < 2){
         counter +=1;
         uint8_t cmd[6] = "shell";
-        printf("first two PIT\n");
+        //printf("first two PIT\n");
         if(counter ==1 ){
             vidmap_change(USER_VID_MEM, 1);
 
@@ -95,12 +100,12 @@ uint32_t schedule(){
     //only reach here on the third PIT interrupt and after
 
     //increment terminal number to get next terminal number
-    uint32_t cur_sched_terminal = (cur_sched_terminal + 1) % 3;
+    cur_sched_terminal = (cur_sched_terminal + 1) % 3;
     
     int32_t next_pid = top_process[cur_sched_terminal];
     pcb_t * next_process_pcb = (pcb_t *)get_pcb_address(next_pid);
     uint32_t next_process_ebp = next_process_pcb->scheduler_ebp; //get next process ebp
-    printf("next_pid : %d\n", next_pid);
+    //printf("next_pid : %d\n", next_pid);
     //change state
     //user vid mapping, terminal write mapping, buffer switching
     if(cur_user_terminal == cur_sched_terminal){ //switching into a terminal user is on
@@ -167,6 +172,4 @@ void set_top_process(int32_t terminal, int32_t pid){
     top_process[terminal] = pid;
 }
 
-uint32_t get_cur_sched_terminal(){
-    return cur_sched_terminal; 
-}
+

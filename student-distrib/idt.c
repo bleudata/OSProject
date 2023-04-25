@@ -158,11 +158,13 @@ void setup_idt() {
     //printf("printing vector %d \n", vector);
     if(vector >= 0 && vector <= 19) {
         set_exception_flag();
+        //printf("vector num: %d \n", vector);
         halt(0);
         //while(1);
         generic_intel_handler(vector);
     }else if(vector == PIT_VECTOR){
-        printf("PIT\n");
+        //printf("vector num: %d \n", vector);
+        //printf("PIT\n");
         schedule();
     }
     else if(vector == KEYBOARD_VECTOR) {

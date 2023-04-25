@@ -48,7 +48,11 @@
 
 #define STDIN_FD        0
 #define STDOUT_FD       1
-
+// p2 kernel stack ebp location: 7F BFBC i think have to minus 4 for all
+// p1 kernel stack ebp location: 7F DFBC
+// p0 kernel stack ebp location: 7F FFBC
+// EIGHT_MB - pid*EIGHT_KB -20 -32 - 4 - 4 -8
+// 0x800000 -5 -8*4 -1*4-1*4-2*4
 // Function pointer struct 
 typedef struct __attribute__ ((packed)){
     int32_t (*open)(const uint8_t* filename);
