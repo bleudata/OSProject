@@ -105,6 +105,7 @@ void vidmap_change(uint32_t virtual_address, uint32_t terminal);
 
 void buffer_swap(uint32_t old_terminal, uint32_t new_terminal);
 
+void copy_video_memory(unsigned char * destination, unsigned char * source);
 
 #endif
 

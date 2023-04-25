@@ -46,6 +46,8 @@ void terminal_init(){
     purge_keyboard_buffer();
     active_terminal_num = 0;
     set_active_terminal_and_keyboard(&terminal_array[0]);
+    set_screen_x(&(terminal_array[0].screen_x));
+    set_screen_y(&(terminal_array[0].screen_y));
     purge_keyboard_buffer();
     // need to set each terminal to have the active keyboard buffer and purge the buffer to help the init
 }
@@ -154,6 +156,8 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
         }
     }
 
+    // TODO: find a way to check if the current process is shown on the active terminal
+    // only want to update the cursor if on the active terminal
     update_cursor(get_x_position(), get_y_position());
     return n;
 }
@@ -225,17 +229,17 @@ unsigned char set_active_terminal_num(unsigned char num) {
     return 0;
 }
 
-/*
- * get_active_keyboard
- *   DESCRIPTION: returns the address of the keyboard struct corresponding to the active terminal
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: address of the keyboard struct corresponding to the active terminal
- *   SIDE EFFECTS: none
- */
-keyboard_buf_t* get_active_keyboard() {
-    return &(terminal_array[active_terminal_num].keyboard);
-}
+// /*
+//  * get_active_keyboard
+//  *   DESCRIPTION: returns the address of the keyboard struct corresponding to the active terminal
+//  *   INPUTS: none
+//  *   OUTPUTS: none
+//  *   RETURN VALUE: address of the keyboard struct corresponding to the active terminal
+//  *   SIDE EFFECTS: none
+//  */
+// keyboard_buf_t* get_active_keyboard() {
+//     return &(terminal_array[active_terminal_num].keyboard);
+// }
 
 
 /*
@@ -248,4 +252,8 @@ keyboard_buf_t* get_active_keyboard() {
  */
 terminal_t* get_active_terminal() {
     return &(terminal_array[active_terminal_num]);
+}
+
+terminal_t * get_terminal(unsigned char num) {
+    return &(terminal_array[num]);
 }

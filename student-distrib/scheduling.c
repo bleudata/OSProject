@@ -116,8 +116,8 @@ uint32_t schedule(){
         // get tje 
         
         terminal_t * terminal = get_active_terminal();
-        set_x_position(terminal->screen_x);
-        set_y_position(terminal->screen_y);
+        set_screen_x(&(terminal->screen_x));
+        set_screen_y(&(terminal->screen_y));
         update_cursor(terminal->screen_x, terminal->screen_y); //update cursor using active termial's screen_x y
     
 
@@ -128,7 +128,9 @@ uint32_t schedule(){
     }else{ //switching to a terminal that user is not on
         //1. map user process vid mem to terminal buffer
         vidmap_change(USER_VID_MEM, cur_sched_terminal);
-        
+        terminal_t * terminal = get_terminal(cur_sched_terminal);
+        set_screen_x(&(terminal->screen_x));
+        set_screen_y(&(terminal->screen_y));
 
         //TODO 2. map terminal write to terminal buffer
         set_video_mem(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB);

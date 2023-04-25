@@ -154,11 +154,11 @@ void vidmap_change(uint32_t virtual_address, uint32_t terminal){
 void buffer_swap(uint32_t old_terminal, uint32_t new_terminal){
     //vid mem to old_terminal , maybe do for loop if slow
     //memcpy((void*)(VIDMEM + FOUR_KB + FOUR_KB*old_terminal),  (void*)VIDMEM   , FOUR_KB);
-    copy_video_memory((unsigned char *)(VIDMEM + FOUR_KB + FOUR_KB*old_terminal),  (unsigned char *)VIDMEM  , FOUR_KB);
+    copy_video_memory((unsigned char *)(VIDMEM + FOUR_KB + FOUR_KB*old_terminal),  (unsigned char *)VIDMEM  );
     
     //new_terminal to vidmem
     //memcpy((void*)VIDMEM   , (void*)(VIDMEM + FOUR_KB + FOUR_KB*new_terminal)  , FOUR_KB);
-    copy_video_memory((unsigned char *)VIDMEM  ,   (unsigned char *)(VIDMEM + FOUR_KB + FOUR_KB*new_terminal)  ,FOUR_KB);
+    copy_video_memory((unsigned char *)VIDMEM  ,   (unsigned char *)(VIDMEM + FOUR_KB + FOUR_KB*new_terminal)  );
 }
 
 /*

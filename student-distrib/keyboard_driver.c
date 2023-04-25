@@ -20,15 +20,6 @@ unsigned char alt_pressed = 0x0;
 /*Keyboard buffer variables*/
 terminal_t * active_terminal;
 keyboard_buf_t * active_keyboard;
-//static unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
-//static unsigned char* buf_position = keyboard_buf; //points to next empty index in the buffer
-//static unsigned char* buf_end = keyboard_buf+128;
-// unsigned char enter_count = 0;
-// unsigned char read_flag = 0; // 1 if inside a read, 0 else
-
-// #define BUF_END_ADDR        keyboard_buf+127 // need minus one because the last index is the newline
-// #define BUF_LINE_TWO_ADDR   keyboard_buf+80
-// #define NEWLINE_INDEX       80
 
 // Array that holds Shifted Values
 // [nonshifted value, shifted value], \0 are function keys!! except the first two
@@ -87,15 +78,18 @@ void keyboard_irq_handler() {
             if((echo != '\0')) { // if not function key
                 if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
                     if(echo == '\t') { // special case for tab
-                        putc(' '); // need to print multiple spaces
-                        putc(' ');
-                        putc(' ');
-                        putc(' ');
+                        putc_vidmem(' '); // need to print multiple spaces
+                        putc_vidmem(' ');
+                        putc_vidmem(' ');
+                        putc_vidmem(' ');
                     }
                     else {
-                        putc(echo);
+                        putc_vidmem(echo);
                     }
-                    update_cursor(get_x_position(), get_y_position()); 
+                    // potentially fixed, may need to revisit
+                    // might need to have some logic for this, we want to update to the x/y position of the terminal showing on the screen
+                    // but the screen_x and y could be set to a currently executing background terminal process
+                    update_cursor(active_terminal->screen_x, active_terminal->screen_y); 
                 }
             }
         }
@@ -133,41 +127,39 @@ void keyboard_irq_handler() {
     else if (code == L_ALT_RELEASE) {
         alt_pressed = 0;
     }
+    // F1 for terminal 0
     else if ( (code == F1_PRESS) && alt_pressed) { //switch to terminal 0
-        active_terminal->screen_x = get_x_position();
-        active_terminal->screen_y = get_y_position();
+        
         set_target_terminal(0);
         set_active_terminal_num(0); //TODO saving screen_x, screen_y and restoring them 
-
         set_active_terminal_and_keyboard(get_active_terminal());
-        
-        set_x_position(active_terminal->screen_x);
-        set_y_position(active_terminal->screen_y);
-        
+        set_screen_x(&(active_terminal->screen_x));
+        set_screen_y(&(active_terminal->screen_y));
+        update_cursor(get_x_position(), get_y_position());
         user_switch_handler();
         //restore new cursor position
         
         
     }
+    // F2 for terminal 1
     else if ( (code == F2_PRESS) && alt_pressed) { //switch to terminal1
-        active_terminal->screen_x = get_x_position();
-        active_terminal->screen_y = get_y_position();
         set_target_terminal(1);
         set_active_terminal_num(1);
         set_active_terminal_and_keyboard(get_active_terminal());
-        set_x_position(active_terminal->screen_x);
-        set_y_position(active_terminal->screen_y);
+        set_screen_x(&(active_terminal->screen_x));
+        set_screen_y(&(active_terminal->screen_y));
+        update_cursor(get_x_position(), get_y_position());
         user_switch_handler();
 
     }
+    // F3 for terminal 2
     else if ( (code == F3_PRESS) && alt_pressed) { //switch to terminal 2
-        active_terminal->screen_x = get_x_position();
-        active_terminal->screen_y = get_y_position();
         set_target_terminal(2);
         set_active_terminal_num(2);
         set_active_terminal_and_keyboard(get_active_terminal());
-        set_x_position(active_terminal->screen_x);
-        set_y_position(active_terminal->screen_y);
+        set_screen_x(&(active_terminal->screen_x));
+        set_screen_y(&(active_terminal->screen_y));
+        update_cursor(get_x_position(), get_y_position());
         user_switch_handler();
     }
     // BACKSPACE
