@@ -53,7 +53,7 @@ void user_switch_handler(){
         cur_user_terminal = target_terminal;
         return;
     }
-
+    cur_user_terminal = target_terminal;
 }
 
 
@@ -107,7 +107,7 @@ uint32_t schedule(){
     //     send_eoi(0);
     //     return;
     // }
-    // if(special_counter == 3){
+    // if(special_counter ==0){
     //     send_eoi(0);
     //     return;
     // }
