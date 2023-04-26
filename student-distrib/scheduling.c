@@ -107,11 +107,11 @@ uint32_t schedule(){
     //     send_eoi(0);
     //     return;
     // }
-    // if(special_counter ==0){
-    //     send_eoi(0);
-    //     return;
-    // }
-    // special_counter +=1;
+    if(special_counter ==2){
+        send_eoi(0);
+        return;
+    }
+    special_counter +=1;
 
     //only reach here on the third PIT interrupt and after
 
