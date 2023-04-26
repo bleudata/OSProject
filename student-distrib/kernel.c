@@ -213,7 +213,7 @@ void entry(unsigned long magic, unsigned long addr) {
     
     
     
-    
+    //pp
     
     uint8_t cmd[6] = "shell";
     execute(cmd);
