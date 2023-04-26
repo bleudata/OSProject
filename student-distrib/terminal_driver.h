@@ -11,9 +11,12 @@
 
 
 typedef struct __attribute__ ((packed)) {
+    unsigned char number;
     int screen_x;
     int screen_y; 
-    unsigned char * virtual_mem_addr;
+    unsigned char * write_to_addr; // pointer to where the terminal currently writes to, either video mem or the storage
+    unsigned char * storage_addr; // pointer to the page used to store data in virtual memory
+    unsigned char storage_offset;
     keyboard_buf_t keyboard;
     
 } terminal_t;
@@ -32,6 +35,7 @@ void update_cursor(int x, int y);
 extern unsigned char get_active_terminal_num();
 extern unsigned char set_active_terminal_num(unsigned char num);
 extern keyboard_buf_t* get_active_keyboard();
-extern terminal_t* get_terminal();
+extern terminal_t* get_active_terminal();
+extern void set_write_to_storage();
 
 #endif /*TERMINAL_DRIVER_H*/

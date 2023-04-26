@@ -10,7 +10,7 @@
 #include "terminal_driver.h"
 
 terminal_t terminal_array[3]; 
-unsigned char displayed_terminal_num = 0; // 0-2, which of the 3 terminals is currently being displayed
+unsigned char active_terminal_num = 0; // 0-2, which of the 3 terminals is currently being displayed
 
 /*
  * terminal_init
@@ -26,17 +26,29 @@ void terminal_init(){
         terminal_array[i].keyboard.buf_position = terminal_array[i].keyboard.keyboard_buf;
         terminal_array[i].keyboard.buf_end_addr = (terminal_array[i].keyboard.keyboard_buf) + KEYBOARD_BUF_SIZE - 1; 
         terminal_array[i].keyboard.buf_line_two_addr = (terminal_array[i].keyboard.keyboard_buf) + NEWLINE_INDEX;
+        terminal_array[i].screen_x = 0;
+        terminal_array[i].screen_y = 0;
     }
-    terminal_array[0].virtual_mem_addr = (unsigned char* ) T0_VIRTUAL_ADDR;
-    terminal_array[1].virtual_mem_addr = (unsigned char* ) T1_VIRTUAL_ADDR;
-    terminal_array[2].virtual_mem_addr = (unsigned char* )T2_VIRTUAL_ADDR;
+    terminal_array[0].storage_addr = (unsigned char* ) T0_VIRTUAL_ADDR;
+    terminal_array[0].storage_offset = (unsigned char) VMEM_OFFSET_T0;
+    terminal_array[0].number = 0;
+    terminal_array[1].storage_addr = (unsigned char* ) T1_VIRTUAL_ADDR;
+    terminal_array[1].storage_offset = (unsigned char) VMEM_OFFSET_T1;
+    terminal_array[1].number = 1;
+    terminal_array[2].storage_addr = (unsigned char* )T2_VIRTUAL_ADDR;
+    terminal_array[2].storage_offset = (unsigned char) VMEM_OFFSET_T2;
+    terminal_array[2].number = 2;
 
-    displayed_terminal_num = 2; // default  to display terminal 0?
-    set_active_keyboard_buffer(&(get_terminal()->keyboard));
-    displayed_terminal_num = 1;
-    set_active_keyboard_buffer(&(get_terminal()->keyboard));
-    displayed_terminal_num = 0;
-    set_active_keyboard_buffer(&(get_terminal()->keyboard));
+
+
+    active_terminal_num = 2; // default  to display terminal 0?
+    set_active_terminal_and_keyboard(&terminal_array[2]);
+    active_terminal_num = 1;
+    set_active_terminal_and_keyboard(&terminal_array[1]);
+    active_terminal_num = 0;
+    set_active_terminal_and_keyboard(&terminal_array[0]);
+    set_screen_x(&(terminal_array[0].screen_x));
+    set_screen_y(&(terminal_array[0].screen_y));
     // need to set each terminal to have the active keyboard buffer and purge the buffer to help the init
 }
 
@@ -67,7 +79,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     unsigned char * new_buf = (unsigned char *)buf;
   // now use newBuf instead of buf
     unsigned char * keyboard_buf;
-    keyboard_buf = terminal_array[displayed_terminal_num].keyboard.keyboard_buf;
+    keyboard_buf = terminal_array[active_terminal_num].keyboard.keyboard_buf;
     set_read_flag(1); // tell keyboard we're inside a terminal read
 
     // validate input, null pointer provided by user
@@ -137,13 +149,15 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
         return -1;
     }
 
-    // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
+    // print until reach a null terminator
     for(i = 0; i < n; i ++) {
         if(new_buf[i] != '\0') {
             putc(new_buf[i]);
         }
     }
 
+    // TODO: find a way to check if the current process is shown on the active terminal
+    // only want to update the cursor if on the active terminal
     update_cursor(get_x_position(), get_y_position());
     return n;
 }
@@ -211,7 +225,7 @@ unsigned char set_active_terminal_num(unsigned char num) {
     if((num > 2)) {
         return -1;
     }
-    displayed_terminal_num = num;
+    active_terminal_num = num;
     return 0;
 }
 
@@ -224,18 +238,19 @@ unsigned char set_active_terminal_num(unsigned char num) {
  *   SIDE EFFECTS: none
  */
 keyboard_buf_t* get_active_keyboard() {
-    return &(terminal_array[displayed_terminal_num].keyboard);
+    return &(terminal_array[active_terminal_num].keyboard);
 }
 
 
 /*
- * get_terminal
+ * get_active_terminal
  *   DESCRIPTION: returns the address of the terminal struct corresponding to the active terminal
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: address of the terminal struct corresponding to the active terminal
  *   SIDE EFFECTS: none
  */
-terminal_t* get_terminal() {
-    return &(terminal_array[displayed_terminal_num]);
+terminal_t* get_active_terminal() {
+    return &(terminal_array[active_terminal_num]);
 }
+

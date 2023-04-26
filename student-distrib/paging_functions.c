@@ -1,7 +1,8 @@
 
 #include "paging.h"
-
-
+#include "terminal_driver.h"
+#include "keyboard_driver.h"
+#include "lib.h"
 
 //create page directory for kernel
 page_directory_entry page_directory[DIR_SIZE] __attribute__((aligned(FOUR_KB)));
@@ -138,8 +139,33 @@ void vidmap_helper(uint32_t virtual_address){
     user_vid_mem[pt_offset].pt_fields.present = 1;
     user_vid_mem[pt_offset].pt_fields.read_write = 1;
     user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET;
+
+
+    // // uint32_t base_addr = ((page_directory[pd_offset]).entry)[pt_offset].pt_fields.page_address;
+    // base_addr = base_addr << 12;
+    // terminal_t* terminal = get_active_terminal();
+    // unsigned char terminal_num = terminal->number;
+    
+    // // currently on active terminal, make sure lib.c video_mem points to VIDEO
+    // if((terminal->storage_offset) == pt_offset) {
+    //     //set lib.c video_mem to VIDEO
+    //     return;
+    // }
+    // // on a background terminal, set lib.c video_mem to storage addr
+    // if(pt_offset == VMEM_OFFSET_T0) {
+    //     // video_mem = (unsigned char * ) T0_VIRTUAL_ADDR
+    // }
+    // else if (pt_offset == VMEM_OFFSET_T1) {
+    //     // video_mem = (unsigned char * ) T0_VIRTUAL_ADDR
+    // }
+    // else if (pt_offset == VMEM_OFFSET_T2) {
+    //     // video_mem = (unsigned char * ) T0_VIRTUAL_ADDR    
+    // }
     flush_tlb();
 }
+
+
+
 
 /*
  * copy_video_memory()

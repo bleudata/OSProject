@@ -20,7 +20,8 @@
 #define VGA_DATA_REG    0x3D5
 
 int32_t printf(int8_t *format, ...);
-void putc(uint8_t c);
+void putc(uint8_t c); // can print to video mem or background process storage mem
+void putc_vidmem(uint8_t c); //always prints to video mem
 int32_t puts(int8_t *s);
 int8_t *itoa(uint32_t value, int8_t* buf, int32_t radix);
 int8_t *strrev(int8_t* s);
@@ -40,8 +41,11 @@ void test_interrupts(void);
 void shift_screen_up();
 void color_screen(unsigned char color);
 void unput_c(unsigned char input);
-int get_x_position();
+int get_x_position(); 
 int get_y_position();
+void set_screen_x(int * new_x);
+void set_screen_y(int * new_y);
+void set_video_mem_address(unsigned char * new_video_address);
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);
 int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);
