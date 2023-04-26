@@ -32,12 +32,14 @@ extern int terminal_close(int32_t fd); // assuming don't need other params?
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
 void update_cursor(int x, int y);
 
-extern unsigned char get_active_terminal_num();
-extern unsigned char set_active_terminal_num(unsigned char num);
+extern unsigned char get_user_terminal_num();
+extern unsigned char set_user_terminal_num(unsigned char num);
 // extern keyboard_buf_t* get_active_keyboard();
-extern terminal_t* get_active_terminal();
+extern terminal_t* get_user_terminal();
 extern terminal_t * get_terminal(unsigned char num);
+terminal_t* first_get_terminal();
 
+terminal_t* second_get_terminal();
 
 
 #endif /*TERMINAL_DRIVER_H*/

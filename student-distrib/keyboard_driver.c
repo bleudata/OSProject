@@ -131,8 +131,8 @@ void keyboard_irq_handler() {
     else if ( (code == F1_PRESS) && alt_pressed) { //switch to terminal 0
         
         set_target_terminal(0);
-        set_active_terminal_num(0); //TODO saving screen_x, screen_y and restoring them 
-        set_active_terminal_and_keyboard(get_active_terminal());
+        set_user_terminal_num(0); 
+        set_active_terminal_and_keyboard(get_user_terminal());
         set_screen_x(&(active_terminal->screen_x));
         set_screen_y(&(active_terminal->screen_y));
         update_cursor(get_x_position(), get_y_position());
@@ -144,8 +144,8 @@ void keyboard_irq_handler() {
     // F2 for terminal 1
     else if ( (code == F2_PRESS) && alt_pressed) { //switch to terminal1
         set_target_terminal(1);
-        set_active_terminal_num(1);
-        set_active_terminal_and_keyboard(get_active_terminal());
+        set_user_terminal_num(1);
+        set_active_terminal_and_keyboard(get_user_terminal());
         set_screen_x(&(active_terminal->screen_x));
         set_screen_y(&(active_terminal->screen_y));
         update_cursor(get_x_position(), get_y_position());
@@ -155,8 +155,8 @@ void keyboard_irq_handler() {
     // F3 for terminal 2
     else if ( (code == F3_PRESS) && alt_pressed) { //switch to terminal 2
         set_target_terminal(2);
-        set_active_terminal_num(2);
-        set_active_terminal_and_keyboard(get_active_terminal());
+        set_user_terminal_num(2);
+        set_active_terminal_and_keyboard(get_user_terminal());
         set_screen_x(&(active_terminal->screen_x));
         set_screen_y(&(active_terminal->screen_y));
         update_cursor(get_x_position(), get_y_position());
@@ -299,7 +299,7 @@ unsigned char * get_keyboard_buffer() {
 unsigned char add_to_keyboard_buffer(unsigned char input) {
     if(active_keyboard->buf_position < active_keyboard->buf_end_addr){
         *(active_keyboard->buf_position) = input;
-        active_keyboard->buf_position++;
+        (active_keyboard->buf_position)++;
         return 1;
     }
     if(active_keyboard->buf_position == active_keyboard->buf_end_addr) { // keyboard_buf[127] can only be a newline

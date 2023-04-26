@@ -223,7 +223,7 @@ void putc(uint8_t c) {
  *   SIDE EFFECTS: edits the screen, might shift everything up one line for vertical scrolling
  */
 void putc_vidmem(uint8_t c) {
-    terminal_t * terminal = get_active_terminal();
+    terminal_t * terminal = get_user_terminal();
     int * my_screen_x = &(terminal->screen_x);
     int * my_screen_y = &(terminal->screen_y); 
      if(c == '\n' || c == '\r') {
@@ -236,8 +236,8 @@ void putc_vidmem(uint8_t c) {
         *screen_x = 0;
         
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1)) = c; // add the character and attrib colors to video memory
-        *(uint8_t *)(video_mem + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)((char*)VIDEO + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1)) = c; // add the character and attrib colors to video memory
+        *(uint8_t *)((char*)VIDEO + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1) + 1) = ATTRIB;
         if(((*my_screen_x)+1) > NUM_COLS-1) {
             if(((*my_screen_y) + 1) > NUM_ROWS-1) { // might need to shift the screen, check if at the bottom of the screen
                 shift_screen_up();
@@ -602,7 +602,7 @@ void color_screen(unsigned char color) {
  *   SIDE EFFECTS: deletes a character on the screen
  */
 void unput_c(unsigned char input) {
-    terminal_t * terminal = get_active_terminal();
+    terminal_t * terminal = get_user_terminal();
     int * my_screen_x = &(terminal->screen_x);
     int * my_screen_y = &(terminal->screen_y);
     unsigned char line_flag = 0;
@@ -632,7 +632,7 @@ void unput_c(unsigned char input) {
  *   SIDE EFFECTS: none
  */
 int get_x_position() {
-    terminal_t * terminal = get_active_terminal();
+    terminal_t * terminal = get_user_terminal();
     return terminal->screen_x;
 }
 
@@ -645,7 +645,7 @@ int get_x_position() {
  *   SIDE EFFECTS: none
  */
 int get_y_position() {
-    terminal_t * terminal = get_active_terminal();
+    terminal_t * terminal = get_user_terminal();
     return terminal->screen_y;
 }
 
