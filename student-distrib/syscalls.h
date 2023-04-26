@@ -48,6 +48,10 @@
 
 #define STDIN_FD        0
 #define STDOUT_FD       1
+//vid mem: 0xb8000
+//t0 mem : 0xb9000
+//t1 mem : 0xba000
+//t2 mem : 0xbb000
 // p2 kernel stack ebp location: 7F BFBC i think have to minus 4 for all
 // p1 kernel stack ebp location: 7F DFBC
 // p0 kernel stack ebp location: 7F FFBC

@@ -234,6 +234,7 @@ int32_t execute(const uint8_t* command){
     uint8_t args_buffer[KEYBOARD_BUF_SIZE];
 
     if(command == NULL){
+        sti();
         return -1;
     }
     
@@ -262,6 +263,7 @@ int32_t execute(const uint8_t* command){
     }
 
     if(cmd_cpy == NULL){
+        sti();
         return -1;
     }
 
@@ -277,6 +279,7 @@ int32_t execute(const uint8_t* command){
 
     d_entry dentry;
     if (read_dentry_by_name(fname, &dentry) == -1){
+        sti();
         return -1; 
     }
 
@@ -303,12 +306,14 @@ int32_t execute(const uint8_t* command){
     read_data(dentry.inode_num, 0, exe_check, EXE_BUF);
     
     if(strncmp((int8_t*)exe_check, (int8_t*)exe, EXE_BUF) != 0){
+        sti();
         return -1; 
     }
     
     /* Set up this programs paging */
     // Entry point into the progam (bytes 24 - 27 of the executable) OFFSET = 24 because thats the start of entrypoint
     if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, UINT_BYTES) < 4 ){  //@ i think should be <4
+        sti();
         return -1; 
     }
     uint32_t new_pid = get_pid();
@@ -322,6 +327,7 @@ int32_t execute(const uint8_t* command){
         destroy_mapping();
         //printf("read_data stuff\n");
         pid_array[new_pid] = 0;
+        sti();
         return -1;
     }  //need to destroy mapping, and free pid, but it cant fail?
         
