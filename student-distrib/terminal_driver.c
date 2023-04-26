@@ -158,7 +158,10 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
 
     // TODO: find a way to check if the current process is shown on the active terminal
     // only want to update the cursor if on the active terminal
-    update_cursor(get_x_position(), get_y_position());
+    if(get_cur_sched_terminal() == get_cur_user_terminal()){
+        update_cursor(get_x_position(), get_y_position());
+    }
+    
     return n;
 }
 
@@ -253,6 +256,16 @@ unsigned char set_active_terminal_num(unsigned char num) {
 terminal_t* get_active_terminal() {
     return &(terminal_array[active_terminal_num]);
 }
+
+terminal_t* first_get_terminal() {
+    return &(terminal_array[1]);
+}
+
+terminal_t* second_get_terminal() {
+    return &(terminal_array[2]);
+}
+
+
 
 terminal_t * get_terminal(unsigned char num) {
     return &(terminal_array[num]);

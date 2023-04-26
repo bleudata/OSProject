@@ -131,7 +131,7 @@ void keyboard_irq_handler() {
     else if ( (code == F1_PRESS) && alt_pressed) { //switch to terminal 0
         
         set_target_terminal(0);
-        set_active_terminal_num(0); //TODO saving screen_x, screen_y and restoring them 
+        set_active_terminal_num(0); 
         set_active_terminal_and_keyboard(get_active_terminal());
         set_screen_x(&(active_terminal->screen_x));
         set_screen_y(&(active_terminal->screen_y));

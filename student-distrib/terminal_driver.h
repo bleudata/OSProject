@@ -37,7 +37,9 @@ extern unsigned char set_active_terminal_num(unsigned char num);
 // extern keyboard_buf_t* get_active_keyboard();
 extern terminal_t* get_active_terminal();
 extern terminal_t * get_terminal(unsigned char num);
+terminal_t* first_get_terminal();
 
+terminal_t* second_get_terminal();
 
 
 #endif /*TERMINAL_DRIVER_H*/

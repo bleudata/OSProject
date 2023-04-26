@@ -36,7 +36,7 @@ void user_switch_handler(){
         vidmap_helper(USER_VID_MEM); //map user virtual video memory to actual video memory
 
         //TODO change terminal write to write to video mem
-        set_video_mem(VIDMEM);
+        set_video_mem((unsigned char *)VIDMEM);
 
         cur_user_terminal = target_terminal;
         return;
@@ -47,7 +47,7 @@ void user_switch_handler(){
         vidmap_change(USER_VID_MEM, cur_sched_terminal); // map user vid mem to correct terminal buffer
 
         //TODO change terminal write to write to cur_sched_terminal buffer
-        set_video_mem(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB);
+        set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB));
 
         cur_user_terminal = target_terminal;
         return;
@@ -83,19 +83,30 @@ uint32_t schedule(){
         //printf("first two PIT\n");
         if(counter ==1 ){
             vidmap_change(USER_VID_MEM, 1);
-
-            //TODO 2. map terminal write to terminal buffer
-            set_video_mem(VIDMEM + FOUR_KB*1 + FOUR_KB);
+            
+            //TODO 2. map terminal write to terminal buffer 1
+            set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*1 + FOUR_KB));
+            terminal_t * terminal = first_get_terminal();
+            set_screen_x(&(terminal->screen_x));
+            set_screen_y(&(terminal->screen_y));
         }
         if(counter ==2){
             vidmap_change(USER_VID_MEM, 2);
 
             //TODO 2. map terminal write to terminal buffer
-            set_video_mem(VIDMEM + FOUR_KB*2 + FOUR_KB);
+            set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*2 + FOUR_KB));
+            terminal_t * terminal = second_get_terminal();
+            set_screen_x(&(terminal->screen_x));
+            set_screen_y(&(terminal->screen_y));
         }
+        
         send_eoi(0);
         execute(cmd);
-    }
+    }//else{
+    //     send_eoi(0);
+    //     return;
+    // }
+
 
     //only reach here on the third PIT interrupt and after
 
@@ -115,14 +126,14 @@ uint32_t schedule(){
         // update cursor
         // get tje 
         
-        terminal_t * terminal = get_active_terminal();
+        terminal_t * terminal = get_terminal(cur_sched_terminal);
         set_screen_x(&(terminal->screen_x));
         set_screen_y(&(terminal->screen_y));
         update_cursor(terminal->screen_x, terminal->screen_y); //update cursor using active termial's screen_x y
     
 
         //TODO 2. map terminal write to video memory
-        set_video_mem(VIDMEM);
+        set_video_mem((unsigned char *)VIDMEM);
     
 
     }else{ //switching to a terminal that user is not on
@@ -133,7 +144,7 @@ uint32_t schedule(){
         set_screen_y(&(terminal->screen_y));
 
         //TODO 2. map terminal write to terminal buffer
-        set_video_mem(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB);
+        set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB));
     }
 
     tss.esp0 = EIGHT_MB - next_pid*EIGHT_KB - UINT_BYTES;
