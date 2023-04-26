@@ -10,7 +10,7 @@
 #include "terminal_driver.h"
 
 terminal_t terminal_array[3];
-unsigned char active_terminal_num = 0; //terminal that user is on
+unsigned char user_terminal_num = 0; //terminal that user is on
 
 /*
  * terminal_init
@@ -38,13 +38,13 @@ void terminal_init(){
     // terminal_array[2].storage_offset = (uint8_t) VMEM_OFFSET_T2;
 
 
-    active_terminal_num = 2; // default  to display terminal 0?
+    user_terminal_num = 2; // default  to display terminal 0?
     set_active_terminal_and_keyboard(&terminal_array[2]);
     purge_keyboard_buffer();
-    active_terminal_num = 1;
+    user_terminal_num = 1;
     set_active_terminal_and_keyboard(&terminal_array[1]);
     purge_keyboard_buffer();
-    active_terminal_num = 0;
+    user_terminal_num = 0;
     set_active_terminal_and_keyboard(&terminal_array[0]);
     set_screen_x(&(terminal_array[0].screen_x));
     set_screen_y(&(terminal_array[0].screen_y));
@@ -77,9 +77,9 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     // Return data from one line that ended in \n or a full buffer
     int32_t i, ret; // loop counter and index, also counts the number of characters read
     unsigned char * new_buf = (unsigned char *)buf;
+    terminal_t * terminal = get_terminal(get_cur_sched_terminal()); //update terminal and keyboard structs to the one that is currently displayed
   // now use newBuf instead of buf
-    unsigned char * keyboard_buf;
-    keyboard_buf = terminal_array[active_terminal_num].keyboard.keyboard_buf;
+
     set_read_flag(1); // tell keyboard we're inside a terminal read
 
     // validate input, null pointer provided by user
@@ -108,8 +108,8 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     // Loop while we wait for an enter
     while(get_enter_count() < 1);
     // Read the keyboard buffer and delete it 
-    while((i < n) && (keyboard_buf[i] != '\n')) {
-        new_buf[i] = keyboard_buf[i]; 
+    while((i < n) && (terminal->keyboard.keyboard_buf[i] != '\n')) {
+        new_buf[i] = terminal->keyboard.keyboard_buf[i]; 
         ret++;
         i++;
     }
@@ -217,18 +217,18 @@ void update_cursor(int x, int y)
 }
 
 /*
- * set_active_terminal_num
+ * set_user_terminal_num
  *   DESCRIPTION: sets the active terminal number
  *   INPUTS: num -- 0-2 corresponding to terminal number 
  *   OUTPUTS: none
  *   RETURN VALUE: 0 success, -1 fail
  *   SIDE EFFECTS: terminal number changes
  */
-unsigned char set_active_terminal_num(unsigned char num) {
+unsigned char set_user_terminal_num(unsigned char num) {
     if((num > 2)) {
         return -1;
     }
-    active_terminal_num = num;
+    user_terminal_num = num;
     return 0;
 }
 
@@ -241,20 +241,20 @@ unsigned char set_active_terminal_num(unsigned char num) {
 //  *   SIDE EFFECTS: none
 //  */
 // keyboard_buf_t* get_active_keyboard() {
-//     return &(terminal_array[active_terminal_num].keyboard);
+//     return &(terminal_array[user_terminal_num].keyboard);
 // }
 
 
 /*
- * get_active_terminal
+ * get_user_terminal
  *   DESCRIPTION: returns the address of the terminal struct corresponding to the active terminal
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: address of the terminal struct corresponding to the active terminal
  *   SIDE EFFECTS: none
  */
-terminal_t* get_active_terminal() {
-    return &(terminal_array[active_terminal_num]);
+terminal_t* get_user_terminal() {
+    return &(terminal_array[user_terminal_num]);
 }
 
 terminal_t* first_get_terminal() {

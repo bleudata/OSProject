@@ -9,6 +9,7 @@ uint32_t cur_sched_terminal = 2; //sched
 uint32_t cur_user_terminal = 0; //same as user_terminal for now
 uint32_t counter = 0;
 uint32_t target_terminal = 0;
+uint32_t special_counter = 0;
 
 //setter function for cur_user_terminal maybe
 uint32_t get_cur_user_terminal(){
@@ -106,7 +107,11 @@ uint32_t schedule(){
     //     send_eoi(0);
     //     return;
     // }
-
+    // if(special_counter == 3){
+    //     send_eoi(0);
+    //     return;
+    // }
+    // special_counter +=1;
 
     //only reach here on the third PIT interrupt and after
 
