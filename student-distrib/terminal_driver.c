@@ -80,7 +80,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     // Return data from one line that ended in \n or a full buffer
     int32_t i, ret; // loop counter and index, also counts the number of characters read
     unsigned char * new_buf = (unsigned char *)buf;
-    terminal_t * terminal = get_terminal(0);
+    terminal_t * terminal = get_terminal(1);
     //terminal_t * terminal = get_terminal(get_cur_sched_terminal()); //update terminal and keyboard structs to the one that is currently displayed
   // now use newBuf instead of buf
 
@@ -110,7 +110,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     ret = 0;
     
     // Loop while we wait for an enter
-    while(get_enter_count() < 1);
+    while(terminal->keyboard.enter_count < 1);
     // Read the keyboard buffer and delete it 
     while((i < n) && (terminal->keyboard.keyboard_buf[i] != '\n')) {
         new_buf[i] = terminal->keyboard.keyboard_buf[i]; 
