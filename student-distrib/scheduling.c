@@ -107,7 +107,11 @@ uint32_t schedule(){
     //     send_eoi(0);
     //     return;
     // }
-    if(special_counter ==2){
+
+    //== 2 is terminal 1
+    //== 
+
+    if(special_counter == 2){
         send_eoi(0);
         return;
     }

@@ -18,8 +18,8 @@ static char* video_mem = (char *)VIDEO;
 void clear(void) {
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
-        *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+        *(uint8_t *)((char*)VIDEO + (i << 1)) = ' ';
+        *(uint8_t *)((char*)VIDEO + (i << 1) + 1) = ATTRIB;
     }
 }
 
@@ -28,11 +28,15 @@ void clear(void) {
 */
 void clear_reset_cursor(void) {
     int32_t i;
+    terminal_t * terminal = get_user_terminal();
+    int * my_screen_x = &(terminal->screen_x);
+    int * my_screen_y = &(terminal->screen_y);
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
-        *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+        *(uint8_t *)((char*)VIDEO + (i << 1)) = ' ';
+        *(uint8_t *)((char*)VIDEO + (i << 1) + 1) = ATTRIB;
     }
-    *screen_x = *screen_y = 0;
+    *my_screen_x = 0;
+    *my_screen_y = 0;
 }
 
 
@@ -233,7 +237,7 @@ void putc_vidmem(uint8_t c) {
         else {
             *my_screen_y = (*my_screen_y + 1); // next row
         }
-        *screen_x = 0;
+        *my_screen_x = 0;
         
     } else {
         *(uint8_t *)((char*)VIDEO + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1)) = c; // add the character and attrib colors to video memory
