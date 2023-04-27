@@ -35,12 +35,12 @@
 #define MULT_KEY_CODES  0xE0
 
 typedef struct __attribute__ ((packed)){
-    unsigned char keyboard_buf[KEYBOARD_BUF_SIZE];
-    unsigned char* buf_position;
-    unsigned char* buf_end_addr; 
-    unsigned char* buf_line_two_addr;
-    unsigned char enter_count;
-    unsigned char read_flag;
+    unsigned char keyboard_buf[KEYBOARD_BUF_SIZE]; // the keyboard buffer
+    unsigned char* buf_position; //position of next open spot in the keyboard buffer
+    unsigned char* buf_end_addr; // address of the end of the keyboard buffer
+    unsigned char* buf_line_two_addr; // address of the start of the second line on the screen but within the keyboard buffer
+    unsigned char enter_count; // number of '\n' characters in the keyboard buffer
+    unsigned char read_flag; // flag to tell keyboard we are inside a terminal read
 } keyboard_buf_t;
 
 // handle keyboard interrupt
@@ -79,9 +79,7 @@ extern void clear_enter_flag();
 // sets read_flag 
 extern void set_read_flag(unsigned char flag);
 
-// sets the active keyboard and the currently active (displayed) terminal
+// sets the active keyboard and the currently visible terminal
 extern unsigned char set_active_terminal_and_keyboard (void * new_terminal);
-
- 
 
 #endif /*KEYBOARD_DRIVER_H*/

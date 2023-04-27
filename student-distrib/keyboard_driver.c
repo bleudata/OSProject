@@ -85,9 +85,7 @@ void keyboard_irq_handler() {
                     else {
                         putc_vidmem(echo);
                     }
-                    // potentially fixed, may need to revisit
-                    // might need to have some logic for this, we want to update to the x/y position of the terminal showing on the screen
-                    // but the screen_x and y could be set to a currently executing background terminal process
+                    // only update the cursor to the x y position of the terminal visible to the user
                     update_cursor(active_terminal->screen_x, active_terminal->screen_y); 
                 }
             }
@@ -131,32 +129,28 @@ void keyboard_irq_handler() {
         
         set_target_terminal(0);
         set_user_terminal_num(0); 
-        set_active_terminal_and_keyboard(get_user_terminal());
-        set_screen_x(&(active_terminal->screen_x));
+        set_active_terminal_and_keyboard(get_user_terminal()); // update the structs for the keyboard file
+        set_screen_x(&(active_terminal->screen_x)); // update the terminal used for terminal write 
         set_screen_y(&(active_terminal->screen_y));
         update_cursor(get_x_position(), get_y_position());
         user_switch_handler();
-        //restore new cursor position
-        
-        
     }
     // F2 for terminal 1
     else if ( (code == F2_PRESS) && alt_pressed) { //switch to terminal1
         set_target_terminal(1);
         set_user_terminal_num(1);
-        set_active_terminal_and_keyboard(get_user_terminal());
-        set_screen_x(&(active_terminal->screen_x));
+        set_active_terminal_and_keyboard(get_user_terminal()); // update the structs for the keyboard file
+        set_screen_x(&(active_terminal->screen_x)); // update the terminal used for terminal write 
         set_screen_y(&(active_terminal->screen_y));
         update_cursor(get_x_position(), get_y_position());
         user_switch_handler();
-
     }
     // F3 for terminal 2
     else if ( (code == F3_PRESS) && alt_pressed) { //switch to terminal 2
         set_target_terminal(2);
         set_user_terminal_num(2);
-        set_active_terminal_and_keyboard(get_user_terminal());
-        set_screen_x(&(active_terminal->screen_x));
+        set_active_terminal_and_keyboard(get_user_terminal()); //update the structs for the keyboard file
+        set_screen_x(&(active_terminal->screen_x)); // update the terminal used for terminal write 
         set_screen_y(&(active_terminal->screen_y));
         update_cursor(get_x_position(), get_y_position());
         user_switch_handler();

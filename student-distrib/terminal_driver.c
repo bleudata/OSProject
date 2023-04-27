@@ -30,24 +30,16 @@ void terminal_init(){
         terminal_array[i].screen_y = 0;
         terminal_array[i].keyboard.enter_count = 0;
         terminal_array[i].keyboard.read_flag = 0;
-
-
     }
-    // terminal_array[0].storage_addr = (unsigned char* ) T0_VIRTUAL_ADDR;
-    // terminal_array[0].storage_offset = (uint8_t) VMEM_OFFSET_T0;
-    // terminal_array[1].storage_addr = (unsigned char* ) T1_VIRTUAL_ADDR;
-    // terminal_array[1].storage_offset = (uint8_t) VMEM_OFFSET_T1;
-    // terminal_array[2].storage_addr = (unsigned char* )T2_VIRTUAL_ADDR;
-    // terminal_array[2].storage_offset = (uint8_t) VMEM_OFFSET_T2;
 
-
-    user_terminal_num = 2; // default  to display terminal 0?
+    // clear keyboard buffers and initialize display terminal to 0
+    user_terminal_num = 2; 
     set_active_terminal_and_keyboard(&terminal_array[2]);
     purge_keyboard_buffer();
     user_terminal_num = 1;
     set_active_terminal_and_keyboard(&terminal_array[1]);
     purge_keyboard_buffer();
-    user_terminal_num = 0;
+    user_terminal_num = 0; // default to have terminal 0 visible
     set_active_terminal_and_keyboard(&terminal_array[0]);
     set_screen_x(&(terminal_array[0].screen_x));
     set_screen_y(&(terminal_array[0].screen_y));
@@ -66,6 +58,7 @@ void terminal_init(){
 int32_t terminal_open(const uint8_t* filename) {
     return 0;
 }
+
 /*
  * terminal_read
  *   DESCRIPTION: Reads from the keyboard buffer and copies specified number of bytes into an array given by the user
@@ -235,19 +228,6 @@ unsigned char set_user_terminal_num(unsigned char num) {
     user_terminal_num = num;
     return 0;
 }
-
-// /*
-//  * get_active_keyboard
-//  *   DESCRIPTION: returns the address of the keyboard struct corresponding to the active terminal
-//  *   INPUTS: none
-//  *   OUTPUTS: none
-//  *   RETURN VALUE: address of the keyboard struct corresponding to the active terminal
-//  *   SIDE EFFECTS: none
-//  */
-// keyboard_buf_t* get_active_keyboard() {
-//     return &(terminal_array[user_terminal_num].keyboard);
-// }
-
 
 /*
  * get_user_terminal

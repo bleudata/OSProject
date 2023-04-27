@@ -153,11 +153,9 @@ void vidmap_change(uint32_t virtual_address, uint32_t terminal){
 // swap terminal buffer and video memory for two terminals
 void buffer_swap(uint32_t old_terminal, uint32_t new_terminal){
     //vid mem to old_terminal , maybe do for loop if slow
-    //memcpy((void*)(VIDMEM + FOUR_KB + FOUR_KB*old_terminal),  (void*)VIDMEM   , FOUR_KB);
     copy_video_memory((unsigned char *)(VIDMEM + FOUR_KB + FOUR_KB*old_terminal),  (unsigned char *)VIDMEM  );
     
     //new_terminal to vidmem
-    //memcpy((void*)VIDMEM   , (void*)(VIDMEM + FOUR_KB + FOUR_KB*new_terminal)  , FOUR_KB);
     copy_video_memory((unsigned char *)VIDMEM  ,   (unsigned char *)(VIDMEM + FOUR_KB + FOUR_KB*new_terminal)  );
 }
 
@@ -177,45 +175,3 @@ void copy_video_memory(unsigned char * destination, unsigned char * source) {
     }
 }
 
-void sanity_check(){
-    int pt_san_offset = (USER_VID_MEM & PT_INDEX_MAP) >>12; 
-    if(user_vid_mem[pt_san_offset].pt_fields.page_address != VMEM_OFFSET){
-        printf("not equal");
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//todo
-//check to destroy memory mapping in halt (for vidmap and stuff)
-//check if about popal and eax in interrupt linkage
-//need to update setting the top task of the terminal
-
-// terminal write mapping
-// extra keyboard buffer and keyboard buffer mapping
-// buffer swapping
-// PIT interrupt initialization
-// make sure the buffer switching works for all cases
-// check what int 0x80 does
-// difference between handler_lnk and do_call
-// clarify what happens during interrupt hit, and difference between syscall 
-// make sure that old ebp value doesnt really matter since we are just popping and iret (sched)
-
-// what happens when interrupt occurs when executing system call, does it just push the
-// iret context above the kernelstack it is working on
-
-//int0x80 for system calls, when doing iret we are going back to the user space but isnt the asm code stored in the kernel?
-
-// cursor positions

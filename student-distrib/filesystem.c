@@ -68,7 +68,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     return -1;
 }
 
-//dentry = &(boot_block->boot_type.dir_entries[index]); WRONG!
+
 /*
  * read_dentry_by_index() - helper function
  *   DESCRIPTION: copies over dentry information at specified index over to caller's dentry struct
@@ -91,10 +91,11 @@ int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
     return 0;
 }
 
-//inode num and datablocknum start from 0 and are indexes to their arrays
+
 /*
  * read_data() - helper function
  *   DESCRIPTION: reads data in file's data blocks, write into caller's buffer
+ *   //inode num and datablocknum start from 0 and are indexes to their arrays
  *   INPUTS: inode: index of inode, offset: num bytes to skip, length: num bytes to read, buf: buffer to store info to
  *   OUTPUTS: fills up buffer with info read from file
  *   RETURN VALUE: number of bytes read
@@ -266,11 +267,12 @@ int32_t dir_close(int32_t fd){
     return 0;
 }
 
-// print/read directory "." and the rest of the files
-// read one filename, also keep track of which file number you are on
+
 /*
  * dir_read
  *   DESCRIPTION: reads one filename at a time into buf, updates file counter
+ *   // print/read directory "." and the rest of the files
+ *   // read one filename, also keep track of which file number you are on
  *   INPUTS: fd:file descriptor , buf: output buffer, nbytes - to tell the function how long the buf provided is
  *   OUTPUTS: none
  *   RETURN VALUE: number of bytes read

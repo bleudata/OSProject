@@ -94,9 +94,7 @@ typedef struct __attribute__ ((packed)){
 
 
 uint32_t get_pid();
-
 extern void set_exception_flag();
-
 extern int32_t halt(uint8_t status);
 extern int32_t execute(const uint8_t* command);
 extern int32_t read(int32_t fd, void* buf, int32_t nbytes);
@@ -107,7 +105,6 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes);
 extern int32_t vidmap(uint8_t** screen_start);
 extern int32_t set_handler(int32_t signum, void* handler_address);
 extern int32_t sigreturn(void);
-
 pcb_t * get_pcb_address(uint32_t pid);
 
 // handler for system calls

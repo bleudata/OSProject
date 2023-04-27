@@ -107,7 +107,5 @@ void buffer_swap(uint32_t old_terminal, uint32_t new_terminal);
 
 void copy_video_memory(unsigned char * destination, unsigned char * source);
 
-void sanity_check();
-
 #endif
 
