@@ -190,7 +190,6 @@ uint32_t bshell_count(){
     }
     
     return count;
-    //or return counter+1;
 }
 
 //set top process to be equal to some pid, or -1 for no process

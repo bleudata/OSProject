@@ -408,7 +408,7 @@ int32_t execute(const uint8_t* command){
 
 /*
  * get_pid
- *   DESCRIPTION: Returns the current pid
+ *   DESCRIPTION: Returns the current pid (only used by execute bois)
  *   INPUTS: 
  *   OUTPUTS: none
  *   RETURN VALUE: the current pid, -1 if fail
@@ -623,4 +623,9 @@ extern int32_t set_handler(int32_t signum, void* handler_address) {
  */
 extern int32_t sigreturn(void) {
     return -1;
+}
+
+uint32_t get_process_terminal(uint32_t pid){
+    pcb_t * pcb = get_pcb_address(pid);
+    return pcb->terminal;
 }

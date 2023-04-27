@@ -16,6 +16,7 @@ typedef struct __attribute__ ((packed)) {
     // unsigned char * storage_addr; // pointer to the page used to store data in virtual memory
     // uint32_t storage_offset;
     keyboard_buf_t keyboard;
+    int32_t rtc_idx;
     
 } terminal_t;
 

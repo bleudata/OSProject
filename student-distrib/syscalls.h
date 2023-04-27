@@ -113,5 +113,7 @@ pcb_t * get_pcb_address(uint32_t pid);
 // handler for system calls
 extern void system_call_handler_lnk();
 
+uint32_t get_process_terminal(uint32_t pid);
+
 #endif /*SYSCALLS_H*/
 

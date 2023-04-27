@@ -37,12 +37,15 @@ void rtc_irq_handler() {
     outb(RTC_REG_C, RTC_REG_PORT); // select register c
     result = inb(RTC_RW_PORT); // need to read from c register or the interrupt won't happen again
     send_eoi(RTC_IRQ);
-    uint32_t idx = get_cur_user_terminal();
-    if(rtc_ctr[idx] < rtc_syshz_per_uhz[idx]){
-        rtc_ctr[idx]++;
-    }
-    else{
-        rtc_irq_flag[idx] = RTC_FLAG_SET;
+
+    int idx;
+    for(idx = 0; idx < 3; idx++){
+        if(rtc_ctr[idx] < rtc_syshz_per_uhz[idx]){
+            rtc_ctr[idx]++;
+        }
+        else{
+            rtc_irq_flag[idx] = RTC_FLAG_SET;
+        }
     }
 }
 
@@ -68,6 +71,7 @@ int32_t rtc_open(const uint8_t* filename){
     outb((prev & RTC_DATA_UPPER_BYTE) | rate, RTC_RW_PORT); //write only our rate to A. Note, rate is the bottom 4 bits.
 
     uint32_t idx = get_cur_user_terminal();
+
     rtc_ctr[idx] = 1;
     rtc_syshz_per_uhz[idx] = RTC_USR_DEFAULT; //since its init, the system frequency of interrupts will always be 1 of itself
     
@@ -122,8 +126,11 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
     if(nbytes < 0){
         return -1;
     }
-    //sanity_check();
-    uint32_t idx = get_cur_user_terminal();
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
+    uint32_t pid = pcb_address->pid;
+    uint32_t idx = get_process_terminal(pid);
+
     rtc_ctr[idx] = 0;
     rtc_irq_flag[idx] = RTC_GLOB_RES_VAR;
     while(rtc_irq_flag[idx] != RTC_FLAG_SET);
@@ -167,7 +174,7 @@ int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes){
     /*Should load the ratio of 1 system cycle per however many requested user cycles*/
     uint32_t idx = get_cur_user_terminal();
     rtc_syshz_per_uhz[idx] = RTC_HZ / req_freq;
-    // printf("idx: %d \n", idx);
+    //printf("idx: %d \n", idx);
     // printf("value: %d", RTC_HZ / req_freq);
     return RTC_PASS;
 }
