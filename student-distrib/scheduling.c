@@ -4,7 +4,7 @@
 //changes6
 int32_t top_process[3] = {-1,-1,-1}; //-1: no process, else pid of top process
 int32_t schedule_flag = 0;
-uint32_t cur_sched_terminal = 2; //sched
+int32_t cur_sched_terminal = 0; //sched has to be 2
 //uint32_t user_terminal = 0; //keyboard and sched
 uint32_t cur_user_terminal = 0; //same as user_terminal for now
 uint32_t counter = 0;
@@ -34,23 +34,25 @@ void user_switch_handler(){
 
     //switching into sched terminal
     if(target_terminal == cur_sched_terminal){
+        cur_user_terminal = target_terminal;
         vidmap_helper(USER_VID_MEM); //map user virtual video memory to actual video memory
 
         //TODO change terminal write to write to video mem
         set_video_mem((unsigned char *)VIDMEM);
 
-        cur_user_terminal = target_terminal;
+        
         return;
     }
 
     //switching out of sched terminal
     if(cur_user_terminal == cur_sched_terminal){
+        cur_user_terminal = target_terminal;
         vidmap_change(USER_VID_MEM, cur_sched_terminal); // map user vid mem to correct terminal buffer
 
         //TODO change terminal write to write to cur_sched_terminal buffer
-        set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB));
+        set_video_mem((unsigned char *)(VIDMEM + FOUR_KiB*cur_sched_terminal + FOUR_KiB));
 
-        cur_user_terminal = target_terminal;
+        
         return;
     }
     cur_user_terminal = target_terminal;
@@ -79,6 +81,7 @@ uint32_t schedule(){
 
     //^ or this
     if(counter < 2){
+        cur_sched_terminal+=1;
         counter +=1;
         uint8_t cmd[6] = "shell";
         //printf("first two PIT\n");
@@ -111,11 +114,12 @@ uint32_t schedule(){
     //== 2 is terminal 1
     //== 
 
-    if(special_counter == 2){
-        send_eoi(0);
-        return;
-    }
-    special_counter +=1;
+    // if(special_counter == 0){
+        
+    //     send_eoi(0);
+    //     return;
+    // }
+    // special_counter +=1;
 
     //only reach here on the third PIT interrupt and after
 

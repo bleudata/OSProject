@@ -15,6 +15,7 @@
 #define PROGRAM_START   0x08048000  
 #define EIGHT_MB        0x800000
 #define EIGHT_KB        0x2000
+#define FOUR_KiB        0x1000
 #define FOUR_MB         0x400000 //4MB
 #define PROGRAM_END     PROGRAM_START + FOUR_MB - 1
 #define ESP_VIRT_START  0x083FFFFC

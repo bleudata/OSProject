@@ -127,6 +127,7 @@ void vidmap_helper(uint32_t virtual_address){
     user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
     user_vid_mem[pt_offset].pt_fields.present = 1;
     user_vid_mem[pt_offset].pt_fields.read_write = 1;
+    // user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET;
     //should depend on which terminal process is on and which terminal user is on
     if(get_cur_user_terminal() == get_cur_sched_terminal()){
         user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET;
