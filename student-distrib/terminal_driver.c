@@ -251,26 +251,24 @@ unsigned char set_user_terminal_num(unsigned char num) {
 
 /*
  * get_user_terminal
- *   DESCRIPTION: returns the address of the terminal struct corresponding to the active terminal
+ *   DESCRIPTION: returns the address of the terminal struct corresponding to the terminal visible to the user
  *   INPUTS: none
  *   OUTPUTS: none
- *   RETURN VALUE: address of the terminal struct corresponding to the active terminal
+ *   RETURN VALUE: address of the terminal struct corresponding to the terminal visible to the user 
  *   SIDE EFFECTS: none
  */
 terminal_t* get_user_terminal() {
     return &(terminal_array[user_terminal_num]);
 }
 
-terminal_t* first_get_terminal() {
-    return &(terminal_array[1]);
-}
-
-terminal_t* second_get_terminal() {
-    return &(terminal_array[2]);
-}
-
-
-
+/*
+ * get_terminal
+ *   DESCRIPTION: returns the address of the terminal struct corresponding to the input index into the terminal array
+ *   INPUTS: num -- index into the terminal array
+ *   OUTPUTS: none
+ *   RETURN VALUE: address of the terminal struct corresponding to the input index
+ *   SIDE EFFECTS: none
+ */
 terminal_t * get_terminal(unsigned char num) {
     return &(terminal_array[num]);
 }

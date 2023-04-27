@@ -581,7 +581,8 @@ void shift_screen_up() {
 
 /*
  * shift_screen_up_vidmem
- *   DESCRIPTION: moves everything on the screen up one line and makes a blank line for the last line
+ *   DESCRIPTION: only in the keyboard handler, always actual video mem, moves everything on the screen up one line 
+ *   and makes a blank line for the last line
  *   INPUTS: color -- upper four bits is background color, lower four bits is attribute color
  *   OUTPUTS: none
  *   RETURN VALUE: none
@@ -627,7 +628,7 @@ void color_screen(unsigned char color) {
  *   SIDE EFFECTS: deletes a character on the screen
  */
 void unput_c(unsigned char input) {
-    terminal_t * terminal = get_user_terminal();
+    terminal_t * terminal = get_user_terminal(); // always get the user terminal because can only backspace on the visible terminal
     int * my_screen_x = &(terminal->screen_x);
     int * my_screen_y = &(terminal->screen_y);
     unsigned char line_flag = 0;

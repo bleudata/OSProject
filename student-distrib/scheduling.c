@@ -7,8 +7,6 @@ int32_t cur_sched_terminal = 0; //sched has to be 2, currently scheduled termina
 uint32_t cur_user_terminal = 0; // the visible / displayed terminal
 uint32_t counter = 0; // for first time bootup of 3 shells
 uint32_t target_terminal = 0; // terminal to switch to
-uint32_t special_counter = 0; // for testing, use to make scheduler stuck on one terminal
-
 
 /*
  * get_cur_user_terminal
@@ -84,33 +82,20 @@ void user_switch_handler(){
 
 /*
  * schedule
- *   DESCRIPTION: Remaps and copies memory to and from storage / video memory when the user switches the visible terminal in the keyboard handler.
+ *   DESCRIPTION: changes scheduled process
  *   INPUTS: none
  *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: updates target_terminal
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS: none
  */
 uint32_t schedule(){
-    // if(schedule_flag == 0){
-    //     return -1;
-    // }
-
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
 
     register uint32_t cur_ebp asm("ebp");
     pcb_address->scheduler_ebp = cur_ebp; //save value of ebp to pcb
 
-    
-
-    // int i; //execute all base shells
-    // for(i = 1; i < 3; i++){
-    //     if(top_process[i] == -1){
-    //         execute("shell"); // have to edit execute to make this work
-    //     }
-    // }
-
-    //^ or this
+    // to load 3 base shells on boot up
     if(counter < 2){
         cur_sched_terminal+=1;
         counter +=1;
@@ -118,41 +103,29 @@ uint32_t schedule(){
         if(counter ==1 ){
             vidmap_change(USER_VID_MEM, 1);
             
-            //TODO 2. map terminal write to terminal buffer 1
+            // map terminal write to terminal buffer 1
             set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*1 + FOUR_KB));
-            terminal_t * terminal = first_get_terminal();
+            terminal_t * terminal = get_terminal(1);
             set_screen_x(&(terminal->screen_x));
             set_screen_y(&(terminal->screen_y));
         }
         if(counter ==2){
             vidmap_change(USER_VID_MEM, 2);
 
-            //TODO 2. map terminal write to terminal buffer
+            // map terminal write to terminal buffer
             set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*2 + FOUR_KB));
-            terminal_t * terminal = second_get_terminal();
+            terminal_t * terminal = get_terminal(2);
             set_screen_x(&(terminal->screen_x));
             set_screen_y(&(terminal->screen_y));
         }
         
         send_eoi(0);
         execute(cmd);
-    }//else{
-    //     send_eoi(0);
-    //     return;
-    // }
-    
-    // test case, keep scheduler stuck to one terminal only
-    // if(special_counter == 0){ // == 0 to get stuck on terminal 2
-        
-    //     send_eoi(0);
-    //     return;
-    // }
-    // special_counter +=1;
+    }
 
     //only reach here on the third PIT interrupt and after
-
     //increment terminal number to get next terminal number
-    cur_sched_terminal = (cur_sched_terminal + 1) % 3;
+    cur_sched_terminal = (cur_sched_terminal + 1) % 3; // round robin, move to next terminal
     
     int32_t next_pid = top_process[cur_sched_terminal];
     pcb_t * next_process_pcb = (pcb_t *)get_pcb_address(next_pid);

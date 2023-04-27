@@ -614,6 +614,15 @@ extern int32_t sigreturn(void) {
     return -1;
 }
 
+
+/*
+ * get_process_terminal
+ *   DESCRIPTION: gets terminal assigned to the input process
+ *   INPUTS: pid -- process id to find terminal for
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 if successful, -1 if fail
+ *   SIDE EFFECTS:  none
+ */
 uint32_t get_process_terminal(uint32_t pid){
     pcb_t * pcb = get_pcb_address(pid);
     return pcb->terminal;

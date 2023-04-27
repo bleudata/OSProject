@@ -14,6 +14,4 @@ void set_top_process(int32_t terminal, int32_t pid);
 uint32_t get_cur_sched_terminal();
 uint32_t get_cur_user_terminal();
 
-// extern int32_t top_process[3]; could do this
-
 #endif /*SYSCALLS_H*/
