@@ -39,6 +39,7 @@ int8_t* strcpy(int8_t* dest, const int8_t*src);
 int8_t* strncpy(int8_t* dest, const int8_t*src, uint32_t n);
 void test_interrupts(void);
 void shift_screen_up();
+void shift_screen_up_vidmem();
 void color_screen(unsigned char color);
 void unput_c(unsigned char input);
 int get_x_position(); 

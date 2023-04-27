@@ -179,13 +179,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     
     printf("Enabling Interrupts\n");
-    
-    // if(file_sys_start == boot_block){
-    //     printf("sys_start same as bootblock");
-    // }
-    // if((file_sys_start + 4096) == inode_array){
-    //     printf("sys_start+4096 same as inode_array");
-    // }
+   
 #ifdef RUN_TESTS
     clear_reset_cursor(); // clear screen and reset cursor
     /* Run tests */

@@ -232,7 +232,7 @@ void putc_vidmem(uint8_t c) {
     int * my_screen_y = &(terminal->screen_y); 
      if(c == '\n' || c == '\r') {
         if((*my_screen_y + 1) > NUM_ROWS-1) { // if currently on the last row need to vertical scroll
-            shift_screen_up();
+            shift_screen_up_vidmem();
         }
         else {
             *my_screen_y = (*my_screen_y + 1); // next row
@@ -244,7 +244,7 @@ void putc_vidmem(uint8_t c) {
         *(uint8_t *)((char*)VIDEO + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1) + 1) = ATTRIB;
         if(((*my_screen_x)+1) > NUM_COLS-1) {
             if(((*my_screen_y) + 1) > NUM_ROWS-1) { // might need to shift the screen, check if at the bottom of the screen
-                shift_screen_up();
+                shift_screen_up_vidmem();
             }
             else {
                 *my_screen_y = (*my_screen_y) + 1; // or just go to the next row
@@ -566,7 +566,6 @@ void test_interrupts(void) {
  *   SIDE EFFECTS: colors the background of the screen and the character color
  */
 void shift_screen_up() {
-    //printf(" inside shift screen up");
     int i;
     int offset = NUM_COLS*2; // text memory is 2 bytes, first byte is ascii, second is attribute
     for(i = 0; i < (SCREEN_BYTES   - offset ); i = i+2) { // new row of screen will be what was previously the row after
@@ -579,6 +578,28 @@ void shift_screen_up() {
     }
 }
 
+
+/*
+ * shift_screen_up_vidmem
+ *   DESCRIPTION: moves everything on the screen up one line and makes a blank line for the last line
+ *   INPUTS: color -- upper four bits is background color, lower four bits is attribute color
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: colors the background of the screen and the character color
+ */
+void shift_screen_up_vidmem() {
+    int i;
+    int offset = NUM_COLS*2; // text memory is 2 bytes, first byte is ascii, second is attribute
+    char * video_ptr = (char * )VIDEO;
+    for(i = 0; i < (SCREEN_BYTES   - offset ); i = i+2) { // new row of screen will be what was previously the row after
+        video_ptr[i] = video_ptr[i+offset]; //  ascii character
+        video_ptr[i+1] = GRAY_ON_BLACK; // attribute
+    }
+    for(i = SCREEN_BYTES - offset; i < SCREEN_BYTES; i = i+2) {
+        video_ptr[i] = ' ';
+        video_ptr[i+1] = GRAY_ON_BLACK;
+    }
+}
 
 /*
  * color screen

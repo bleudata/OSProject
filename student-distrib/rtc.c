@@ -185,7 +185,5 @@ int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes){
     uint32_t pid = pcb_address->pid;
     uint32_t idx = get_process_terminal(pid);
     rtc_syshz_per_uhz[idx] = RTC_HZ / req_freq;
-    //printf("idx: %d \n", idx);
-    // printf("value: %d", RTC_HZ / req_freq);
     return RTC_PASS;
 }

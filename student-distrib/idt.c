@@ -154,30 +154,20 @@ void setup_idt() {
  *   SIDE EFFECTS: calls the interrupt handler corresponding to the input vector
  */
  void generic_handler(int vector) {
-    //clear();
-    //printf("printing vector %d \n", vector);
     if(vector >= 0 && vector <= 19) {
         set_exception_flag();
-        //printf("vector num: %d \n", vector);
         halt(0);
-        //while(1);
         generic_intel_handler(vector);
     }else if(vector == PIT_VECTOR){
-        //printf("vector num: %d \n", vector);
-        //printf("PIT\n");
         schedule();
     }
     else if(vector == KEYBOARD_VECTOR) {
         keyboard_irq_handler(); // this is from pic file
     }
     else if(vector == RTC_VECTOR) {
-        //printf("entered rtc if statement");
         rtc_irq_handler(); // this is from rtc file
     }
-    
-    // else if(vector == SYSTEM_CALL_VECTOR) {
-    //     generic_system_call_handler();
-    // }
+
  }
 
 /*
@@ -190,7 +180,6 @@ void setup_idt() {
  *   SIDE EFFECTS: prints message to the screen saying which exception occured
  */
 void generic_intel_handler(int vector) {
-    //printf("before line 139 if statement hello \n");
     if(vector < 0 || vector > 19) {
        return; // invalid vector number for this function
     }

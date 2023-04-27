@@ -37,7 +37,6 @@ void filesys_init(uint32_t* fileimg_address){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
-    // printf(" in read dentry by name %s \n", fname);
     //null check for name and dentry
     if(fname == NULL || dentry == NULL){
         return -1;
@@ -51,17 +50,14 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     // uint32_t str_length = strlen((int8_t*)fname);
     int i; //loop over dir_entries array and find dentry with matching filename's index, call read_dentry_by_index
     for(i = 0; i<num_dir_entries ; i++){
-        //printf("%d\n", strlen(boot_block->dir_entries[i].filename));
         if(strlen((int8_t*)fname)==32){
             if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen((int8_t*)fname)) == 0){
-                //printf("\n herere");
                 return read_dentry_by_index(i, dentry); 
             }
         } else {
 
             if(strlen(boot_block->dir_entries[i].filename) == strlen((int8_t*)fname)){
                 if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen((int8_t*)fname)) == 0){
-                //printf("\n herere");
                 return read_dentry_by_index(i, dentry); 
                 }
             }
@@ -106,7 +102,6 @@ int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
     
     inode_struct* cur_inode = &(inode_array[inode]); //ptr to inode of file to read from
-    //printf("file length: %d \n",cur_inode->length );
     int file_remainder = cur_inode->length - offset; //remaining bytes in file to read
     unsigned int data_block_count = boot_block->data_block_count; //num of data blocks for sanity check
 
@@ -153,8 +148,6 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t file_open(const uint8_t* filename){
-    // printf(" in file open %s\n", filename);
-    //d_entry * dentry;
     // filename length check
     if(strlen((int8_t*)filename) > MAX_FILE_LENGTH || filename == NULL){
         return -1;
@@ -191,8 +184,6 @@ int32_t file_close(int32_t fd){
  *   RETURN VALUE: number of bytes read
  */
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
-    // printf(" in file read\n");
-
     //sanity check
     if(buf == NULL){
         return -1;
@@ -234,7 +225,6 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
  *   RETURN VALUE: fd of dentry/file on sucess, -1:fail
  */
 int32_t dir_open(const uint8_t* filename){
-    // printf("in directory open %s \n", filename);
     if(filename == NULL){
         return -1;
     }
@@ -337,7 +327,6 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
  *   RETURN VALUE: length of file in bytes
  */
 uint32_t get_file_length(int32_t inode_num){
-    //printf("INODE NUM: %d \n", inode_num);
     return inode_array[inode_num].length;
 }
 
