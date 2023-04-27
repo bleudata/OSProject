@@ -69,10 +69,15 @@ int32_t rtc_open(const uint8_t* filename){
     char prev = inb(RTC_RW_PORT);	// get initial value of register A, should be 32kHz
     outb(RTC_REG_A_DISABLE, RTC_REG_PORT);		// reset index to A
     outb((prev & RTC_DATA_UPPER_BYTE) | rate, RTC_RW_PORT); //write only our rate to A. Note, rate is the bottom 4 bits.
+    
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
+    uint32_t pid = pcb_address->pid;
+    uint32_t idx = get_process_terminal(pid);
 
-    uint32_t idx = get_cur_user_terminal();
+    // uint32_t idx = get_cur_user_terminal();
 
-    rtc_ctr[idx] = 1;
+    rtc_ctr[idx] = 0;
     rtc_syshz_per_uhz[idx] = RTC_USR_DEFAULT; //since its init, the system frequency of interrupts will always be 1 of itself
     
     d_entry dentry;
@@ -100,7 +105,10 @@ int32_t rtc_close(int32_t fd){
         return -1;
     }
 
-    uint32_t idx = get_cur_user_terminal();
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
+    uint32_t pid = pcb_address->pid;
+    uint32_t idx = get_process_terminal(pid);
     rtc_ctr[idx] = 1;
     rtc_syshz_per_uhz[idx] = RTC_USR_DEFAULT; //reset the # of interrupts per system freq to be just 1, so its itself
     return RTC_PASS;
@@ -172,7 +180,10 @@ int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes){
     }
 
     /*Should load the ratio of 1 system cycle per however many requested user cycles*/
-    uint32_t idx = get_cur_user_terminal();
+    register uint32_t cur_esp asm("esp");
+    pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
+    uint32_t pid = pcb_address->pid;
+    uint32_t idx = get_process_terminal(pid);
     rtc_syshz_per_uhz[idx] = RTC_HZ / req_freq;
     //printf("idx: %d \n", idx);
     // printf("value: %d", RTC_HZ / req_freq);
