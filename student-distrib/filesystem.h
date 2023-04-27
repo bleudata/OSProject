@@ -43,18 +43,8 @@ typedef struct __attribute__ ((packed)){
     uint8_t data[DATA_BLOCK_NUM_BYTES]; //4096
 }data_struct;
 
-//4KB size bad bad idea..
-// typedef union{
-//     boot_block_struct boot_type;
-//     inode_block_struct inode_type;
-//     uint8_t data[4096];
-// }file_sys_block;
-
-
-
 //file_init -> just initialize global variables(pointers to stuff inside the filesystem)
 extern void filesys_init(uint32_t* fileimg_address);
-
 
 //fopen (args same as sys calls because called by them) (+design choice for dentry things)
 int32_t file_open(const uint8_t* filename);
@@ -91,9 +81,6 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
 // returns length of file in bytes
 uint32_t get_file_length(int32_t inode_num);
-
-
-int32_t prog_loader();
 
 //return address of cp2_dentry
 d_entry * get_cp2_dentry_address();

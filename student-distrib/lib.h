@@ -7,20 +7,21 @@
 
 #include "types.h"
 
-#define VIDEO       0xB8000
-#define NUM_COLS    80
-#define NUM_ROWS    25
+#define VIDEO           0xB8000
+#define NUM_COLS        80 // the screen has 80 characters per line
+#define NUM_ROWS        25 // the screen has 25 lines
 #define SCREEN_SIZE     NUM_COLS*NUM_ROWS
-#define SCREEN_BYTES    NUM_COLS*NUM_ROWS*2
-#define ATTRIB      0x7
-#define BSOD        0x1F
+#define SCREEN_BYTES    NUM_COLS*NUM_ROWS*2 // 2 bytes per char, 1 for char, 1 for attribute
+#define ATTRIB          0x7
+#define BSOD            0x1F
 #define GRAY_ON_BLACK   0x07
 #define MAX_SCANLINE    14 // number of pixels for character height - 1
 #define VGA_ADDR_REG    0x3D4
 #define VGA_DATA_REG    0x3D5
 
 int32_t printf(int8_t *format, ...);
-void putc(uint8_t c);
+void putc(uint8_t c); // can print to video mem or background process storage mem
+void putc_vidmem(uint8_t c); //always prints to video mem
 int32_t puts(int8_t *s);
 int8_t *itoa(uint32_t value, int8_t* buf, int32_t radix);
 int8_t *strrev(int8_t* s);
@@ -38,10 +39,14 @@ int8_t* strcpy(int8_t* dest, const int8_t*src);
 int8_t* strncpy(int8_t* dest, const int8_t*src, uint32_t n);
 void test_interrupts(void);
 void shift_screen_up();
+void shift_screen_up_vidmem();
 void color_screen(unsigned char color);
 void unput_c(unsigned char input);
-int get_x_position();
+int get_x_position(); 
 int get_y_position();
+void set_screen_x(int * new_x);
+void set_screen_y(int * new_y);
+void set_video_mem(unsigned char * new_video_address);
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);
 int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);

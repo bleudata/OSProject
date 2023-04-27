@@ -15,6 +15,7 @@
 #define PROGRAM_START   0x08048000  
 #define EIGHT_MB        0x800000
 #define EIGHT_KB        0x2000
+#define FOUR_KiB        0x1000
 #define FOUR_MB         0x400000 //4MB
 #define PROGRAM_END     PROGRAM_START + FOUR_MB - 1
 #define ESP_VIRT_START  0x083FFFFC
@@ -22,7 +23,7 @@
 #define PCB_STACK       0xFFFFE000
 #define VIRT_MEM_PAGE   0x08000000
 #define VIRT_MEM_SHIFT  22
-#define USER_VMEM       0xDBBA0000
+#define USER_VID_MEM    0xDBBA0000
 
 #define KERNEL_START    0x400000
 #define KERNEL_END      0x800000
@@ -48,7 +49,15 @@
 
 #define STDIN_FD        0
 #define STDOUT_FD       1
-
+//vid mem: 0xb8000
+//t0 mem : 0xb9000
+//t1 mem : 0xba000
+//t2 mem : 0xbb000
+// p2 kernel stack ebp location: 7F BFBC i think have to minus 4 for all
+// p1 kernel stack ebp location: 7F DFBC
+// p0 kernel stack ebp location: 7F FFBC
+// EIGHT_MB - pid*EIGHT_KB -20 -32 - 4 - 4 -8
+// 0x800000 -5 -8*4 -1*4-1*4-2*4
 // Function pointer struct 
 typedef struct __attribute__ ((packed)){
     int32_t (*open)(const uint8_t* filename);
@@ -74,17 +83,18 @@ typedef struct __attribute__ ((packed)){
     fd_entry fd_array[8]; // file descriptors: we need the actual array of file descriptors
     uint32_t parent_esp;
     uint32_t parent_ebp;
+    uint32_t scheduler_ebp; //ebp for scheduling
     uint8_t active;
     uint8_t args_data[KEYBOARD_BUF_SIZE];
     uint8_t args_length;
+    uint32_t terminal;
+
 } pcb_t;
 
 
 
 uint32_t get_pid();
-
 extern void set_exception_flag();
-
 extern int32_t halt(uint8_t status);
 extern int32_t execute(const uint8_t* command);
 extern int32_t read(int32_t fd, void* buf, int32_t nbytes);
@@ -95,11 +105,12 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes);
 extern int32_t vidmap(uint8_t** screen_start);
 extern int32_t set_handler(int32_t signum, void* handler_address);
 extern int32_t sigreturn(void);
-
 pcb_t * get_pcb_address(uint32_t pid);
 
 // handler for system calls
 extern void system_call_handler_lnk();
+
+uint32_t get_process_terminal(uint32_t pid);
 
 #endif /*SYSCALLS_H*/
 

@@ -51,6 +51,16 @@ void init_paging() {
     first_page_table[VMEM_OFFSET].pt_fields.present = 1;
     first_page_table[VMEM_OFFSET].pt_fields.read_write = 1;
     first_page_table[VMEM_OFFSET].pt_fields.page_address = VMEM_OFFSET;
+
+    //initialize 4kb buffer kernel mapping for terminal 0,1 and 2 
+    int terminal_num;
+    for(terminal_num = 0; terminal_num < 3; terminal_num++){ // check privilege mapping
+        page_directory[0].entry = (uint32_t)(first_page_table) | VMEM_ENTRY_SET;
+        first_page_table[VMEM_OFFSET+terminal_num+1].pt_fields.present = 1;
+        first_page_table[VMEM_OFFSET+terminal_num+1].pt_fields.read_write = 1;
+        first_page_table[VMEM_OFFSET+terminal_num+1].pt_fields.page_address = VMEM_OFFSET + terminal_num+1;
+    }
+    
     
     //load page dir to %cr3, enable mixed size pages and turn on paging
     load_page_dir((uint32_t *)page_directory);
@@ -60,8 +70,8 @@ void init_paging() {
 
 /*
  * map_helper()
- *   DESCRIPTION: maps virtual memory 128 MB to the correct 4MB page in physical memory depending on the pid
- *   INPUTS: pid - is a process ID BRO
+ *   DESCRIPTION: maps virtual memory 128 MB (program memory) to the correct 4MB page in physical memory depending on the pid
+ *   INPUTS: pid - is a process ID 
  *   OUTPUTS: none
  *   RETURN VALUE: none
  *   SIDE EFFECTS: none 
@@ -117,7 +127,51 @@ void vidmap_helper(uint32_t virtual_address){
     user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
     user_vid_mem[pt_offset].pt_fields.present = 1;
     user_vid_mem[pt_offset].pt_fields.read_write = 1;
-    user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET;
+    // user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET;
+    //should depend on which terminal process is on and which terminal user is on
+    if(get_cur_user_terminal() == get_cur_sched_terminal()){
+        user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET;
+    }else{
+        user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET + get_cur_sched_terminal() + 1;
+    }
+    
     flush_tlb();
+}
+
+// set user vid mem to point to terminal buffer
+void vidmap_change(uint32_t virtual_address, uint32_t terminal){
+    uint32_t pd_offset = virtual_address >> VIRT_MEM_SHIFT;
+    uint32_t pt_offset = (virtual_address & PT_INDEX_MAP) >>12; 
+    page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | 7; 
+    user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
+    user_vid_mem[pt_offset].pt_fields.present = 1;
+    user_vid_mem[pt_offset].pt_fields.read_write = 1;
+    user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET + terminal + 1;
+    flush_tlb();
+}
+
+// swap terminal buffer and video memory for two terminals
+void buffer_swap(uint32_t old_terminal, uint32_t new_terminal){
+    //vid mem to old_terminal , maybe do for loop if slow
+    copy_video_memory((unsigned char *)(VIDMEM + FOUR_KB + FOUR_KB*old_terminal),  (unsigned char *)VIDMEM  );
+    
+    //new_terminal to vidmem
+    copy_video_memory((unsigned char *)VIDMEM  ,   (unsigned char *)(VIDMEM + FOUR_KB + FOUR_KB*new_terminal)  );
+}
+
+/*
+ * copy_video_memory()
+ *   DESCRIPTION: Copys a 4KB block of memory from source to destination
+ *   INPUTS: source - 4KB block to copy from
+ *           destination - 4KB block to copy to
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: changes physical memory
+ */
+void copy_video_memory(unsigned char * destination, unsigned char * source) {
+    int i;
+    for (i = 0; i < 4096; i++) {
+        destination[i] = source[i];
+    }
 }
 

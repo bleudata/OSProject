@@ -16,6 +16,7 @@
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 #include "rtc.h"
+#include "pit.h"
 
 #define RUN_TESTS
 
@@ -163,8 +164,10 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("done with idt init");
     // now unmask the irqs we want
     enable_irq(PIC2_IRQ); 
+    pit_init(200);
     keyboard_init();
     rtc_init();
+    terminal_init();
     enable_cursor(MAX_SCANLINE, MAX_SCANLINE); 
     update_cursor(0,0);
     //init fops tables
@@ -176,13 +179,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     
     printf("Enabling Interrupts\n");
-    sti();
-    // if(file_sys_start == boot_block){
-    //     printf("sys_start same as bootblock");
-    // }
-    // if((file_sys_start + 4096) == inode_array){
-    //     printf("sys_start+4096 same as inode_array");
-    // }
+   
 #ifdef RUN_TESTS
     clear_reset_cursor(); // clear screen and reset cursor
     /* Run tests */
@@ -213,7 +210,7 @@ void entry(unsigned long magic, unsigned long addr) {
     
     
     
-    
+    sti(); 
     uint8_t cmd[6] = "shell";
     execute(cmd);
     

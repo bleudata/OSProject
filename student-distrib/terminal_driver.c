@@ -9,6 +9,44 @@
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 
+terminal_t terminal_array[3];
+unsigned char user_terminal_num = 0; //terminal that user is on
+
+/*
+ * terminal_init
+ *   DESCRIPTION: Sets the values in each of the terminal structs in the terminal array, and clears the keyboard buffers for each terminal
+ *   INPUTS: filename -- name of file to open
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS:  none
+ */
+void terminal_init(){
+    int i;
+    for(i = 0; i < 3; i++) {
+        terminal_array[i].keyboard.buf_position = terminal_array[i].keyboard.keyboard_buf;
+        terminal_array[i].keyboard.buf_end_addr = (terminal_array[i].keyboard.keyboard_buf) + KEYBOARD_BUF_SIZE - 1; 
+        terminal_array[i].keyboard.buf_line_two_addr = (terminal_array[i].keyboard.keyboard_buf) + NEWLINE_INDEX;
+        terminal_array[i].screen_x = 0;
+        terminal_array[i].screen_y = 0;
+        terminal_array[i].keyboard.enter_count = 0;
+        terminal_array[i].keyboard.read_flag = 0;
+    }
+
+    // clear keyboard buffers and initialize display terminal to 0
+    user_terminal_num = 2; 
+    set_active_terminal_and_keyboard(&terminal_array[2]);
+    purge_keyboard_buffer();
+    user_terminal_num = 1;
+    set_active_terminal_and_keyboard(&terminal_array[1]);
+    purge_keyboard_buffer();
+    user_terminal_num = 0; // default to have terminal 0 visible
+    set_active_terminal_and_keyboard(&terminal_array[0]);
+    set_screen_x(&(terminal_array[0].screen_x));
+    set_screen_y(&(terminal_array[0].screen_y));
+    purge_keyboard_buffer();
+    // need to set each terminal to have the active keyboard buffer and purge the buffer to help the init
+}
+
 /*
  * terminal_open
  *   DESCRIPTION: Doesn't actually do anything, just need to match system call params
@@ -20,6 +58,7 @@
 int32_t terminal_open(const uint8_t* filename) {
     return 0;
 }
+
 /*
  * terminal_read
  *   DESCRIPTION: Reads from the keyboard buffer and copies specified number of bytes into an array given by the user
@@ -34,9 +73,10 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     // Return data from one line that ended in \n or a full buffer
     int32_t i, ret; // loop counter and index, also counts the number of characters read
     unsigned char * new_buf = (unsigned char *)buf;
+    //terminal_t * terminal = get_terminal(1);
+    terminal_t * terminal = get_terminal(get_cur_sched_terminal()); //update terminal and keyboard structs to the one that is currently displayed
   // now use newBuf instead of buf
-    unsigned char * keyboard_buf;
-    keyboard_buf = get_keyboard_buffer();
+
     set_read_flag(1); // tell keyboard we're inside a terminal read
 
     // validate input, null pointer provided by user
@@ -63,10 +103,10 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     ret = 0;
     
     // Loop while we wait for an enter
-    while(get_enter_count() < 1);
+    while(terminal->keyboard.enter_count < 1);
     // Read the keyboard buffer and delete it 
-    while((i < n) && (keyboard_buf[i] != '\n')) {
-        new_buf[i] = keyboard_buf[i]; 
+    while((i < n) && (terminal->keyboard.keyboard_buf[i] != '\n')) {
+        new_buf[i] = terminal->keyboard.keyboard_buf[i]; 
         ret++;
         i++;
     }
@@ -106,14 +146,19 @@ int32_t terminal_write(int32_t fd, const void * buf, int32_t n) {
         return -1;
     }
 
-    // TODO: How do we know the buffer size? How to check if the buffer size is equal to n ?
+    // : How do we know the buffer size? How to check if the buffer size is equal to n ?
     for(i = 0; i < n; i ++) {
         if(new_buf[i] != '\0') {
             putc(new_buf[i]);
         }
     }
 
-    update_cursor(get_x_position(), get_y_position());
+    // TODO: find a way to check if the current process is shown on the active terminal
+    // only want to update the cursor if on the active terminal
+    if(get_cur_sched_terminal() == get_cur_user_terminal()){
+        update_cursor(get_x_position(), get_y_position());
+    }
+    
     return n;
 }
 
@@ -168,3 +213,42 @@ void update_cursor(int x, int y)
     outb((uint8_t) ((pos >> BYTE_SHIFT) & LOWER_16), VGA_DATA_REG);
 }
 
+/*
+ * set_user_terminal_num
+ *   DESCRIPTION: sets the active terminal number
+ *   INPUTS: num -- 0-2 corresponding to terminal number 
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 success, -1 fail
+ *   SIDE EFFECTS: terminal number changes
+ */
+unsigned char set_user_terminal_num(unsigned char num) {
+    if((num > 2)) {
+        return -1;
+    }
+    user_terminal_num = num;
+    return 0;
+}
+
+/*
+ * get_user_terminal
+ *   DESCRIPTION: returns the address of the terminal struct corresponding to the terminal visible to the user
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: address of the terminal struct corresponding to the terminal visible to the user 
+ *   SIDE EFFECTS: none
+ */
+terminal_t* get_user_terminal() {
+    return &(terminal_array[user_terminal_num]);
+}
+
+/*
+ * get_terminal
+ *   DESCRIPTION: returns the address of the terminal struct corresponding to the input index into the terminal array
+ *   INPUTS: num -- index into the terminal array
+ *   OUTPUTS: none
+ *   RETURN VALUE: address of the terminal struct corresponding to the input index
+ *   SIDE EFFECTS: none
+ */
+terminal_t * get_terminal(unsigned char num) {
+    return &(terminal_array[num]);
+}

@@ -6,7 +6,8 @@ uint32_t exception_flag = 0; //0 = no exception
 uint32_t process_count = 0;
 uint32_t pid_array[6] = {0,0,0,0,0,0}; //available pid
 uint32_t entry_point;
-uint32_t esp_start = ESP_VIRT_START;
+uint32_t esp_start = ESP_VIRT_START; 
+uint32_t terminal_num = 0;
 
 
 /*
@@ -36,8 +37,6 @@ int32_t open(const uint8_t* filename){
     if(filename == NULL){
         return -1;
     }
-    // printf(" 42 filename: %s\n", filename);
-    // printf(" \ndone with filename \n");
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
     
@@ -93,6 +92,7 @@ int32_t open(const uint8_t* filename){
     (pcb_address->fd_array[fd]).flag = 1;
 
     // Dont call respective open: just return the fd
+    // in actual os it actually does something like load file from disk
     if ((pcb_address->fd_array[fd]).fops.open(filename) == -1 ) 
         return -1;
 
@@ -137,6 +137,7 @@ int32_t close(int32_t fd){
  *   SIDE EFFECTS:  edits the PCB returns to parent process
  */
 int32_t halt(uint8_t status){
+    cli();
     uint32_t ret_status = status;
 
     //close all files
@@ -159,11 +160,18 @@ int32_t halt(uint8_t status){
     process_count-=1;
     //check if main shell
     if(parent_pid == -1){
-        tss.esp0 = EIGHT_MB - EIGHT_KB - UINT_BYTES; 
-        tss.ss0 = KERNEL_DS;
+        //cannot do this anymore for scheduling since it might overwrite kernel 1's stuff
+        // the kernel stack to use for pre base shell should be dependent on the pid of base shell
+        // tss.esp0 = EIGHT_MB - (pcb_address->pid)*EIGHT_KB - UINT_BYTES; 
+        // tss.ss0 = KERNEL_DS;
         // Unmap and call shell again
         destroy_mapping();
-        uint8_t cmd[SHELL_SIZE] = "shell";
+        uint8_t cmd[SHELL_SIZE] = "shell"; //what if a PIT interrupt occurs here and tries to switch here??
+        //problem because kernel stack of this terminal's top process is undefined
+        //unless PIT is not able to interrupt during this section.. cannot nest interrupt, priority??
+        // check about enabling scheduler function
+        set_top_process(pcb_address->terminal, -1);
+        //some how decrement base shell count
         execute(cmd);
 
     }else{
@@ -171,7 +179,7 @@ int32_t halt(uint8_t status){
         tss.ss0 = KERNEL_DS;
         map_helper(parent_pid);
         get_pcb_address(parent_pid)->active = 1;
-        
+        set_top_process(pcb_address->terminal, parent_pid);
     }
 
     uint32_t parent_esp = pcb_address->parent_esp;
@@ -188,6 +196,7 @@ int32_t halt(uint8_t status){
         movl %0, %%esp          \n\
         movl %1, %%ebp          \n\
         movl %2, %%eax          \n\
+        sti                     \n\
         leave                   \n\
         ret                     \n\
         "
@@ -210,14 +219,16 @@ int32_t halt(uint8_t status){
  *   SIDE EFFECTS:  Hands off the processor 
  */
 int32_t execute(const uint8_t* command){
+    cli();
     // Parameter check
     int i;
     uint8_t args_buffer[KEYBOARD_BUF_SIZE];
 
     if(command == NULL){
+        sti();
         return -1;
     }
-
+    
     if(process_count >= MAX_PROC_CNT){
         return 256;
     }
@@ -243,6 +254,7 @@ int32_t execute(const uint8_t* command){
     }
 
     if(cmd_cpy == NULL){
+        sti();
         return -1;
     }
 
@@ -258,6 +270,7 @@ int32_t execute(const uint8_t* command){
 
     d_entry dentry;
     if (read_dentry_by_name(fname, &dentry) == -1){
+        sti();
         return -1; 
     }
 
@@ -284,12 +297,14 @@ int32_t execute(const uint8_t* command){
     read_data(dentry.inode_num, 0, exe_check, EXE_BUF);
     
     if(strncmp((int8_t*)exe_check, (int8_t*)exe, EXE_BUF) != 0){
+        sti();
         return -1; 
     }
     
     /* Set up this programs paging */
     // Entry point into the progam (bytes 24 - 27 of the executable) OFFSET = 24 because thats the start of entrypoint
     if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, UINT_BYTES) < 4 ){  //@ i think should be <4
+        sti();
         return -1; 
     }
     uint32_t new_pid = get_pid();
@@ -302,6 +317,7 @@ int32_t execute(const uint8_t* command){
     if(read_data(dentry.inode_num, 0,  (uint8_t*)program_start , file_length) == -1){// write the executable file to the page
         destroy_mapping();
         pid_array[new_pid] = 0;
+        sti();
         return -1;
     }  //need to destroy mapping, and free pid, but it cant fail?
         
@@ -312,14 +328,20 @@ int32_t execute(const uint8_t* command){
     //fill in new process PCB
     pcb_t * pcb_address = get_pcb_address(new_pid);
     pcb_address->pid = new_pid;
-    if(process_count == 0){
+    if(process_count ==0 || bshell_count() < 3){ //for 3 base shells
         pcb_address->parent_pid = -1;
+        pcb_address->terminal = new_pid; //terminal num correspond to pid for base shells
+        set_top_process(pcb_address->terminal, new_pid);
     }else{
-        pcb_address->parent_pid = parent_pcb->pid;
-        register uint32_t parent_esp asm("esp");
-        pcb_address->parent_esp = parent_esp; // technically not needed
-        register uint32_t parent_ebp asm("ebp");
-        pcb_address->parent_ebp = parent_ebp;
+        pcb_address->parent_pid = parent_pcb->pid; // NOTSCHED
+        register uint32_t parent_esp asm("esp");  // NOTSCHED
+        pcb_address->parent_esp = parent_esp; // technically not needed // NOTSCHED
+        register uint32_t parent_ebp asm("ebp");// NOTSCHED
+        pcb_address->parent_ebp = parent_ebp;// NOTSCHED
+        pcb_address->terminal = parent_pcb->terminal;
+        //top_process[1] = 1;
+        set_top_process(parent_pcb->terminal, new_pid);
+        
     }
     pcb_address->args_length = k;
     // put the args into the pcb
@@ -344,8 +366,8 @@ int32_t execute(const uint8_t* command){
     pcb_address->fd_array[STDOUT_FD].flag = 1;
     
 
-    //setting the new TSS ESP0 and SS0
-    tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - UINT_BYTES;
+    //setting the new TSS ESP0 and SS0 // NOTSCHED
+    tss.esp0 = EIGHT_MB - new_pid*EIGHT_KB - UINT_BYTES; // normally - (largest register size)
     tss.ss0 = KERNEL_DS;
     
     // jump to the entry point of the program and begin execution
@@ -355,6 +377,8 @@ int32_t execute(const uint8_t* command){
     //line 3: This pushes the flags
     //line 4: This value is USER CS
     //line 5: This pushes the EIP
+
+    sti();
 
     asm volatile (" \n\
             pushl $0x002B           \n\
@@ -374,7 +398,7 @@ int32_t execute(const uint8_t* command){
 
 /*
  * get_pid
- *   DESCRIPTION: Returns the current pid
+ *   DESCRIPTION: Returns the current pid (only used by execute bois)
  *   INPUTS: 
  *   OUTPUTS: none
  *   RETURN VALUE: the current pid, -1 if fail
@@ -413,14 +437,13 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     if(nbytes < 0){
         return -1;
     }
-
+    
     register uint32_t cur_esp asm("esp");
     pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
 
     if((pcb_address->fd_array[fd]).flag == 0){
         return -1;
     }
-
     //check if its terminal read for stdin aka if its NULL, and if it is return -1, otherwise do a normal file's read
     if((pcb_address->fd_array[fd]).fops.read != NULL){
         // read the file and update the file position based on number of bytes succesfully read
@@ -540,12 +563,13 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes) {
  *   SIDE EFFECTS:  none
  */
 extern int32_t vidmap(uint8_t** screen_start) {
-    //checking that its not null and not in an area of kernel memory
-    if(screen_start == NULL || (screen_start >= (uint8_t**)(KERNEL_START-4) && screen_start < (uint8_t**)KERNEL_END)){
-        return -1; //ask TA BRO
+    
+    if(screen_start == NULL || (screen_start >= (uint8_t**)(KERNEL_START-3) && screen_start < (uint8_t**)KERNEL_END)){
+        return -1; 
     }
+
     //choosing this vmem, also making sure its 4kb aligned
-    uint32_t virtual_memory = USER_VMEM;
+    uint32_t virtual_memory = USER_VID_MEM;
 
     //sets up page table and modifies directory to have this pte mapped to kernel vidmem
     vidmap_helper(virtual_memory);
@@ -578,4 +602,18 @@ extern int32_t set_handler(int32_t signum, void* handler_address) {
  */
 extern int32_t sigreturn(void) {
     return -1;
+}
+
+
+/*
+ * get_process_terminal
+ *   DESCRIPTION: gets terminal assigned to the input process
+ *   INPUTS: pid -- process id to find terminal for
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 if successful, -1 if fail
+ *   SIDE EFFECTS:  none
+ */
+uint32_t get_process_terminal(uint32_t pid){
+    pcb_t * pcb = get_pcb_address(pid);
+    return pcb->terminal;
 }

@@ -5,6 +5,9 @@
 #include "i8259.h"
 #include "lib.h"
 #include "syscalls.h"
+#include "scheduling.h"
+#include "paging.h"
+#include "terminal_driver.h"
 
 #define RTC_REG_PORT        0x70
 #define RTC_RW_PORT         0x71
@@ -22,6 +25,7 @@
 #define RTC_GLOB_RES_RATE   1
 #define RTC_FLAG_SET        1
 
+#define RTC_USR_DEFAULT     512
 
 #define RTC_DATA_UPPER_BYTE 0xf0
 

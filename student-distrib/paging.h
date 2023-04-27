@@ -6,6 +6,7 @@
 
 #define BLANK_ENTRY     0x00000000
 #define PT_INDEX_MAP    0x003FF000
+#define VIDMEM          0x000B8000
 
 
 #define VMEM_OFFSET     184
@@ -100,6 +101,11 @@ void vidmap_helper(uint32_t virtual_address);
 
 extern void flush_tlb();
 
+void vidmap_change(uint32_t virtual_address, uint32_t terminal);
+
+void buffer_swap(uint32_t old_terminal, uint32_t new_terminal);
+
+void copy_video_memory(unsigned char * destination, unsigned char * source);
 
 #endif
 

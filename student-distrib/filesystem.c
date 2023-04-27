@@ -37,7 +37,6 @@ void filesys_init(uint32_t* fileimg_address){
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
-    // printf(" in read dentry by name %s \n", fname);
     //null check for name and dentry
     if(fname == NULL || dentry == NULL){
         return -1;
@@ -51,17 +50,14 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     // uint32_t str_length = strlen((int8_t*)fname);
     int i; //loop over dir_entries array and find dentry with matching filename's index, call read_dentry_by_index
     for(i = 0; i<num_dir_entries ; i++){
-        //printf("%d\n", strlen(boot_block->dir_entries[i].filename));
         if(strlen((int8_t*)fname)==32){
             if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen((int8_t*)fname)) == 0){
-                //printf("\n herere");
                 return read_dentry_by_index(i, dentry); 
             }
         } else {
 
             if(strlen(boot_block->dir_entries[i].filename) == strlen((int8_t*)fname)){
                 if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen((int8_t*)fname)) == 0){
-                //printf("\n herere");
                 return read_dentry_by_index(i, dentry); 
                 }
             }
@@ -72,7 +68,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     return -1;
 }
 
-//dentry = &(boot_block->boot_type.dir_entries[index]); WRONG!
+
 /*
  * read_dentry_by_index() - helper function
  *   DESCRIPTION: copies over dentry information at specified index over to caller's dentry struct
@@ -95,10 +91,11 @@ int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
     return 0;
 }
 
-//inode num and datablocknum start from 0 and are indexes to their arrays
+
 /*
  * read_data() - helper function
  *   DESCRIPTION: reads data in file's data blocks, write into caller's buffer
+ *   //inode num and datablocknum start from 0 and are indexes to their arrays
  *   INPUTS: inode: index of inode, offset: num bytes to skip, length: num bytes to read, buf: buffer to store info to
  *   OUTPUTS: fills up buffer with info read from file
  *   RETURN VALUE: number of bytes read
@@ -106,7 +103,6 @@ int32_t read_dentry_by_index(uint32_t index, d_entry* dentry){
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
     
     inode_struct* cur_inode = &(inode_array[inode]); //ptr to inode of file to read from
-    //printf("file length: %d \n",cur_inode->length );
     int file_remainder = cur_inode->length - offset; //remaining bytes in file to read
     unsigned int data_block_count = boot_block->data_block_count; //num of data blocks for sanity check
 
@@ -147,14 +143,12 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
 /*
  * file_open
- *   DESCRIPTION: initializes caller's dentry struct
+ *   DESCRIPTION: tries to read file dentry from bootblock into local dentry var, see if file exists
  *   INPUTS: filename, dentry struct ptr
  *   OUTPUTS: none
  *   RETURN VALUE: 0:success, -1:fail
  */
 int32_t file_open(const uint8_t* filename){
-    // printf(" in file open %s\n", filename);
-    //d_entry * dentry;
     // filename length check
     if(strlen((int8_t*)filename) > MAX_FILE_LENGTH || filename == NULL){
         return -1;
@@ -191,8 +185,6 @@ int32_t file_close(int32_t fd){
  *   RETURN VALUE: number of bytes read
  */
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes){
-    // printf(" in file read\n");
-
     //sanity check
     if(buf == NULL){
         return -1;
@@ -234,7 +226,6 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes){
  *   RETURN VALUE: fd of dentry/file on sucess, -1:fail
  */
 int32_t dir_open(const uint8_t* filename){
-    // printf("in directory open %s \n", filename);
     if(filename == NULL){
         return -1;
     }
@@ -276,11 +267,12 @@ int32_t dir_close(int32_t fd){
     return 0;
 }
 
-// print/read directory "." and the rest of the files
-// read one filename, also keep track of which file number you are on
+
 /*
  * dir_read
  *   DESCRIPTION: reads one filename at a time into buf, updates file counter
+ *   // print/read directory "." and the rest of the files
+ *   // read one filename, also keep track of which file number you are on
  *   INPUTS: fd:file descriptor , buf: output buffer, nbytes - to tell the function how long the buf provided is
  *   OUTPUTS: none
  *   RETURN VALUE: number of bytes read
@@ -337,7 +329,6 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
  *   RETURN VALUE: length of file in bytes
  */
 uint32_t get_file_length(int32_t inode_num){
-    //printf("INODE NUM: %d \n", inode_num);
     return inode_array[inode_num].length;
 }
 
