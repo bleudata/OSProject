@@ -172,7 +172,7 @@ int32_t halt(uint8_t status){
         //problem because kernel stack of this terminal's top process is undefined
         //unless PIT is not able to interrupt during this section.. cannot nest interrupt, priority??
         // check about enabling scheduler function
-
+        set_top_process(pcb_address->terminal, -1);
         //some how decrement base shell count
         execute(cmd);
 
@@ -181,7 +181,7 @@ int32_t halt(uint8_t status){
         tss.ss0 = KERNEL_DS;
         map_helper(parent_pid);
         get_pcb_address(parent_pid)->active = 1;
-        
+        set_top_process(pcb_address->terminal, parent_pid);
     }
 
     uint32_t parent_esp = pcb_address->parent_esp;
@@ -388,7 +388,7 @@ int32_t execute(const uint8_t* command){
     //line 4: This value is USER CS
     //line 5: This pushes the EIP
 
-    
+    sti();
 
     asm volatile (" \n\
             pushl $0x002B           \n\
@@ -396,7 +396,6 @@ int32_t execute(const uint8_t* command){
             pushfl                  \n\
             pushl $0x0023           \n\
             pushl %1                \n\
-            sti                     \n\
             iret                    \n\
             "
             :
@@ -456,7 +455,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     if((pcb_address->fd_array[fd]).flag == 0){
         return -1;
     }
-    sti();
+    //sti();
     //check if its terminal read for stdin aka if its NULL, and if it is return -1, otherwise do a normal file's read
     //printf("read:455 \n");
     if((pcb_address->fd_array[fd]).fops.read != NULL){

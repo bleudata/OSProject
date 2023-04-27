@@ -132,6 +132,7 @@ void vidmap_helper(uint32_t virtual_address){
     if(get_cur_user_terminal() == get_cur_sched_terminal()){
         user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET;
     }else{
+        //printf("vidmap to terminal");
         user_vid_mem[pt_offset].pt_fields.page_address = VMEM_OFFSET + get_cur_sched_terminal() + 1;
     }
     
@@ -143,7 +144,7 @@ void vidmap_change(uint32_t virtual_address, uint32_t terminal){
     uint32_t pd_offset = virtual_address >> VIRT_MEM_SHIFT;
     uint32_t pt_offset = (virtual_address & PT_INDEX_MAP) >>12; 
     page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | 7; 
-
+    //printf("vidmap to terminal");
     user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
     user_vid_mem[pt_offset].pt_fields.present = 1;
     user_vid_mem[pt_offset].pt_fields.read_write = 1;
@@ -177,6 +178,22 @@ void copy_video_memory(unsigned char * destination, unsigned char * source) {
         destination[i] = source[i];
     }
 }
+
+void sanity_check(){
+    int pt_san_offset = (USER_VID_MEM & PT_INDEX_MAP) >>12; 
+    if(user_vid_mem[pt_san_offset].pt_fields.page_address != VMEM_OFFSET){
+        printf("not equal");
+    }
+}
+
+
+
+
+
+
+
+
+
 
 
 

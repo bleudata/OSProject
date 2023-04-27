@@ -6,6 +6,7 @@
 #include "lib.h"
 #include "syscalls.h"
 #include "scheduling.h"
+#include "paging.h"
 
 #define RTC_REG_PORT        0x70
 #define RTC_RW_PORT         0x71

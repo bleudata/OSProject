@@ -164,7 +164,7 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("done with idt init");
     // now unmask the irqs we want
     enable_irq(PIC2_IRQ); 
-    pit_init(20);
+    pit_init(200);
     keyboard_init();
     rtc_init();
     terminal_init();
