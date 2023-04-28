@@ -237,6 +237,11 @@ int32_t execute(const uint8_t* command){
     // cmd_cpy is command but w/o front sapces/ trailing spaces/ extra middle spaces
     uint8_t* cmd_cpy = (uint8_t*)command;
 
+    if(cmd_cpy == NULL){
+        sti();
+        return -1;
+    }
+
     // get rid of spaces before the first letter
     uint32_t length = strlen((const int8_t*)cmd_cpy);
     for (i = 0; i < length; i++) {
@@ -245,23 +250,11 @@ int32_t execute(const uint8_t* command){
     }
     cmd_cpy += i;
 
-    // get rid of spaces after
-    for (i = length - 1; i >= 0; i--) {
-        if (cmd_cpy[i] == ' ') 
-            cmd_cpy[i] = '\0';
-        else 
-            break;
-    }
-
-    if(cmd_cpy == NULL){
-        sti();
-        return -1;
-    }
-
     uint8_t fname[KEYBOARD_BUF_SIZE];
     memset(fname, '\0', KEYBOARD_BUF_SIZE);
     uint32_t cmd_ctr = 0;
-    
+
+
     // Get first word which is the fname
     while( cmd_cpy[cmd_ctr] != ' '  && cmd_cpy[cmd_ctr] != '\0'  && cmd_cpy[cmd_ctr] != '\n'){
         cmd_ctr++;
@@ -291,8 +284,9 @@ int32_t execute(const uint8_t* command){
     }
     
     if (strncmp( (int8_t *)fname,  (int8_t *)"cat", cmd_ctr) != 0 && strncmp( (int8_t *)fname, (int8_t *)"grep", cmd_ctr) != 0 ) {
-        if (strlen((int8_t*)args_buffer) > 1) 
+        if (strlen((int8_t*)args_buffer) > 1) {
             return -1;
+        }
     }
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
     uint8_t exe_check[EXE_BUF];

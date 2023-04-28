@@ -137,8 +137,9 @@ uint32_t schedule(){
         terminal_t * terminal = get_terminal(cur_sched_terminal);
         set_screen_x(&(terminal->screen_x)); // Putc should update the x and y position for this terminal
         set_screen_y(&(terminal->screen_y));
-        update_cursor(terminal->screen_x, terminal->screen_y); //update cursor using active termial's screen_x y
+        // update_cursor(terminal->screen_x, terminal->screen_y); //update cursor using active termial's screen_x y
         set_video_mem((unsigned char *)VIDMEM); // 2. Map terminal write to video memory
+        update_cursor(terminal->screen_x, terminal->screen_y);
     
 
     }else{ //switching to a terminal that user is not on
@@ -148,6 +149,7 @@ uint32_t schedule(){
         set_screen_x(&(terminal->screen_x)); // Putc should update x and y position for this terminal
         set_screen_y(&(terminal->screen_y));
         set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*cur_sched_terminal + FOUR_KB)); //2. map terminal write to terminal buffer
+        update_cursor(get_user_terminal()->screen_x, get_user_terminal()->screen_y);
     }
 
     tss.esp0 = EIGHT_MB - next_pid*EIGHT_KB - UINT_BYTES;

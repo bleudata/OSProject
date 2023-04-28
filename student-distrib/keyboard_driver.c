@@ -131,31 +131,37 @@ void keyboard_irq_handler() {
         
         set_target_terminal(0);
         set_user_terminal_num(0); 
-        set_active_terminal_and_keyboard(get_user_terminal()); // update the structs for the keyboard file
+        set_active_terminal_and_keyboard(get_terminal(0)); // update the structs for the keyboard file
+        user_switch_handler();
         set_screen_x(&(active_terminal->screen_x)); // update the terminal used for terminal write 
         set_screen_y(&(active_terminal->screen_y));
-        update_cursor(get_x_position(), get_y_position());
-        user_switch_handler();
+        // update_cursor(get_x_position(), get_y_position(), get_cur_sched_terminal());
+        // user_switch_handler();
+        update_cursor(active_terminal->screen_x, active_terminal->screen_y);
     }
     // F2 for terminal 1
     else if ( (code == F2_PRESS) && alt_pressed) { //switch to terminal1
         set_target_terminal(1);
         set_user_terminal_num(1);
-        set_active_terminal_and_keyboard(get_user_terminal()); // update the structs for the keyboard file
+        set_active_terminal_and_keyboard(get_terminal(1)); // update the structs for the keyboard file
+        user_switch_handler();
         set_screen_x(&(active_terminal->screen_x)); // update the terminal used for terminal write 
         set_screen_y(&(active_terminal->screen_y));
-        update_cursor(get_x_position(), get_y_position());
-        user_switch_handler();
+        // update_cursor(get_x_position(), get_y_position(), get_cur_sched_terminal());
+        // user_switch_handler();
+        update_cursor(active_terminal->screen_x, active_terminal->screen_y);
     }
     // F3 for terminal 2
     else if ( (code == F3_PRESS) && alt_pressed) { //switch to terminal 2
         set_target_terminal(2);
         set_user_terminal_num(2);
-        set_active_terminal_and_keyboard(get_user_terminal()); //update the structs for the keyboard file
+        set_active_terminal_and_keyboard(get_terminal(2)); //update the structs for the keyboard file
+        user_switch_handler();
         set_screen_x(&(active_terminal->screen_x)); // update the terminal used for terminal write 
         set_screen_y(&(active_terminal->screen_y));
-        update_cursor(get_x_position(), get_y_position());
-        user_switch_handler();
+        // update_cursor(get_x_position(), get_y_position(), get_cur_sched_terminal());
+        // user_switch_handler();
+        update_cursor(active_terminal->screen_x, active_terminal->screen_y);
     }
     // BACKSPACE
     else if (code == BACKSPACE) {
