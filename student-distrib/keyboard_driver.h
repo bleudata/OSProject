@@ -73,12 +73,6 @@ extern unsigned char get_enter_count();
 // Decrements value of enter count
 extern void decrement_enter_count();
 
-// Sets enter_flag to 0
-extern void clear_enter_flag();
-
-// sets read_flag 
-extern void set_read_flag(unsigned char flag);
-
 // sets the active keyboard and the currently visible terminal
 extern unsigned char set_active_terminal_and_keyboard (void * new_terminal);
 

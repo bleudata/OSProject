@@ -53,7 +53,7 @@ static unsigned char scancodes[58][2] = { // values 0x00 - 0x39
 void keyboard_irq_handler() {
     int code = inb(KEYBOARD_PORT);
     unsigned char echo;
-
+    
     if(code >= SCAN_CODE_START && code <= SCAN_CODE_END) { // check if key is invalid for print
         unsigned char val = 0;
         if ((code >= Q_PRESS && code <= P_PRESS) || (code >= A_PRESS && code <= L_PRESS) || (code >= Z_PRESS && code <= M_PRESS)) {
@@ -70,23 +70,25 @@ void keyboard_irq_handler() {
             }
         }
         else {
-            echo = scancodes[code][val]; // print char if key was valid
-            if (echo == '\n') {
-                (active_keyboard->enter_count)++;
-            }
-            if((echo != '\0')) { // if not function key
-                if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
-                    if(echo == '\t') { // special case for tab
-                        putc_vidmem(' '); // need to print multiple spaces
-                        putc_vidmem(' ');
-                        putc_vidmem(' ');
-                        putc_vidmem(' ');
+            if(active_keyboard->read_flag == 1) {
+                echo = scancodes[code][val]; // print char if key was valid
+                if (echo == '\n') {
+                    (active_keyboard->enter_count)++;
+                }
+                if((echo != '\0')) { // if not function key
+                    if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
+                        if(echo == '\t') { // special case for tab
+                            putc_vidmem(' '); // need to print multiple spaces
+                            putc_vidmem(' ');
+                            putc_vidmem(' ');
+                            putc_vidmem(' ');
+                        }
+                        else {
+                            putc_vidmem(echo);
+                        }
+                        // only update the cursor to the x y position of the terminal visible to the user
+                        update_cursor(active_terminal->screen_x, active_terminal->screen_y); 
                     }
-                    else {
-                        putc_vidmem(echo);
-                    }
-                    // only update the cursor to the x y position of the terminal visible to the user
-                    update_cursor(active_terminal->screen_x, active_terminal->screen_y); 
                 }
             }
         }
@@ -352,10 +354,6 @@ unsigned char get_enter_count() {
  */
 void decrement_enter_count() {
     (active_keyboard->enter_count)--;
-}
-
-void set_read_flag(unsigned char flag) {
-    active_keyboard->read_flag = flag;
 }
 
 /*

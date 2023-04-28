@@ -290,6 +290,10 @@ int32_t execute(const uint8_t* command){
         }
     }
     
+    if (strncmp( (int8_t *)fname,  (int8_t *)"cat", cmd_ctr) != 0 && strncmp( (int8_t *)fname, (int8_t *)"grep", cmd_ctr) != 0 ) {
+        if (strlen((int8_t*)args_buffer) > 1) 
+            return -1;
+    }
     // File is executable if first 4 Bytes of the file are (0: 0x7f; 1: 0x45; 2: 0x4c; 3: 0x46)
     uint8_t exe_check[EXE_BUF];
     uint8_t exe[EXE_BUF] = {EXE_BYTE0, EXE_BYTE1, EXE_BYTE2, EXE_BYTE3};

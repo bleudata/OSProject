@@ -77,8 +77,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     terminal_t * terminal = get_terminal(get_cur_sched_terminal()); //update terminal and keyboard structs to the one that is currently displayed
   // now use newBuf instead of buf
 
-    set_read_flag(1); // tell keyboard we're inside a terminal read
-
+    terminal->keyboard.read_flag = 1; // tell keyboard we entered terminal read
     // validate input, null pointer provided by user
     if(new_buf == 0) {
         return -1; 
@@ -115,8 +114,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     ret++;
     purge_and_align_keyboard_buffer(ret);
     decrement_enter_count();
-    set_read_flag(0); // tell keyboard we're done with terminal read
-
+    terminal->keyboard.read_flag = 0; // tell keyboard we're done with terminal read
     return ret;
 }
 
