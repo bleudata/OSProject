@@ -270,21 +270,25 @@ int32_t execute(const uint8_t* command){
     //setting the cmd ptr to point to the first char after the first space that is after the first word
     int k = 0;
     int j = 0;
+    memset(args_buffer, '\0', KEYBOARD_BUF_SIZE); // always clear the args buffer to avoid accidental random characters in the arguments
     if (cmd_cpy[cmd_ctr] == ' ' ) {
         cmd_args = (uint8_t*)(cmd_cpy + cmd_ctr + 1);
-        memset(args_buffer, '\0', KEYBOARD_BUF_SIZE);
         // fill the actual characters
+        // get rid of spaces in the middle such as "cat       frame0.txt"
+        while(((cmd_args[k]) != '\0') && (cmd_args[k] == ' ')) {
+            k++;
+        }
+        // fill arguments with everything else after middle spaces, including ending spaces
         while((cmd_args[k] != '\0')) { 
-            if(cmd_args[k] != ' '){
-                args_buffer[j] = cmd_args[k]; // cat arg1
-                j++; 
-            }
+            args_buffer[j] = cmd_args[k]; // cat arg1
+            j++; 
             k++;
         }
     }
     
+    // TO DO: won't work if type just one letter extra
     if (strncmp( (int8_t *)fname,  (int8_t *)"cat", cmd_ctr) != 0 && strncmp( (int8_t *)fname, (int8_t *)"grep", cmd_ctr) != 0 ) {
-        if (strlen((int8_t*)args_buffer) > 1) {
+        if (strlen((int8_t*)args_buffer) > 0) {
             return -1;
         }
     }
@@ -341,7 +345,7 @@ int32_t execute(const uint8_t* command){
         set_top_process(parent_pcb->terminal, new_pid);
         
     }
-    pcb_address->args_length = k;
+    pcb_address->args_length = j;
     // put the args into the pcb
     for(k = 0; k <= (pcb_address->args_length); k++) {
         (pcb_address->args_data)[k] = args_buffer[k];
