@@ -109,17 +109,12 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
         ret++;
         i++;
     }
-    // printf(" i value : %d \n", i);
-    // new_buf[i] = '?';
+    
     new_buf[i] = '\n'; // [\n\n]
-    // new_buf[i+1] = '\0';
     ret++;
     purge_and_align_keyboard_buffer(ret);
     decrement_enter_count();
     terminal->keyboard.read_flag = 0; // tell keyboard we're done with terminal read
-    //printf("\n  BUFFER: %s ", buf);
-    // AT THIS POINT THE FULL BUFFER STILL HAS A NEW LINE AT THE END 
-    // WHERE does the buffer get passed after ????
     return ret;
 }
 
