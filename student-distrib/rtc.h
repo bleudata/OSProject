@@ -40,12 +40,6 @@
 #define RTC_HZ              1024
 #define RTC_HZ_MIN          2
 
-typedef struct __attribute__ ((packed)) {
-    int32_t rtc_irq_flag;
-    uint32_t rtc_syshz_per_uhz;
-    uint32_t rtc_ctr;  
-} rtc_t;
-
 //initialization function of rtc
 extern void rtc_init();
 
