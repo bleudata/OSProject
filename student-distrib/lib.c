@@ -19,7 +19,7 @@ void clear(void) {
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)((char*)VIDEO + (i << 1)) = ' ';
-        *(uint8_t *)((char*)VIDEO + (i << 1) + 1) = ATTRIB;
+        *(uint8_t *)((char*)VIDEO + (i << 1) + 1) = COLOR_THEME;
     }
 }
 
@@ -33,7 +33,7 @@ void clear_reset_cursor(void) {
     int * my_screen_y = &(terminal->screen_y);
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)((char*)VIDEO + (i << 1)) = ' ';
-        *(uint8_t *)((char*)VIDEO + (i << 1) + 1) = ATTRIB;
+        *(uint8_t *)((char*)VIDEO + (i << 1) + 1) = COLOR_THEME;
     }
     *my_screen_x = 0;
     *my_screen_y = 0;
@@ -200,7 +200,7 @@ void putc(uint8_t c) {
         
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS * (*screen_y) + *screen_x) << 1)) = c; // add the character and attrib colors to video memory
-        *(uint8_t *)(video_mem + ((NUM_COLS * (*screen_y) + *screen_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + ((NUM_COLS * (*screen_y) + *screen_x) << 1) + 1) = COLOR_THEME;
         if(((*screen_x)+1) > NUM_COLS-1) {
             if(((*screen_y) + 1) > NUM_ROWS-1) { // might need to shift the screen, check if at the bottom of the screen
                 shift_screen_up();
@@ -242,7 +242,7 @@ void putc_vidmem(uint8_t c) {
         
     } else {
         *(uint8_t *)((char*)VIDEO + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1)) = c; // add the character and attrib colors to video memory
-        *(uint8_t *)((char*)VIDEO + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)((char*)VIDEO + ((NUM_COLS * (*my_screen_y) + *my_screen_x) << 1) + 1) = COLOR_THEME;
         if(((*my_screen_x)+1) > NUM_COLS-1) {
             if(((*my_screen_y) + 1) > NUM_ROWS-1) { // might need to shift the screen, check if at the bottom of the screen
                 shift_screen_up_vidmem();
@@ -571,11 +571,11 @@ void shift_screen_up() {
     int offset = NUM_COLS*2; // text memory is 2 bytes, first byte is ascii, second is attribute
     for(i = 0; i < (SCREEN_BYTES   - offset ); i = i+2) { // new row of screen will be what was previously the row after
         video_mem[i] = video_mem[i+offset]; //  ascii character
-        video_mem[i+1] = GRAY_ON_BLACK; // attribute
+        video_mem[i+1] = COLOR_THEME; // attribute
     }
     for(i = SCREEN_BYTES - offset; i < SCREEN_BYTES; i = i+2) {
         video_mem[i] = ' ';
-        video_mem[i+1] = GRAY_ON_BLACK;
+        video_mem[i+1] = COLOR_THEME;
     }
 }
 
@@ -595,11 +595,11 @@ void shift_screen_up_vidmem() {
     char * video_ptr = (char * )VIDEO;
     for(i = 0; i < (SCREEN_BYTES   - offset ); i = i+2) { // new row of screen will be what was previously the row after
         video_ptr[i] = video_ptr[i+offset]; //  ascii character
-        video_ptr[i+1] = GRAY_ON_BLACK; // attribute
+        video_ptr[i+1] = COLOR_THEME; // attribute
     }
     for(i = SCREEN_BYTES - offset; i < SCREEN_BYTES; i = i+2) {
         video_ptr[i] = ' ';
-        video_ptr[i+1] = GRAY_ON_BLACK;
+        video_ptr[i+1] = COLOR_THEME;
     }
 }
 
@@ -644,7 +644,7 @@ void unput_c(unsigned char input) {
         
     }    
     *addr = ' '; // replace the character with space to get rid of it
-    *(addr + 1) = ATTRIB;
+    *(addr + 1) = COLOR_THEME;
     if(!line_flag) {
         (*my_screen_x)--;
     } 
