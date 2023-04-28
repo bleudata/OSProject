@@ -74,6 +74,9 @@ void keyboard_irq_handler() {
                 echo = scancodes[code][val]; // print char if key was valid
                 if (echo == '\n') {
                     (user_keyboard->enter_count)++;
+                    if(strlen((int8_t*)user_keyboard->keyboard_buf) == KEYBOARD_BUF_SIZE - 1){
+                        putc_vidmem(echo);
+                    }
                 }
                 if((echo != '\0')) { // if not function key
                     if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer

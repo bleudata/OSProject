@@ -237,6 +237,7 @@ void putc_vidmem(uint8_t c) {
         else {
             *my_screen_y = (*my_screen_y + 1); // next row
         }
+        //printf(" in putc_vidmem ");
         *my_screen_x = 0;
         
     } else {
