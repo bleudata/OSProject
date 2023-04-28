@@ -34,13 +34,13 @@ void terminal_init(){
 
     // clear keyboard buffers and initialize display terminal to 0
     user_terminal_num = 2; 
-    set_active_terminal_and_keyboard(&terminal_array[2]);
+    set_user_terminal_and_keyboard(&terminal_array[2]);
     purge_keyboard_buffer();
     user_terminal_num = 1;
-    set_active_terminal_and_keyboard(&terminal_array[1]);
+    set_user_terminal_and_keyboard(&terminal_array[1]);
     purge_keyboard_buffer();
     user_terminal_num = 0; // default to have terminal 0 visible
-    set_active_terminal_and_keyboard(&terminal_array[0]);
+    set_user_terminal_and_keyboard(&terminal_array[0]);
     set_screen_x(&(terminal_array[0].screen_x));
     set_screen_y(&(terminal_array[0].screen_y));
     purge_keyboard_buffer();
@@ -209,6 +209,7 @@ void update_cursor(int x, int y)
     outb((uint8_t) (pos & LOWER_16),VGA_DATA_REG);
     outb(0x0E, VGA_ADDR_REG); // cursor location high
     outb((uint8_t) ((pos >> BYTE_SHIFT) & LOWER_16), VGA_DATA_REG);
+    // printf(" %d ", user_terminal_num);
 }
 
 /*

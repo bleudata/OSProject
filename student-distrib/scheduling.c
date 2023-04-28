@@ -137,7 +137,7 @@ uint32_t schedule(){
         terminal_t * terminal = get_terminal(cur_sched_terminal);
         set_screen_x(&(terminal->screen_x)); // Putc should update the x and y position for this terminal
         set_screen_y(&(terminal->screen_y));
-        // update_cursor(terminal->screen_x, terminal->screen_y); //update cursor using active termial's screen_x y
+        update_cursor(terminal->screen_x, terminal->screen_y); //update cursor using active termial's screen_x y
         set_video_mem((unsigned char *)VIDMEM); // 2. Map terminal write to video memory
         update_cursor(terminal->screen_x, terminal->screen_y);
     

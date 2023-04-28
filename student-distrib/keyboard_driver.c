@@ -18,8 +18,8 @@ unsigned char ctrl_pressed = 0x0;
 unsigned char alt_pressed = 0x0;
 
 /*Keyboard buffer variables*/
-terminal_t * active_terminal;
-keyboard_buf_t * active_keyboard;
+terminal_t * user_terminal; // user = visible /displayed terminal
+keyboard_buf_t * user_keyboard;
 
 // Array that holds Shifted Values
 // [nonshifted value, shifted value], \0 are function keys!! except the first two
@@ -65,15 +65,15 @@ void keyboard_irq_handler() {
         if (ctrl_pressed && code == L_PRESS) { // 0x26 is the scan code for L/l
             clear_reset_cursor(); 
             update_cursor(0,0); // move cursor back to top left of the screen
-            if(active_keyboard->read_flag == 0) { //only purge the keyboard buffer if not in a terminal read
+            if(user_keyboard->read_flag == 0) { //only purge the keyboard buffer if not in a terminal read
                 purge_keyboard_buffer(); 
             }
         }
         else {
-            if(active_keyboard->read_flag == 1) {
+            if(user_keyboard->read_flag == 1) {
                 echo = scancodes[code][val]; // print char if key was valid
                 if (echo == '\n') {
-                    (active_keyboard->enter_count)++;
+                    (user_keyboard->enter_count)++;
                 }
                 if((echo != '\0')) { // if not function key
                     if(add_to_keyboard_buffer(echo)){ // if successfully wrote to the buffer
@@ -87,7 +87,7 @@ void keyboard_irq_handler() {
                             putc_vidmem(echo);
                         }
                         // only update the cursor to the x y position of the terminal visible to the user
-                        update_cursor(active_terminal->screen_x, active_terminal->screen_y); 
+                        update_cursor(user_terminal->screen_x, user_terminal->screen_y); 
                     }
                 }
             }
@@ -131,37 +131,25 @@ void keyboard_irq_handler() {
         
         set_target_terminal(0);
         set_user_terminal_num(0); 
-        set_active_terminal_and_keyboard(get_terminal(0)); // update the structs for the keyboard file
+        set_user_terminal_and_keyboard(get_terminal(0)); // update the structs for the keyboard file
         user_switch_handler();
-        set_screen_x(&(active_terminal->screen_x)); // update the terminal used for terminal write 
-        set_screen_y(&(active_terminal->screen_y));
-        // update_cursor(get_x_position(), get_y_position(), get_cur_sched_terminal());
-        // user_switch_handler();
-        update_cursor(active_terminal->screen_x, active_terminal->screen_y);
+        update_cursor(user_terminal->screen_x, user_terminal->screen_y);
     }
     // F2 for terminal 1
     else if ( (code == F2_PRESS) && alt_pressed) { //switch to terminal1
         set_target_terminal(1);
         set_user_terminal_num(1);
-        set_active_terminal_and_keyboard(get_terminal(1)); // update the structs for the keyboard file
+        set_user_terminal_and_keyboard(get_terminal(1)); // update the structs for the keyboard file
         user_switch_handler();
-        set_screen_x(&(active_terminal->screen_x)); // update the terminal used for terminal write 
-        set_screen_y(&(active_terminal->screen_y));
-        // update_cursor(get_x_position(), get_y_position(), get_cur_sched_terminal());
-        // user_switch_handler();
-        update_cursor(active_terminal->screen_x, active_terminal->screen_y);
+        update_cursor(user_terminal->screen_x, user_terminal->screen_y);
     }
     // F3 for terminal 2
     else if ( (code == F3_PRESS) && alt_pressed) { //switch to terminal 2
         set_target_terminal(2);
         set_user_terminal_num(2);
-        set_active_terminal_and_keyboard(get_terminal(2)); //update the structs for the keyboard file
+        set_user_terminal_and_keyboard(get_terminal(2)); //update the structs for the keyboard file
         user_switch_handler();
-        set_screen_x(&(active_terminal->screen_x)); // update the terminal used for terminal write 
-        set_screen_y(&(active_terminal->screen_y));
-        // update_cursor(get_x_position(), get_y_position(), get_cur_sched_terminal());
-        // user_switch_handler();
-        update_cursor(active_terminal->screen_x, active_terminal->screen_y);
+        update_cursor(user_terminal->screen_x, user_terminal->screen_y);
     }
     // BACKSPACE
     else if (code == BACKSPACE) {
@@ -175,7 +163,7 @@ void keyboard_irq_handler() {
                 unput_c(' '); // delete space 4
             }
             else {
-                unput_c(*((active_keyboard->buf_position)+1));
+                unput_c(*((user_keyboard->buf_position)+1));
             }
             update_cursor(get_x_position(), get_y_position());
         }
@@ -225,9 +213,9 @@ void keyboard_init() {
  *   SIDE EFFECTS: chnages keyboard buffer
  */
 void purge_keyboard_buffer() {
-    memset(active_keyboard->keyboard_buf, '\0', KEYBOARD_BUF_SIZE);
+    memset(user_keyboard->keyboard_buf, '\0', KEYBOARD_BUF_SIZE);
     // move position back to the start of the buffer
-    active_keyboard->buf_position = active_keyboard->keyboard_buf; 
+    user_keyboard->buf_position = user_keyboard->keyboard_buf; 
 }
 
 /*
@@ -240,13 +228,13 @@ void purge_keyboard_buffer() {
  */
 void purge_and_align_keyboard_buffer(int n) {
     if(n <= KEYBOARD_BUF_SIZE) {
-        memset(active_keyboard->keyboard_buf, '\0', n);
+        memset(user_keyboard->keyboard_buf, '\0', n);
     }
     if(n < KEYBOARD_BUF_SIZE) {
         align_keyboard_buffer(n); // only need to align if didn't completely purge the buffer
     }
     else {
-        active_keyboard->buf_position = active_keyboard->keyboard_buf;
+        user_keyboard->buf_position = user_keyboard->keyboard_buf;
     }
 }
 /*
@@ -264,15 +252,15 @@ void align_keyboard_buffer(int new_start) {
         return; 
     }
     while((new_start < KEYBOARD_BUF_SIZE)) { 
-        active_keyboard->keyboard_buf[i] = active_keyboard->keyboard_buf[new_start];
+        user_keyboard->keyboard_buf[i] = user_keyboard->keyboard_buf[new_start];
         i++;
         new_start++;
     }
     while(i < KEYBOARD_BUF_SIZE) {
-        active_keyboard->keyboard_buf[i] = '\0';
+        user_keyboard->keyboard_buf[i] = '\0';
         i++;
     }
-    active_keyboard->buf_position = active_keyboard->keyboard_buf + KEYBOARD_BUF_SIZE - new_start; // point to next empty
+    user_keyboard->buf_position = user_keyboard->keyboard_buf + KEYBOARD_BUF_SIZE - new_start; // point to next empty
 
 }
 
@@ -286,7 +274,7 @@ void align_keyboard_buffer(int new_start) {
  *   SIDE EFFECTS: none
  */
 unsigned char * get_keyboard_buffer() {
-    return active_keyboard->keyboard_buf;
+    return user_keyboard->keyboard_buf;
 }
 
 /*
@@ -298,14 +286,14 @@ unsigned char * get_keyboard_buffer() {
  *   SIDE EFFECTS: none
  */
 unsigned char add_to_keyboard_buffer(unsigned char input) {
-    if(active_keyboard->buf_position < active_keyboard->buf_end_addr){
-        *(active_keyboard->buf_position) = input;
-        (active_keyboard->buf_position)++;
+    if(user_keyboard->buf_position < user_keyboard->buf_end_addr){
+        *(user_keyboard->buf_position) = input;
+        (user_keyboard->buf_position)++;
         return 1;
     }
-    if(active_keyboard->buf_position == active_keyboard->buf_end_addr) { // keyboard_buf[127] can only be a newline
+    if(user_keyboard->buf_position == user_keyboard->buf_end_addr) { // keyboard_buf[127] can only be a newline
         if(input == '\n') {
-           *(active_keyboard->buf_position) = '\n'; 
+           *(user_keyboard->buf_position) = '\n'; 
         }
         
     } 
@@ -321,17 +309,17 @@ unsigned char add_to_keyboard_buffer(unsigned char input) {
  *   SIDE EFFECTS: changes the keyboard buffer
  */
 unsigned char remove_from_keyboard_buffer() {
-    if(active_keyboard->buf_position > active_keyboard->keyboard_buf) { // if buffer is not empty 
-        if(*(active_keyboard->buf_position-1) == '\n') {
+    if(user_keyboard->buf_position > user_keyboard->keyboard_buf) { // if buffer is not empty 
+        if(*(user_keyboard->buf_position-1) == '\n') {
             return 0;
         }
-        active_keyboard->buf_position--; 
-        if(*(active_keyboard->buf_position) == '\t') {
-            *(active_keyboard->buf_position) = '\0';
+        user_keyboard->buf_position--; 
+        if(*(user_keyboard->buf_position) == '\t') {
+            *(user_keyboard->buf_position) = '\0';
             return 2;
         }
         else {
-            *(active_keyboard->buf_position) = '\0';
+            *(user_keyboard->buf_position) = '\0';
             return 1;
         }
     }
@@ -347,7 +335,7 @@ unsigned char remove_from_keyboard_buffer() {
  *   SIDE EFFECTS: none
  */
 unsigned char get_enter_count() {
-    return active_keyboard->enter_count;
+    return user_keyboard->enter_count;
 }
 
 /*
@@ -359,23 +347,23 @@ unsigned char get_enter_count() {
  *   SIDE EFFECTS: none
  */
 void decrement_enter_count() {
-    (active_keyboard->enter_count)--;
+    (user_keyboard->enter_count)--;
 }
 
 /*
- * set_active_terminal_and_keyboard
+ * set_user_terminal_and_keyboard
  *   DESCRIPTION: sets active keyboard and active terminal based on terminal that is currently being displayed
  *   INPUTS: terminal -- struct of terminal that is currently being displayed
  *   OUTPUTS: none
  *   RETURN VALUE: 0 success, -1 fail
  *   SIDE EFFECTS: none
  */
-unsigned char set_active_terminal_and_keyboard (void* terminal) {
+unsigned char set_user_terminal_and_keyboard (void* terminal) {
     if(terminal == NULL) {
         return -1;
     }
     terminal_t * new_terminal = (terminal_t *) terminal;
-    active_terminal = new_terminal;
-    active_keyboard = &(new_terminal->keyboard);
+    user_terminal = new_terminal;
+    user_keyboard = &(new_terminal->keyboard);
     return 0;
 }
