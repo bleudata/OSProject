@@ -171,7 +171,6 @@ int32_t halt(uint8_t status){
         //unless PIT is not able to interrupt during this section.. cannot nest interrupt, priority??
         // check about enabling scheduler function
         set_top_process(pcb_address->terminal, -1);
-        //some how decrement base shell count
         execute(cmd);
 
     }else{
@@ -230,7 +229,7 @@ int32_t execute(const uint8_t* command){
     }
     
     if(process_count >= MAX_PROC_CNT){
-        return 256;
+        return EXCEPT_STATUS;
     }
 
 
@@ -305,7 +304,7 @@ int32_t execute(const uint8_t* command){
     
     /* Set up this programs paging */
     // Entry point into the progam (bytes 24 - 27 of the executable) OFFSET = 24 because thats the start of entrypoint
-    if (read_data(dentry.inode_num, 24 , (uint8_t*)&entry_point, UINT_BYTES) < 4 ){  //@ i think should be <4
+    if (read_data(dentry.inode_num, EXE_OFFSET , (uint8_t*)&entry_point, UINT_BYTES) < EXE_READ_SIZE ){  //@ i think should be <4
         sti();
         return -1; 
     }
@@ -330,7 +329,7 @@ int32_t execute(const uint8_t* command){
     //fill in new process PCB
     pcb_t * pcb_address = get_pcb_address(new_pid);
     pcb_address->pid = new_pid;
-    if(process_count ==0 || bshell_count() < 3){ //for 3 base shells
+    if(process_count ==0 || bshell_count() < INIT_SHELLS){ //for 3 base shells
         pcb_address->parent_pid = -1;
         pcb_address->terminal = new_pid; //terminal num correspond to pid for base shells
         set_top_process(pcb_address->terminal, new_pid);

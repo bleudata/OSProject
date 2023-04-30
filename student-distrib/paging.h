@@ -7,10 +7,14 @@
 #define BLANK_ENTRY     0x00000000
 #define PT_INDEX_MAP    0x003FF000
 #define VIDMEM          0x000B8000
-
+#define VIDMEM_ADDRS    4096
 
 #define VMEM_OFFSET     184
 #define VMEM_ENTRY_SET  3
+#define VIRTMEM_UPPR_20 12
+#define SET_ENTRY_BITS  7
+
+#define PHYS_BASE       2
 
 #define DIR_SIZE        1024
 #define TABLE_SIZE      1024

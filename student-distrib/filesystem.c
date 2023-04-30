@@ -50,7 +50,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, d_entry* dentry){
     // uint32_t str_length = strlen((int8_t*)fname);
     int i; //loop over dir_entries array and find dentry with matching filename's index, call read_dentry_by_index
     for(i = 0; i<num_dir_entries ; i++){
-        if(strlen((int8_t*)fname)==32){
+        if(strlen((int8_t*)fname)==MAX_FILE_LENGTH){
             if(strncmp((int8_t*)fname, boot_block->dir_entries[i].filename, strlen((int8_t*)fname)) == 0){
                 return read_dentry_by_index(i, dentry); 
             }

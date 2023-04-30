@@ -5,6 +5,12 @@
 #include "paging.h"
 
 #define PCB_STACK       0xFFFFE000
+#define NUM_TERMS       3
+#define INIT_TRACKER    2
+
+#define TERM_ZERO       0
+#define TERM_ONE        1
+#define TERM_TWO        2
 
 extern uint32_t schedule();
 uint32_t bshell_count();

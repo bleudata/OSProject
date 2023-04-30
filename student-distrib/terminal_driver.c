@@ -9,7 +9,7 @@
 #include "keyboard_driver.h"
 #include "terminal_driver.h"
 
-terminal_t terminal_array[3];
+terminal_t terminal_array[NUM_TERMS];
 unsigned char user_terminal_num = 0; //terminal that user is on
 
 /*
@@ -22,7 +22,7 @@ unsigned char user_terminal_num = 0; //terminal that user is on
  */
 void terminal_init(){
     int i;
-    for(i = 0; i < 3; i++) {
+    for(i = 0; i < NUM_TERMS; i++) {
         terminal_array[i].keyboard.buf_position = terminal_array[i].keyboard.keyboard_buf;
         terminal_array[i].keyboard.buf_end_addr = (terminal_array[i].keyboard.keyboard_buf) + KEYBOARD_BUF_SIZE - 1; 
         terminal_array[i].keyboard.buf_line_two_addr = (terminal_array[i].keyboard.keyboard_buf) + NEWLINE_INDEX;
@@ -33,16 +33,16 @@ void terminal_init(){
     }
 
     // clear keyboard buffers and initialize display terminal to 0
-    user_terminal_num = 2; 
-    set_user_terminal_and_keyboard(&terminal_array[2]);
+    user_terminal_num = TERM_TWO; 
+    set_user_terminal_and_keyboard(&terminal_array[TERM_TWO]);
     purge_keyboard_buffer();
-    user_terminal_num = 1;
-    set_user_terminal_and_keyboard(&terminal_array[1]);
+    user_terminal_num = TERM_ONE;
+    set_user_terminal_and_keyboard(&terminal_array[TERM_ONE]);
     purge_keyboard_buffer();
-    user_terminal_num = 0; // default to have terminal 0 visible
-    set_user_terminal_and_keyboard(&terminal_array[0]);
-    set_screen_x(&(terminal_array[0].screen_x));
-    set_screen_y(&(terminal_array[0].screen_y));
+    user_terminal_num = TERM_ZERO; // default to have terminal 0 visible
+    set_user_terminal_and_keyboard(&terminal_array[TERM_ZERO]);
+    set_screen_x(&(terminal_array[TERM_ZERO].screen_x));
+    set_screen_y(&(terminal_array[TERM_ZERO].screen_y));
     purge_keyboard_buffer();
     // need to set each terminal to have the active keyboard buffer and purge the buffer to help the init
 }
@@ -77,7 +77,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     terminal_t * terminal = get_terminal(get_cur_sched_terminal()); //update terminal and keyboard structs to the one that is currently displayed
   // now use newBuf instead of buf
 
-    terminal->keyboard.read_flag = 1; // tell keyboard we entered terminal read
+    terminal->keyboard.read_flag = KB_FLAG_SET; // tell keyboard we entered terminal read
     // validate input, null pointer provided by user
     if(new_buf == 0) {
         return -1; 
@@ -102,7 +102,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     ret = 0;
     
     // Loop while we wait for an enter
-    while(terminal->keyboard.enter_count < 1);
+    while(terminal->keyboard.enter_count < MAX_KB_ENT_CNT);
     // Read the keyboard buffer and delete it 
     while((i < n ) && (terminal->keyboard.keyboard_buf[i] != '\n')) {
         new_buf[i] = terminal->keyboard.keyboard_buf[i]; 
@@ -114,7 +114,7 @@ int32_t terminal_read(int32_t fd, void * buf, int32_t n) {
     ret++;
     purge_and_align_keyboard_buffer(ret);
     decrement_enter_count();
-    terminal->keyboard.read_flag = 0; // tell keyboard we're done with terminal read
+    terminal->keyboard.read_flag = KB_FLAG_UNSET; // tell keyboard we're done with terminal read
     return ret;
 }
 
@@ -186,9 +186,9 @@ int32_t terminal_close(int32_t fd) {
  */
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
 {
-    outb(0x0A, VGA_ADDR_REG); // select cursor start register 
+    outb(CURSOR_REG_A, VGA_ADDR_REG); // select cursor start register 
     outb((inb(VGA_DATA_REG) & CURSOR_ENABLE) | cursor_start, VGA_DATA_REG);// bit 5 = 0 to enable cursor, bits 0-4 cursor scanline start, probably 15
-    outb(0x0B, VGA_ADDR_REG);
+    outb(CURSOR_REG_B, VGA_ADDR_REG);
     outb((inb(VGA_DATA_REG) & CURSOR_SKEW) | cursor_end, VGA_DATA_REG); // bits 6-7 cursor skew, bits 0-4 cursor end line, probably 15
 }
 
@@ -205,9 +205,9 @@ void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
 void update_cursor(int x, int y)
 {
     uint16_t pos = y * NUM_COLS + x;
-    outb(0x0F, VGA_ADDR_REG); // cursor location low
+    outb(VGA_REG_F, VGA_ADDR_REG); // cursor location low
     outb((uint8_t) (pos & LOWER_16),VGA_DATA_REG);
-    outb(0x0E, VGA_ADDR_REG); // cursor location high
+    outb(VGA_REG_E, VGA_ADDR_REG); // cursor location high
     outb((uint8_t) ((pos >> BYTE_SHIFT) & LOWER_16), VGA_DATA_REG);
     // printf(" %d ", user_terminal_num);
 }
@@ -221,7 +221,7 @@ void update_cursor(int x, int y)
  *   SIDE EFFECTS: terminal number changes
  */
 unsigned char set_user_terminal_num(unsigned char num) {
-    if((num > 2)) {
+    if((num > TERM_OF)) {
         return -1;
     }
     user_terminal_num = num;

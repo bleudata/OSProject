@@ -132,25 +132,25 @@ void keyboard_irq_handler() {
     // F1 for terminal 0
     else if ( (code == F1_PRESS) && alt_pressed) { //switch to terminal 0
         
-        set_target_terminal(0);
-        set_user_terminal_num(0); 
-        set_user_terminal_and_keyboard(get_terminal(0)); // update the structs for the keyboard file
+        set_target_terminal(TERM_ZERO);
+        set_user_terminal_num(TERM_ZERO); 
+        set_user_terminal_and_keyboard(get_terminal(TERM_ZERO)); // update the structs for the keyboard file
         user_switch_handler();
         update_cursor(user_terminal->screen_x, user_terminal->screen_y);
     }
     // F2 for terminal 1
     else if ( (code == F2_PRESS) && alt_pressed) { //switch to terminal1
-        set_target_terminal(1);
-        set_user_terminal_num(1);
-        set_user_terminal_and_keyboard(get_terminal(1)); // update the structs for the keyboard file
+        set_target_terminal(TERM_ONE);
+        set_user_terminal_num(TERM_ONE);
+        set_user_terminal_and_keyboard(get_terminal(TERM_ONE)); // update the structs for the keyboard file
         user_switch_handler();
         update_cursor(user_terminal->screen_x, user_terminal->screen_y);
     }
     // F3 for terminal 2
     else if ( (code == F3_PRESS) && alt_pressed) { //switch to terminal 2
-        set_target_terminal(2);
-        set_user_terminal_num(2);
-        set_user_terminal_and_keyboard(get_terminal(2)); //update the structs for the keyboard file
+        set_target_terminal(TERM_TWO);
+        set_user_terminal_num(TERM_TWO);
+        set_user_terminal_and_keyboard(get_terminal(TERM_TWO)); //update the structs for the keyboard file
         user_switch_handler();
         update_cursor(user_terminal->screen_x, user_terminal->screen_y);
     }

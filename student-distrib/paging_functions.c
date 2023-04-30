@@ -54,7 +54,7 @@ void init_paging() {
 
     //initialize 4kb buffer kernel mapping for terminal 0,1 and 2 
     int terminal_num;
-    for(terminal_num = 0; terminal_num < 3; terminal_num++){ // check privilege mapping
+    for(terminal_num = 0; terminal_num < NUM_TERMS; terminal_num++){ // check privilege mapping
         page_directory[0].entry = (uint32_t)(first_page_table) | VMEM_ENTRY_SET;
         first_page_table[VMEM_OFFSET+terminal_num+1].pt_fields.present = 1;
         first_page_table[VMEM_OFFSET+terminal_num+1].pt_fields.read_write = 1;
@@ -84,7 +84,7 @@ void map_helper(uint32_t pid) {
     // // After getting the PDE we have to zero out non address bits
     int32_t virtual = VIRT_MEM_PAGE;
     virtual = virtual >> VIRT_MEM_SHIFT;
-    page_directory[virtual].fourmb.page_address = 2 + 1*pid;  //= PHYS_MEM_BASE + PHYS_MEM_OFF*pid;
+    page_directory[virtual].fourmb.page_address = PHYS_BASE + 1*pid;  //= PHYS_MEM_BASE + PHYS_MEM_OFF*pid;
     page_directory[virtual].fourmb.present = 1;
     page_directory[virtual].fourmb.read_write = 1;
     page_directory[virtual].fourmb.user_supervisor = 1; 
@@ -121,8 +121,8 @@ void destroy_mapping(){
 void vidmap_helper(uint32_t virtual_address){
     uint32_t virtual = virtual_address; 
     uint32_t pd_offset = virtual >> VIRT_MEM_SHIFT;
-    uint32_t pt_offset = (virtual & PT_INDEX_MAP) >>12; 
-    page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | 7; 
+    uint32_t pt_offset = (virtual & PT_INDEX_MAP) >> VIRTMEM_UPPR_20; 
+    page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | SET_ENTRY_BITS; 
 
     user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
     user_vid_mem[pt_offset].pt_fields.present = 1;
@@ -141,8 +141,8 @@ void vidmap_helper(uint32_t virtual_address){
 // set user vid mem to point to terminal buffer
 void vidmap_change(uint32_t virtual_address, uint32_t terminal){
     uint32_t pd_offset = virtual_address >> VIRT_MEM_SHIFT;
-    uint32_t pt_offset = (virtual_address & PT_INDEX_MAP) >>12; 
-    page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | 7; 
+    uint32_t pt_offset = (virtual_address & PT_INDEX_MAP) >> VIRTMEM_UPPR_20; 
+    page_directory[pd_offset].entry = (uint32_t)(user_vid_mem) | SET_ENTRY_BITS; 
     user_vid_mem[pt_offset].pt_fields.user_supervisor = 1;
     user_vid_mem[pt_offset].pt_fields.present = 1;
     user_vid_mem[pt_offset].pt_fields.read_write = 1;
@@ -170,7 +170,7 @@ void buffer_swap(uint32_t old_terminal, uint32_t new_terminal){
  */
 void copy_video_memory(unsigned char * destination, unsigned char * source) {
     int i;
-    for (i = 0; i < 4096; i++) {
+    for (i = 0; i < VIDMEM_ADDRS; i++) {
         destination[i] = source[i];
     }
 }

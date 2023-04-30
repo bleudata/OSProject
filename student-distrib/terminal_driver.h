@@ -5,9 +5,20 @@
 
 #define CURSOR_ENABLE   0xC0
 #define CURSOR_SKEW     0xE0
+#define CURSOR_REG_A    0x0A
+#define CURSOR_REG_B    0x0B
+
+#define VGA_REG_E       0x0E
+#define VGA_REG_F       0x0F
+
+#define MAX_KB_ENT_CNT  1
+#define KB_FLAG_UNSET   0
+#define KB_FLAG_SET     1
 
 #define LOWER_16        0xFF
 #define BYTE_SHIFT      8
+
+#define TERM_OF         2
 
 typedef struct __attribute__ ((packed)) {
     int screen_x;

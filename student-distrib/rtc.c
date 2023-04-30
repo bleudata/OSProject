@@ -1,8 +1,6 @@
 #include "rtc.h"
 
-static int rtc_irq_flag[3];
-static uint32_t rtc_syshz_per_uhz[3];
-static uint32_t rtc_ctr[3];
+static rtc_t rtc_info[NUM_TERMS];
 
 /*
  * rtc_init
@@ -39,12 +37,12 @@ void rtc_irq_handler() {
     send_eoi(RTC_IRQ);
 
     int idx;
-    for(idx = 0; idx < 3; idx++){
-        if(rtc_ctr[idx] < rtc_syshz_per_uhz[idx]){
-            rtc_ctr[idx]++;
+    for(idx = 0; idx < NUM_TERMS; idx++){
+        if(rtc_info[idx].rtc_ctr < rtc_info[idx].rtc_syshz_per_uhz){
+            rtc_info[idx].rtc_ctr++;
         }
         else{
-            rtc_irq_flag[idx] = RTC_FLAG_SET;
+            rtc_info[idx].rtc_irq_flag = RTC_FLAG_SET;
         }
     }
 }
@@ -64,6 +62,13 @@ int32_t rtc_open(const uint8_t* filename){
         return -1;
     }
 
+    d_entry dentry;
+    int32_t dentry_success = read_dentry_by_name(filename, &dentry);
+
+    if(dentry_success == -1){
+        return -1;
+    }
+
     uint16_t rate = RTC_RATE;
     outb(RTC_REG_A_DISABLE, RTC_REG_PORT); // set index to register A, disable NMI
     char prev = inb(RTC_RW_PORT);	// get initial value of register A, should be 32kHz
@@ -77,15 +82,9 @@ int32_t rtc_open(const uint8_t* filename){
 
     // uint32_t idx = get_cur_user_terminal();
 
-    rtc_ctr[idx] = 0;
-    rtc_syshz_per_uhz[idx] = RTC_USR_DEFAULT; //since its init, the system frequency of interrupts will always be 1 of itself
-    
-    d_entry dentry;
-    int32_t dentry_success = read_dentry_by_name(filename, &dentry);
+    rtc_info[idx].rtc_ctr = 0;
+    rtc_info[idx].rtc_syshz_per_uhz = RTC_USR_DEFAULT; //since its init, the system frequency of interrupts will always be 512 of itself for 2 Hz
 
-    if(dentry_success == -1){
-        return -1;
-    }
    
     return 0;
 }
@@ -109,8 +108,10 @@ int32_t rtc_close(int32_t fd){
     pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
     uint32_t pid = pcb_address->pid;
     uint32_t idx = get_process_terminal(pid);
-    rtc_ctr[idx] = 1;
-    rtc_syshz_per_uhz[idx] = RTC_USR_DEFAULT; //reset the # of interrupts per system freq to be just 1, so its itself
+
+    rtc_info[idx].rtc_ctr = 0;
+    rtc_info[idx].rtc_syshz_per_uhz = RTC_USR_DEFAULT; //reset the # of interrupts per system freq to be 512 of itself, so its 2 Hz default
+
     return RTC_PASS;
 }
 
@@ -139,10 +140,13 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
     uint32_t pid = pcb_address->pid;
     uint32_t idx = get_process_terminal(pid);
 
-    rtc_ctr[idx] = 0;
-    rtc_irq_flag[idx] = RTC_GLOB_RES_VAR;
-    while(rtc_irq_flag[idx] != RTC_FLAG_SET);
-    rtc_irq_flag[idx] = RTC_GLOB_RES_VAR;
+    rtc_info[idx].rtc_ctr = 0;
+    rtc_info[idx].rtc_irq_flag = RTC_GLOB_RES_VAR;
+
+    while(rtc_info[idx].rtc_irq_flag != RTC_FLAG_SET);
+    
+    rtc_info[idx].rtc_irq_flag = RTC_GLOB_RES_VAR;
+
     
     return RTC_PASS;
 }
@@ -184,6 +188,7 @@ int32_t rtc_write(int32_t fd, const void *buf, int32_t nbytes){
     pcb_t * pcb_address = (pcb_t*)(cur_esp & PCB_STACK);
     uint32_t pid = pcb_address->pid;
     uint32_t idx = get_process_terminal(pid);
-    rtc_syshz_per_uhz[idx] = RTC_HZ / req_freq;
+    
+    rtc_info[idx].rtc_syshz_per_uhz = RTC_HZ / req_freq;
     return RTC_PASS;
 }

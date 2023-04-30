@@ -1,7 +1,7 @@
 #include "scheduling.h"
 
 
-int32_t top_process[3] = {-1,-1,-1}; //-1: no process, else pid of top process 
+int32_t top_process[NUM_TERMS] = {-1,-1,-1}; //-1: no process, else pid of top process 
 int32_t schedule_flag = 0;
 int32_t cur_sched_terminal = 0; //sched has to be 2, currently scheduled terminal
 uint32_t cur_user_terminal = 0; // the visible / displayed terminal
@@ -96,25 +96,25 @@ uint32_t schedule(){
     pcb_address->scheduler_ebp = cur_ebp; //save value of ebp to pcb
 
     // to load 3 base shells on boot up
-    if(counter < 2){
+    if(counter < INIT_TRACKER){
         cur_sched_terminal+=1;
         counter +=1;
-        uint8_t cmd[6] = "shell";
-        if(counter ==1 ){
-            vidmap_change(USER_VID_MEM, 1);
+        uint8_t cmd[SHELL_SIZE] = "shell";
+        if(counter == TERM_ONE){
+            vidmap_change(USER_VID_MEM, TERM_ONE);
             
             // map terminal write to terminal buffer 1
-            set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*1 + FOUR_KB));
-            terminal_t * terminal = get_terminal(1);
+            set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*TERM_ONE + FOUR_KB));
+            terminal_t * terminal = get_terminal(TERM_ONE);
             set_screen_x(&(terminal->screen_x));
             set_screen_y(&(terminal->screen_y));
         }
-        if(counter ==2){
-            vidmap_change(USER_VID_MEM, 2);
+        if(counter == TERM_TWO){
+            vidmap_change(USER_VID_MEM, TERM_TWO);
 
             // map terminal write to terminal buffer
-            set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*2 + FOUR_KB));
-            terminal_t * terminal = get_terminal(2);
+            set_video_mem((unsigned char *)(VIDMEM + FOUR_KB*TERM_TWO + FOUR_KB));
+            terminal_t * terminal = get_terminal(TERM_TWO);
             set_screen_x(&(terminal->screen_x));
             set_screen_y(&(terminal->screen_y));
         }
@@ -125,7 +125,7 @@ uint32_t schedule(){
 
     //only reach here on the third PIT interrupt and after
     //increment terminal number to get next terminal number
-    cur_sched_terminal = (cur_sched_terminal + 1) % 3; // round robin, move to next terminal
+    cur_sched_terminal = (cur_sched_terminal + 1) % NUM_TERMS; // round robin, move to next terminal
     
     int32_t next_pid = top_process[cur_sched_terminal];
     pcb_t * next_process_pcb = (pcb_t *)get_pcb_address(next_pid);
@@ -137,9 +137,8 @@ uint32_t schedule(){
         terminal_t * terminal = get_terminal(cur_sched_terminal);
         set_screen_x(&(terminal->screen_x)); // Putc should update the x and y position for this terminal
         set_screen_y(&(terminal->screen_y));
-        update_cursor(terminal->screen_x, terminal->screen_y); //update cursor using active termial's screen_x y
         set_video_mem((unsigned char *)VIDMEM); // 2. Map terminal write to video memory
-        update_cursor(terminal->screen_x, terminal->screen_y);
+        update_cursor(terminal->screen_x, terminal->screen_y); //update cursor using active termial's screen_x y
     
 
     }else{ //switching to a terminal that user is not on
@@ -182,7 +181,7 @@ uint32_t schedule(){
 uint32_t bshell_count(){
     uint32_t count = 0;
     int i;
-    for(i = 0; i<3; i++){
+    for(i = 0; i < NUM_TERMS; i++){
         if(top_process[i] != -1){
             count+=1;
         }
