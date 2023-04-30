@@ -113,7 +113,7 @@ void destroy_mapping(){
 /*
  * vidmap_helper()
  *   DESCRIPTION: sets up page table and page dir and modifies directory to have this pte mapped to kernel vidmem
- *   INPUTS: pid
+ *   INPUTS: virtual address
  *   OUTPUTS: none
  *   RETURN VALUE: none
  *   SIDE EFFECTS: none
@@ -138,7 +138,14 @@ void vidmap_helper(uint32_t virtual_address){
     flush_tlb();
 }
 
-// set user vid mem to point to terminal buffer
+/*
+ * vidmap_change()
+ *   DESCRIPTION: switches the kernel video memory to one of the 3 terminal video memories
+ *   INPUTS: virtrual address, terminal #
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 void vidmap_change(uint32_t virtual_address, uint32_t terminal){
     uint32_t pd_offset = virtual_address >> VIRT_MEM_SHIFT;
     uint32_t pt_offset = (virtual_address & PT_INDEX_MAP) >> VIRTMEM_UPPR_20; 
@@ -150,7 +157,14 @@ void vidmap_change(uint32_t virtual_address, uint32_t terminal){
     flush_tlb();
 }
 
-// swap terminal buffer and video memory for two terminals
+/*
+ * buffer_swap()
+ *   DESCRIPTION: swaps the contents of the video memories between the kernel video memory and the desired new kernel video memory
+ *   INPUTS: old_terminal #, new_terminal #
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 void buffer_swap(uint32_t old_terminal, uint32_t new_terminal){
     //vid mem to old_terminal , maybe do for loop if slow
     copy_video_memory((unsigned char *)(VIDMEM + FOUR_KB + FOUR_KB*old_terminal),  (unsigned char *)VIDMEM  );
